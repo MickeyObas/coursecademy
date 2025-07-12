@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BACKEND_URL } from '../config';
+import api from '../utils/axios';
+
 
 const EnterCode: React.FC = () => {
   const [code, setCode] = useState('');
@@ -22,29 +24,23 @@ const EnterCode: React.FC = () => {
     try{
       setLoading(true);
       setError('');
-      const response = await fetch(`${BACKEND_URL}/api/auth/verify-email/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          code: code,
-          token: token
-        })
+      const response = await api.post(`/api/auth/verify-email/`, {
+        code: code,
+        token: token
       });
-      if(!response.ok){
-        const errorResponse = await response.json();
-        console.log(errorResponse);
-        setError(errorResponse.error);
+      const data = response.data;
+      console.log(data);
+      navigate(`/complete-registration/`, {state: {'email': data.email}});
+      sessionStorage.removeItem('userVerifyEmail');
+      sessionStorage.removeItem('userVerifyToken');
+    }catch(error: any){
+      if(error.response){
+        console.log(error.response.data);
+        setError(error.response.data?.error);
       }else{
-        const data = await response.json();
-        console.log(data);
-        navigate(`/complete-registration/`, {state: {'email': data.email}});
-        sessionStorage.removeItem('userVerifyEmail');
-        sessionStorage.removeItem('userVerifyToken');
+        console.error(error);
+        setError("Network error. Please try again.");
       }
-    }catch(err){
-      console.error(err);
     }finally{
       setLoading(false);
     }

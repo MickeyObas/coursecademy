@@ -1,4 +1,4 @@
-import random
+import random, re
 
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions, mail
@@ -7,7 +7,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import serializers
 
 from api.models import VerificationCode
-from api.utils import is_valid_email
+from api.utils import is_valid_email, is_valid_full_name
 from .models import User
 
 
@@ -17,7 +17,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "password", "password2"]
+        fields = ["email", "full_name", "password", "password2"]
         extra_kwargs = {
             "password": {"write_only": True},
             "password2": {"write_only": True},
@@ -31,7 +31,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         if password != password2:
             raise serializers.ValidationError({"password": "Passwords don't match"})
 
-        # Remove password2 as it's not to be stored
+        # Remove password2 as it's not to be stored during actual "User" creation 
         del attrs["password2"]
 
         user = User(**attrs)
@@ -46,6 +46,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return super().validate(attrs)
+
+    def validate_full_name(self, value):
+        name = value.strip()
+
+        if not is_valid_full_name(name):
+            raise serializers.ValidationError(
+                "Name is invalid. Please enter a name that contains only letters and optionally hyphens."
+            )
+        
+        return name
 
     def validate_email(self, value):
         email = value.strip().lower()

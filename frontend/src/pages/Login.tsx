@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { BACKEND_URL } from '../config';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import api from '../utils/axios';
+
 
 const Login: React.FC = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,27 +26,24 @@ const Login: React.FC = () => {
     
     try{
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/auth/token/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password
-        })
+      const response = await api.post(`/api/auth/token/`, {
+        email: email,
+        password: password
       });
-      if(!response.ok){
-        const errorResponse = await response.json();
-        setError(errorResponse.error);
+      const data = await response.data;
+      console.log(data);
+      login(data);
+      setEmail('');
+      setPassword('');
+      navigate('/');
+    }catch(error: any){
+      if(error.response){
+        console.error(error.response.data);
+        setError(error.response.data?.error);
       }else{
-        const data = await response.json();
-        console.log(data);
-        setEmail('');
-        setPassword('');
+        console.error(error);
+        setError("Network error. Please try again.");
       }
-    }catch(err){
-      console.error(err);
     }finally{
       setLoading(false);
     }

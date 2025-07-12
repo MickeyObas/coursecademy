@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BACKEND_URL } from '../config';
+import api from '../utils/axios';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -37,32 +38,27 @@ const Register: React.FC = () => {
     
     try{
       setLoading(true);
-      const response = await fetch(`${BACKEND_URL}/api/auth/register/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          full_name: fullName,
-          email: email,
-          password: password,
-          password2: confirmPassword
-        })
+      
+      const response = await api.post(`/api/auth/register/`, {
+        full_name: fullName,
+        email: email,
+        password: password,
+        password2: confirmPassword
       });
-      if(!response.ok){
-        const errorResponse = await response.json();
-        console.log(errorResponse);
-        setError(errorResponse.error);
+      console.log(response.data);
+      navigate('/login/');
+    }catch(error: any){
+      if(error.response){
+        console.log(error.response.data);
+        setError(error.response.data?.error);
       }else{
-        const data = await response.json();
-        console.log(data);
-        navigate('/login/');
+        console.error(error);
+        setError("Network error. Please try again.")
       }
-    }catch(err){
-      console.error(err);
     }finally{
       setLoading(false);
     }
+
   }
 
   return (

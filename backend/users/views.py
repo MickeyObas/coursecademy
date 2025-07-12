@@ -90,11 +90,12 @@ def verify_email(request):
         )
 
     try:
-        VerificationService.verify_email(user_code, token)
-        return Response({"message": "Email verification successful"})
+        user_email = VerificationService.verify_email(user_code, token)
+        return Response({"message": "Email verification successful", "email": user_email})
     except ValueError as e:
         return Response({"error": str(e)}, status=400)
     except Exception as e:
+        print(e)
         return Response({"error": "Something went wrong"}, status=500)    
 
 

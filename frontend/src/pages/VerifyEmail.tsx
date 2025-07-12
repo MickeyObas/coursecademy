@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { validateEmail } from '../utils';
+import { validateEmail } from '../utils/utils';
 import { BACKEND_URL } from '../config';
+import api from '../utils/axios';
+
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
@@ -26,28 +28,21 @@ const VerifyEmail: React.FC = () => {
     setLoading(true);
 
     try{
-      const response = await fetch(`${BACKEND_URL}/api/auth/send-confirmation-code/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: email.trim()
-        })
+      const response = await api.post(`/api/auth/send-confirmation-code/`, {
+        email: email.trim()
       });
-      if(!response.ok){
-        const errorResponse = await response.json();
-        setError(errorResponse.error);
-        console.log("Whoops, something went wrong.", errorResponse);
+      console.log(response.data);
+      sessionStorage.setItem('userVerifyToken', response.data.user_verify_token);
+      sessionStorage.setItem('userVerifyEmail', response.data.user_verify_email);
+      navigate('/enter-code/');
+    }catch(error: any){
+      if(error.response){
+        console.error(error.response.data);
+        setError(error.response.data?.error);
       }else{
-        const data = await response.json();
-        console.log(data);
-        sessionStorage.setItem('userVerifyToken', data.user_verify_token);
-        sessionStorage.setItem('userVerifyEmail', data.user_verify_email);
-        navigate('/enter-code/');
+        console.error(error);
+        setError("Network error. Please try again.");
       }
-    }catch(err){
-      console.error(err);
     }finally{
       setLoading(false);
     }

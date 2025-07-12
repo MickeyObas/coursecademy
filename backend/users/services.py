@@ -81,5 +81,7 @@ class VerificationService:
             code_entry.is_used = True
             code_entry.save()
 
+            return code_entry.email
+        
         except VerificationCode.DoesNotExist:
             raise ValueError("Invalid or used token.")
