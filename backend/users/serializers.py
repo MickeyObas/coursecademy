@@ -61,7 +61,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             )
 
         email_verification_code = VerificationCode.objects.filter(
-            email=email, is_approved=True
+            email=email, is_used=True
         )
 
         if not email_verification_code.exists():

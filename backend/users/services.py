@@ -18,7 +18,15 @@ class VerificationService:
             if User.objects.filter(email=email).exists():
                 raise ValueError("Account with this email already exists")
             elif VerificationCode.objects.filter(email=email).exists():
-                VerificationCode.objects.filter(email=email).delete
+                VerificationCode.objects.filter(email=email).delete()
+
+            cache_key = f"sent_token_{email}"
+            if cache.get(cache_key):
+                raise ValueError(
+                    "Too many requests. Please wait before requesting a new code"
+                )
+            else:
+                cache.set(cache_key, True, 60)
 
             code = generate_6_digit_code()
             subject = "Your verification code"
@@ -35,7 +43,9 @@ class VerificationService:
             email_message.attach_alternative(html_content, "text/html")
             email_message.send()
 
-            VerificationCode.objects.create(email=email, code=code)
+            verification_code = VerificationCode.objects.create(email=email, code=code)
+
+            return verification_code.token
 
         except Exception as e:
             print(e)
@@ -48,21 +58,28 @@ class VerificationService:
             raise ValueError(
                 "Too many requests. Please wait before requesting a new code"
             )
-        cache.set(cache_key, True, 60)
+        else:
+            cache.set(cache_key, True, 60)
+
         VerificationCode.objects.filter(email=email).delete()
         VerificationService.send_verification_code(email=email)
 
     @staticmethod
-    def verify_email(email, user_code):
+    def verify_email(user_code, token):
         try:
             code_entry = VerificationCode.objects.get(
-                email=email, code=user_code, is_approved=False
+                token=token, is_used=False
             )
             if timezone.now() > code_entry.expiry_time:
                 raise ValueError(
                     'Code expired. Please tap on "Resend" to get a new verification code sent to your email.'
                 )
-            code_entry.is_approved = True
+            
+            if code_entry.code != user_code:
+                raise ValueError('Incorrect code.')
+
+            code_entry.is_used = True
             code_entry.save()
+
         except VerificationCode.DoesNotExist:
-            raise ValueError("Invalid code")
+            raise ValueError("Invalid or used token.")

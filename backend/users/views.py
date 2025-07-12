@@ -35,8 +35,12 @@ def send_confirmation_code_to_email(request):
         )
 
     try:
-        VerificationService.send_verification_code(email)
-        return Response({"message": "A confirmation code has been sent to your email"})
+        token = VerificationService.send_verification_code(email)
+        return Response({
+            "message": "A confirmation code has been sent to your email",
+            "user_verify_token": token,
+            "user_verify_email": email
+        })
     except ValueError as e:
         return Response({"error": str(e)}, status=400)
     except Exception as e:
@@ -73,22 +77,20 @@ def resend_confirmation_code_to_email(request):
 @api_view(["POST"])
 def verify_email(request):
     user_code = request.data.get("code")
-    email = request.data.get("email")
+    token = request.data.get("token")
 
     if not user_code:
         return Response(
             {"error": "User code required"}, status=status.HTTP_400_BAD_REQUEST
         )
-
-    if not email:
+    
+    if not token:
         return Response(
-            {"error": "Email address required"}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "Token required"}, status=status.HTTP_400_BAD_REQUEST
         )
-    else:
-        email = email.strip().lower()
 
     try:
-        VerificationService.verify_email(email, user_code)
+        VerificationService.verify_email(user_code, token)
         return Response({"message": "Email verification successful"})
     except ValueError as e:
         return Response({"error": str(e)}, status=400)

@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 
+import uuid
+
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -11,10 +13,11 @@ class TimeStampedModel(models.Model):
 
 
 class VerificationCode(TimeStampedModel):
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     email = models.EmailField()
     code = models.CharField(max_length=6)
     expiry_time = models.DateTimeField()
-    is_approved = models.BooleanField(default=False)
+    is_used = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ["email", "code"]

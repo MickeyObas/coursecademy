@@ -15,6 +15,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         student = 'STUDENT' 'Student'
         instructor = 'INSTRUCTOR', 'Instructor'
 
+    full_name = models.CharField(max_length=255)
     email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -37,7 +38,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pictures')
+    profile_picture = models.ImageField(upload_to='profile_pictures', null=True, blank=True)
     
     def __str__(self):
         return f"{self.user.email}'s Profile"
