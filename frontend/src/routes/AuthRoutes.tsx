@@ -9,8 +9,8 @@ const AuthRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/register" element={<VerifyEmail />} />
+      <Route path="/complete-registration" element={<Register />} />
       <Route path="/enter-code" element={<EnterCode />} />
     </Routes>
   );

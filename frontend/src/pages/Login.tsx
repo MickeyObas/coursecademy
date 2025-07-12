@@ -5,6 +5,7 @@ import { BACKEND_URL } from '../config';
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
@@ -20,6 +21,7 @@ const Login: React.FC = () => {
     setError('');
     
     try{
+      setLoading(true);
       const response = await fetch(`${BACKEND_URL}/api/auth/token/`, {
         method: 'POST',
         headers: {
@@ -36,9 +38,13 @@ const Login: React.FC = () => {
       }else{
         const data = await response.json();
         console.log(data);
+        setEmail('');
+        setPassword('');
       }
     }catch(err){
       console.error(err);
+    }finally{
+      setLoading(false);
     }
   };
 
@@ -104,7 +110,7 @@ const Login: React.FC = () => {
             type="submit"
             className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition"
           >
-            Log In
+            {loading ? 'Loading...' : 'Login'}
           </button>
         </form>
 

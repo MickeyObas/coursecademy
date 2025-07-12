@@ -39,7 +39,9 @@ const EnterCode: React.FC = () => {
       }else{
         const data = await response.json();
         console.log(data);
-        navigate(`/register/`);
+        navigate(`/complete-registration/`, {state: {'email': data.email}});
+        sessionStorage.removeItem('userVerifyEmail');
+        sessionStorage.removeItem('userVerifyToken');
       }
     }catch(err){
       console.error(err);

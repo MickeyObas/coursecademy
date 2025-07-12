@@ -1,21 +1,29 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { BACKEND_URL } from '../config';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { email } = location.state || {};
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    // In case user goes to complete-registration route directly, for some weird reason 
+    if(!email){
+      navigate('/register/');
+    }
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
-    if (!fullName || !email || !password || !confirmPassword) {
+    if (!fullName || !password || !confirmPassword) {
       setError('Please fill in all fields.');
       return;
     }
@@ -28,6 +36,7 @@ const Register: React.FC = () => {
     setError('');
     
     try{
+      setLoading(true);
       const response = await fetch(`${BACKEND_URL}/api/auth/register/`, {
         method: 'POST',
         headers: {
@@ -42,6 +51,7 @@ const Register: React.FC = () => {
       });
       if(!response.ok){
         const errorResponse = await response.json();
+        console.log(errorResponse);
         setError(errorResponse.error);
       }else{
         const data = await response.json();
@@ -50,6 +60,8 @@ const Register: React.FC = () => {
       }
     }catch(err){
       console.error(err);
+    }finally{
+      setLoading(false);
     }
   }
 
@@ -63,17 +75,6 @@ const Register: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="fullName" className="block text-sm font-medium mb-1">Full Name</label>
-            <input
-              id="fullName"
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
-              required
-            />
-          </div>
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
@@ -81,7 +82,19 @@ const Register: React.FC = () => {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              disabled={true}
+              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500 bg-slate-100"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="fullName" className="block text-sm font-medium mb-1">Full Name</label>
+            <input
+              id="fullName"
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
@@ -126,7 +139,7 @@ const Register: React.FC = () => {
             type="submit"
             className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition"
           >
-            Register
+            {loading ? 'Loading...' : 'Register'}
           </button>
         </form>
 
