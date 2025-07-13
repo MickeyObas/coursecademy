@@ -36,11 +36,12 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       !originalRequest._retry
     ) {
+      console.log("Acess Token Expired");
       originalRequest._retry = true;
 
       try {
         const refreshRes = await axios.post<RefreshTokenResponse>(
-          `${BASE_URL}/api/token/refresh/`,
+          `${BASE_URL}/api/auth/token/refresh/`,
           {},
           { withCredentials: true }
         );

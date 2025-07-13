@@ -33,8 +33,10 @@ INSTALLED_APPS = [
 
     # Internal Apps
     'api.apps.ApiConfig',
+    'assessments.apps.AssessmentsConfig',
+    'categories.apps.CategoriesConfig',
     'courses.apps.CoursesConfig',
-    'practicetests.apps.PracticetestsConfig',
+    'enrollments.apps.EnrollmentsConfig',
     'users.apps.UsersConfig',
 
     # External Apps

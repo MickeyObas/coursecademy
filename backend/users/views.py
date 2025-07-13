@@ -18,6 +18,14 @@ from api.utils import is_valid_email
 from .services import VerificationService
 
 
+@api_view(['GET'])
+def get_profile(request):
+    return Response({
+        "email": request.user.email,
+        'message': 'Welcome buddy!'
+    })
+
+
 @api_view(["POST"])
 def send_confirmation_code_to_email(request):
     email = request.data.get("email")

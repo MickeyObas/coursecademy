@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { BACKEND_URL } from '../config';
 import api from '../utils/axios';
 
 const Register: React.FC = () => {
@@ -12,7 +11,12 @@ const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState({
+    general: '',
+    email: '',
+    password: '',
+    password2: '',
+  });
 
   useEffect(() => {
     // In case user goes to complete-registration route directly, for some weird reason 
@@ -25,16 +29,21 @@ const Register: React.FC = () => {
     e.preventDefault();
 
     if (!fullName || !password || !confirmPassword) {
-      setError('Please fill in all fields.');
+      setError((prev) => ({...prev, general: 'Please fill in all fields'}));
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match.');
+      setError((prev) => ({...prev, password2: 'Passwords do not match'}));
       return;
     }
 
-    setError('');
+    setError({
+      general: '',
+      email: '',
+      password: '',
+      password2: ''
+    });
     
     try{
       setLoading(true);
@@ -50,10 +59,15 @@ const Register: React.FC = () => {
     }catch(error: any){
       if(error.response){
         console.log(error.response.data);
-        setError(error.response.data?.error);
+        setError({
+          email: error.response.data.email || '',
+          password: error.response.data.password || '',
+          password2: error.response.data.password2 || '',
+          general: ''
+        });
       }else{
         console.error(error);
-        setError("Network error. Please try again.")
+        setError((prev) => ({...prev, general: 'Network error. Please try again'}))
       }
     }finally{
       setLoading(false);
@@ -66,8 +80,8 @@ const Register: React.FC = () => {
       <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8">
         <h2 className="text-2xl font-semibold text-center mb-6">Create Your Account</h2>
 
-        {error && (
-          <div className="text-red-600 text-sm mb-4 text-center">{error}</div>
+        {error.general && (
+          <div className="text-red-600 text-sm mb-4 text-center">{error.general}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -82,6 +96,7 @@ const Register: React.FC = () => {
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500 bg-slate-100"
               required
             />
+            <p className="text-red-600 text-xs min-h-4">{error.email}</p>
           </div>
 
           <div>
@@ -94,6 +109,7 @@ const Register: React.FC = () => {
               className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
+            <p className="text-red-600 text-xs min-h-4">{error.full_name}</p>
           </div>
 
           <div>
@@ -108,6 +124,7 @@ const Register: React.FC = () => {
                 required
               />
             </div>
+            <p className="text-red-600 text-xs min-h-4">{error.password}</p>
           </div>
 
           <div>
@@ -129,6 +146,7 @@ const Register: React.FC = () => {
                 {showPassword ? 'Hide' : 'Show'}
               </button>
             </div>
+            <p className="text-red-600 text-xs min-h-4">{error.password2}</p>
           </div>
 
           <button

@@ -11,10 +11,11 @@ from .managers import CustomUserManager
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     class AccountTypes(models.TextChoices):
-        admin = 'ADMIN', 'Admin'
-        student = 'STUDENT' 'Student'
-        instructor = 'INSTRUCTOR', 'Instructor'
+        ADMIN = 'A', 'Admin'
+        STUDENT = 'S', 'Student'
+        INSTRUCTOR = 'I', 'Instructor'
 
+    account_type = models.CharField(max_length=500, default=AccountTypes.STUDENT, choices=AccountTypes.choices)
     full_name = models.CharField(max_length=255)
     email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
