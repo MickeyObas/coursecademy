@@ -4,8 +4,12 @@ from django.db.models import Q
 
 from rest_framework import status
 from rest_framework.decorators import api_view
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from users.models import User
 from users.serializers import (PasswordResetConfirmSerializer,
@@ -134,15 +138,44 @@ def login(request):
 
     if user is not None:
         refresh = RefreshToken.for_user(user)
-        return Response(
+        response = Response(
             {
-                "refresh": str(refresh),
+                # "refresh": str(refresh),
                 "access": str(refresh.access_token),
                 "user": UserSerializer(user, context={"request": request}).data,
             },
             status=status.HTTP_200_OK,
         )
+        response.set_cookie(
+            key='refresh',
+            value=str(refresh),
+            httponly=True,
+            samesite='None',
+            secure=True,
+            path='/',
+            max_age=1 * 24 * 60 * 60
+        )
+        return response
     else:
         return Response(
             {"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class CookieTokenRefreshView(TokenRefreshView):
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        print(request.COOKIES)
+        refresh_token = request.COOKIES.get("refresh")
+        print("REFRESH TOKEN: ", refresh_token)
+
+        if refresh_token is None:
+            return Response({"error": "No refresh token"}, status=401)
+        
+        serializer = self.get_serializer(data={"refresh": refresh_token})
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+        return Response(serializer.validated_data)

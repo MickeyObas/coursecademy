@@ -14,6 +14,5 @@ class Enrollment(TimeStampedModel):
 
     def __str__(self):
         return f"{self.user.email if self.user else 'Deleted User'} - {self.course.title}"
-    
 
 

@@ -178,3 +178,5 @@ cython_debug/
 
 # miscellaneous
 brainstorm.txt
+
+backend/certs/

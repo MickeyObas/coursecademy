@@ -36,7 +36,7 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       !originalRequest._retry
     ) {
-      console.log("Acess Token Expired");
+      console.log("Access Token Expired");
       originalRequest._retry = true;
 
       try {

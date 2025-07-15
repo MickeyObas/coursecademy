@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
 
 
 load_dotenv()
@@ -149,6 +150,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5175",
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
+
 # MEDIA
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -156,9 +160,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.BasicAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 
-CORS_ALLOW_CREDENTIALS = True
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1)
+}
+
+STATICFILES_DIRS = [ BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
