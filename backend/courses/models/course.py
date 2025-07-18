@@ -18,13 +18,15 @@ class Course(TimeStampedModel):
     tags = models.CharField(max_length=255, blank=True, help_text='Comma-separated values')
     rating_count = models.PositiveIntegerField(default=0)
     average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
-    rating_count = models.PositiveIntegerField(default=0)
     enrollment_count = models.PositiveBigIntegerField(default=0)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
 
     class Meta:
         ordering = ['-created_at']
         indexes = [models.Index(fields=['slug'])]
+    
+    def __str__(self):
+        return self.title[:50]
 
     def save(self, *args, **kwargs):
         if not self.slug:
