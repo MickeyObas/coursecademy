@@ -7,8 +7,8 @@ class Module(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
 
-    class Meta:
-        unique_together = ['order', 'course']
+    # class Meta:
+    #     unique_together = ['order', 'course']
 
     def __str__(self):
         return f"{self.course.title}: Module - {self.order}"

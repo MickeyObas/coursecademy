@@ -1,5 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+
 from api.models import TimeStampedModel
 
 
@@ -41,59 +44,37 @@ class Question(TimeStampedModel):
         NORMAL = "NORMAL", "Normal"
         HARD = "HARD", "Hard"
 
-    module_assessment = models.ForeignKey(
-        'assessments.ModuleAssessment',
-        on_delete=models.CASCADE, 
-        blank=True, 
-        null=True
-    )
-    course_assessment = models.ForeignKey(
-        'assessments.CourseAssessment',
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    assessment_object = GenericForeignKey('content_type', 'object_id')
     order = models.PositiveSmallIntegerField(blank=True, null=True)
     category = models.ForeignKey('categories.Category', on_delete=models.CASCADE)
     text = models.TextField()
     difficulty = models.CharField(max_length=6, choices=Difficulties.choices, blank=True, null=True)
-    correct_answer = models.CharField(max_length=30, blank=True, null=True)
+    is_true = models.BooleanField(blank=True, null=True)
+    correct_answer = models.CharField(max_length=100, blank=True, null=True)
     explanation = models.TextField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
-    type = models.CharField(max_length=4, default=QuestionTypes.MCQ)
-    is_true = models.BooleanField(default=False)
+    type = models.CharField(max_length=4, choices=QuestionTypes.choices)
 
-    class Meta:
-        unique_together = [
-            ('order', 'module_assessment'),
-            ('order', 'course_assessment')
-        ]
-    
     def clean(self) -> None:
-        if self.module_assessment and self.course_assessment:
-            raise ValidationError("A question can only belong to at most a module assessment or a course assessment.")
-        
-        if not (self.module_assessment or self.course_assessment) and not self.difficulty:
-            raise ValidationError("Any question without relation to an assessment must have its difficulty set.")
-        
-        if (self.module_assessment or self.course_assessment) and not self.order:
-            raise ValidationError("Questions for module and course assessments must have an order.")
-        
         if (self.type == self.QuestionTypes.FIB) and not self.correct_answer:
             raise ValidationError("FIB questions must have 'correct_answer' set.")
         
         if (self.type != self.QuestionTypes.FIB) and self.correct_answer:
             raise ValidationError("Only FIB questions should have a direct 'correct_answer' value set.")
         
-        if (self.type != self.QuestionTypes.TF) and not not self.is_true:
+        if self.type != self.QuestionTypes.TF and self.is_true is not None:
             raise ValidationError("Only TF questions should have the 'is_true' flag set")
+        
+        if self.type == self.QuestionTypes.TF and self.is_true is None:
+            raise ValidationError("TF questions should have the 'is_true' flag set")
 
         return super().clean()
 
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
-
 
     def __str__(self):
         return f"{self.pk} - {self.text[:50]}"
@@ -106,14 +87,18 @@ class Option(TimeStampedModel):
     - `TF` questions will be controlled with the 'is_true' field
     - `FIB` questions will be controlled with the `correct_answer` field
     """
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.text}"
     
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+    
     def clean(self):
-        if self.question.type == Question.QuestionTypes.TF:
-            raise ValidationError("TF questions should not have option instances created for them.")
+        if self.question.type != Question.QuestionTypes.MCQ:
+            raise ValidationError("Only MCQ questions should have option instances created for them.")
 
