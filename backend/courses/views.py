@@ -3,14 +3,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .models import Course
-from .serializers import CourseSerializer
+from .serializers import CourseSerializer, ThinCourseSerializer
 from enrollments.models import Enrollment
 
 
 class CourseListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Course.objects.all()
-    serializer_class = CourseSerializer
+    serializer_class = ThinCourseSerializer
 
 
 class CourseDetailView(generics.RetrieveAPIView):

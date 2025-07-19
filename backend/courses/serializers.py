@@ -3,8 +3,19 @@ from rest_framework import serializers
 from .models import (
     Course,
     CourseLearningPoint,
-    CourseSkill
+    CourseSkill, 
+    Module
 )
+
+
+class ModuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Module
+        fields = [
+            'order',
+            'title',
+            'description'
+        ]
 
 
 class CourseLearningPointSerializer(serializers.ModelSerializer):
@@ -22,9 +33,11 @@ class CourseSkillSerializer(serializers.ModelSerializer):
             'name'
         ]
 
+
 class CourseSerializer(serializers.ModelSerializer):
     learning_points = CourseLearningPointSerializer(many=True)
     skills = CourseSkillSerializer(many=True, required=False)
+    modules = ModuleSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -35,6 +48,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'category',
             'instructor',
             'thumbnail',
+            'modules',
             'is_active',
             'tags',
             'rating_count',
@@ -42,7 +56,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'enrollment_count',
             'price',
             'learning_points',
-            'skills'
+            'skills',
         ]
 
     def create(self, validated_data):
@@ -79,6 +93,7 @@ class ThinCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
+            'id',
             'title',
             'category',
             'average_rating'

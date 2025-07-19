@@ -2,8 +2,8 @@ from django.db import models
 
 
 class Module(models.Model):
-    order = models.DecimalField(max_digits=3, decimal_places=1)
-    course = models.ForeignKey('courses.Course', on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField()
+    course = models.ForeignKey('courses.Course', on_delete=models.CASCADE, related_name='modules')
     title = models.CharField(max_length=150)
     description = models.TextField()
 
