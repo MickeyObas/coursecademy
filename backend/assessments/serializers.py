@@ -25,6 +25,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'explanation',
             'is_active',
             'is_true',
+            'correct_answer',
             'order',
             'details',
             'content_type',
@@ -32,6 +33,10 @@ class QuestionSerializer(serializers.ModelSerializer):
             'assessment_type',
             'assessment_id'
         ]
+        extra_kwargs = {
+            'is_true': {'write_only': True},
+            'correct_answer': {'write_only': True}
+        }
 
     def validate(self, data):
         q_type = data.get('type')
