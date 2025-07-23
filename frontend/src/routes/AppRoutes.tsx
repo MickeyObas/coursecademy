@@ -4,7 +4,8 @@ import Register from '../pages/Register';
 import VerifyEmail from '../pages/VerifyEmail';
 import EnterCode from '../pages/EnterCode';
 import { PrivateRoutes } from "../components/PrivateRoutes";
-import Home from "../pages/Home";
+import Dashboard from "../pages/Dashboard";
+import DashboardLayout from "../components/layouts/DashboardLayout";
 
 
 const AppRoutes = () => {
@@ -16,10 +17,12 @@ const AppRoutes = () => {
       <Route path="/register" element={<VerifyEmail />} />
       <Route path="/complete-registration" element={<Register />} />
       <Route path="/enter-code" element={<EnterCode />} />
-    
+      
       {/* Private Routes */}
       <Route element={<PrivateRoutes />}>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<DashboardLayout />}>
+          <Route index path="" element={<Dashboard />} />
+        </Route>
       </Route>
 
     </Routes>
