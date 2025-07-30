@@ -32,3 +32,11 @@ class TestAssessment(TimeStampedModel):
 
     def __str__(self):
         return f"{self.category} - {self.difficulty}"
+    
+
+class TestAssessmentCategoryDescription(models.Model):
+    category = models.ForeignKey('categories.Category', on_delete=models.CASCADE)
+    text = models.TextField()
+
+    def __str__(self):
+        return f"Description for TestAssessment: {self.category.title}"

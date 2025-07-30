@@ -6,6 +6,12 @@ import EnterCode from '../pages/EnterCode';
 import { PrivateRoutes } from "../components/PrivateRoutes";
 import Dashboard from "../pages/Dashboard";
 import DashboardLayout from "../components/layouts/DashboardLayout";
+import Courses from "../pages/Courses";
+import Tests from "../pages/Tests";
+import Certifications from "../pages/Certifications";
+import Profile from "../pages/Profile";
+import Settings from "../pages/Settings";
+import TestDetails from "../pages/TestDetails";
 
 
 const AppRoutes = () => {
@@ -22,6 +28,12 @@ const AppRoutes = () => {
       <Route element={<PrivateRoutes />}>
         <Route path="/" element={<DashboardLayout />}>
           <Route index path="" element={<Dashboard />} />
+          <Route path="courses" element={<Courses />} />
+          <Route path="tests" element={<Tests />} />
+          <Route path="tests/:categoryId" element={<TestDetails />} />
+          <Route path="certifications" element={<Certifications />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Route>
 
