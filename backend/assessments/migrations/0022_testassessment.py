@@ -7,22 +7,46 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0021_alter_question_difficulty'),
-        ('categories', '0002_alter_category_options'),
+        ("assessments", "0021_alter_question_difficulty"),
+        ("categories", "0002_alter_category_options"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TestAssessment',
+            name="TestAssessment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('difficulty', models.CharField(choices=[('EASY', 'Easy'), ('NORMAL', 'Normal'), ('HARD', 'Hard')], max_length=10)),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='categories.category')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "difficulty",
+                    models.CharField(
+                        choices=[
+                            ("EASY", "Easy"),
+                            ("NORMAL", "Normal"),
+                            ("HARD", "Hard"),
+                        ],
+                        max_length=10,
+                    ),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="categories.category",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('category', 'difficulty')},
+                "unique_together": {("category", "difficulty")},
             },
         ),
     ]

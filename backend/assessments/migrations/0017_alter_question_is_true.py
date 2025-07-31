@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0016_question_correct_answer_question_is_true_and_more'),
+        ("assessments", "0016_question_correct_answer_question_is_true_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='question',
-            name='is_true',
+            model_name="question",
+            name="is_true",
             field=models.BooleanField(),
         ),
     ]

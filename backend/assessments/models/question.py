@@ -1,7 +1,7 @@
-from django.db import models
-from django.core.exceptions import ValidationError
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError
+from django.db import models
 
 from api.models import TimeStampedModel
 
@@ -19,24 +19,28 @@ class Question(TimeStampedModel):
     - If it belongs to an assessment, it MUST have an `order`
     - If it does not belong to any assessment, it MUST have a `difficulty`
     """
+
     class QuestionTypes(models.TextChoices):
-        MCQ = 'MCQ', 'Multiple Choice'
-        TF = 'TF', 'True or False'
-        FIB = 'FIB', 'Fill in the Blank'
-    
+        MCQ = "MCQ", "Multiple Choice"
+        TF = "TF", "True or False"
+        FIB = "FIB", "Fill in the Blank"
+
     class Difficulties(models.TextChoices):
         EASY = "EASY", "Easy"
         NORMAL = "NORMAL", "Normal"
         HARD = "HARD", "Hard"
 
-    # TODO: Create TestAssessments then make these fields required
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, null=True, blank=True
+    )
     object_id = models.PositiveIntegerField(null=True, blank=True)
-    assessment_object = GenericForeignKey('content_type', 'object_id')
+    assessment_object = GenericForeignKey("content_type", "object_id")
     order = models.PositiveSmallIntegerField(blank=True, null=True)
-    category = models.ForeignKey('categories.Category', on_delete=models.CASCADE)
+    category = models.ForeignKey("categories.Category", on_delete=models.CASCADE)
     text = models.TextField()
-    difficulty = models.CharField(max_length=6, choices=Difficulties.choices, default=Difficulties.EASY)
+    difficulty = models.CharField(
+        max_length=6, choices=Difficulties.choices, default=Difficulties.EASY
+    )
     is_true = models.BooleanField(blank=True, null=True)
     correct_answer = models.CharField(max_length=100, blank=True, null=True)
     explanation = models.TextField(blank=True, null=True)
@@ -46,13 +50,17 @@ class Question(TimeStampedModel):
     def clean(self) -> None:
         if (self.type == self.QuestionTypes.FIB) and not self.correct_answer:
             raise ValidationError("FIB questions must have 'correct_answer' set.")
-        
+
         if (self.type != self.QuestionTypes.FIB) and self.correct_answer:
-            raise ValidationError("Only FIB questions should have a direct 'correct_answer' value set.")
-        
+            raise ValidationError(
+                "Only FIB questions should have a direct 'correct_answer' value set."
+            )
+
         if self.type != self.QuestionTypes.TF and self.is_true is not None:
-            raise ValidationError("Only TF questions should have the 'is_true' flag set")
-        
+            raise ValidationError(
+                "Only TF questions should have the 'is_true' flag set"
+            )
+
         if self.type == self.QuestionTypes.TF and self.is_true is None:
             raise ValidationError("TF questions should have the 'is_true' flag set")
 
@@ -73,18 +81,22 @@ class Option(TimeStampedModel):
     - `TF` questions will be controlled with the 'is_true' field
     - `FIB` questions will be controlled with the `correct_answer` field
     """
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
+
+    question = models.ForeignKey(
+        Question, on_delete=models.CASCADE, related_name="options"
+    )
     text = models.CharField(max_length=255)
     is_correct = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.text}"
-    
+        return f"Question ID:{self.question.id} -----> {self.text}"
+
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
-    
+
     def clean(self):
         if self.question.type != Question.QuestionTypes.MCQ:
-            raise ValidationError("Only MCQ questions should have option instances created for them.")
-
+            raise ValidationError(
+                "Only MCQ questions should have option instances created for them."
+            )

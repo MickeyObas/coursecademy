@@ -7,17 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0004_moduleassessment'),
-        ('categories', '0002_alter_category_options'),
+        ("assessments", "0004_moduleassessment"),
+        ("categories", "0002_alter_category_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='question',
-            name='category',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='categories.category'),
+            model_name="question",
+            name="category",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="categories.category",
+            ),
         ),
         migrations.DeleteModel(
-            name='TestAssessment',
+            name="TestAssessment",
         ),
     ]

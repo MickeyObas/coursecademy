@@ -7,39 +7,44 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0013_alter_question_is_true'),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("assessments", "0013_alter_question_is_true"),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='question',
+            name="question",
             unique_together=set(),
         ),
         migrations.AddField(
-            model_name='question',
-            name='content_type',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype'),
+            model_name="question",
+            name="content_type",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="contenttypes.contenttype",
+            ),
         ),
         migrations.AddField(
-            model_name='question',
-            name='object_id',
+            model_name="question",
+            name="object_id",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.RemoveField(
-            model_name='question',
-            name='correct_answer',
+            model_name="question",
+            name="correct_answer",
         ),
         migrations.RemoveField(
-            model_name='question',
-            name='course_assessment',
+            model_name="question",
+            name="course_assessment",
         ),
         migrations.RemoveField(
-            model_name='question',
-            name='is_true',
+            model_name="question",
+            name="is_true",
         ),
         migrations.RemoveField(
-            model_name='question',
-            name='module_assessment',
+            model_name="question",
+            name="module_assessment",
         ),
     ]

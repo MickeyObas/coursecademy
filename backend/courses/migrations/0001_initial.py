@@ -10,78 +10,189 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('categories', '0001_initial'),
+        ("categories", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Course',
+            name="Course",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('title', models.CharField(max_length=300)),
-                ('slug', models.SlugField(blank=True, unique=True)),
-                ('description', models.TextField()),
-                ('thumbnail', models.ImageField(blank=True, null=True, upload_to='course_thumbnails/')),
-                ('is_active', models.BooleanField(default=True)),
-                ('tags', models.CharField(blank=True, help_text='Comma-separated values', max_length=255)),
-                ('average_rating', models.DecimalField(decimal_places=2, default=0.0, max_digits=3)),
-                ('rating_count', models.PositiveIntegerField(default=0)),
-                ('enrollment_count', models.PositiveBigIntegerField(default=0)),
-                ('price', models.DecimalField(decimal_places=2, default=0.0, max_digits=8)),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='categories.category')),
-                ('instructor', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='courses', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("title", models.CharField(max_length=300)),
+                ("slug", models.SlugField(blank=True, unique=True)),
+                ("description", models.TextField()),
+                (
+                    "thumbnail",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="course_thumbnails/"
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "tags",
+                    models.CharField(
+                        blank=True, help_text="Comma-separated values", max_length=255
+                    ),
+                ),
+                (
+                    "average_rating",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=3),
+                ),
+                ("rating_count", models.PositiveIntegerField(default=0)),
+                ("enrollment_count", models.PositiveBigIntegerField(default=0)),
+                (
+                    "price",
+                    models.DecimalField(decimal_places=2, default=0.0, max_digits=8),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="categories.category",
+                    ),
+                ),
+                (
+                    "instructor",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="courses",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='CourseLearningPoint',
+            name="CourseLearningPoint",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.CharField(max_length=300)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='learning_points', to='courses.course')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.CharField(max_length=300)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="learning_points",
+                        to="courses.course",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CourseRating',
+            name="CourseRating",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('rating', models.PositiveSmallIntegerField(choices=[(1, '1 Star'), (2, '2 Star'), (3, '3 Star'), (4, '4 Star'), (5, '5 Star')])),
-                ('review', models.TextField(blank=True)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='courses.course')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "rating",
+                    models.PositiveSmallIntegerField(
+                        choices=[
+                            (1, "1 Star"),
+                            (2, "2 Star"),
+                            (3, "3 Star"),
+                            (4, "4 Star"),
+                            (5, "5 Star"),
+                        ]
+                    ),
+                ),
+                ("review", models.TextField(blank=True)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="courses.course"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CourseSkill',
+            name="CourseSkill",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='skills', to='courses.course')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="skills",
+                        to="courses.course",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Module',
+            name="Module",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('order', models.DecimalField(decimal_places=1, max_digits=3)),
-                ('title', models.CharField(max_length=150)),
-                ('description', models.TextField()),
-                ('course', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='courses.course')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("order", models.DecimalField(decimal_places=1, max_digits=3)),
+                ("title", models.CharField(max_length=150)),
+                ("description", models.TextField()),
+                (
+                    "course",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="courses.course"
+                    ),
+                ),
             ],
         ),
         migrations.AddIndex(
-            model_name='course',
-            index=models.Index(fields=['slug'], name='courses_cou_slug_2e551f_idx'),
+            model_name="course",
+            index=models.Index(fields=["slug"], name="courses_cou_slug_2e551f_idx"),
         ),
         migrations.AlterUniqueTogether(
-            name='courserating',
-            unique_together={('user', 'course')},
+            name="courserating",
+            unique_together={("user", "course")},
         ),
     ]

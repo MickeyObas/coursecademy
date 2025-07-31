@@ -7,13 +7,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0014_alter_question_unique_together_question_content_type_and_more'),
+        (
+            "assessments",
+            "0014_alter_question_unique_together_question_content_type_and_more",
+        ),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='option',
-            name='question',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='options', to='assessments.question'),
+            model_name="option",
+            name="question",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="options",
+                to="assessments.question",
+            ),
         ),
     ]

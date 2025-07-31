@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from django.core.cache import cache
-from django.utils import timezone
 from django.conf import settings
-from django.template.loader import render_to_string
+from django.core.cache import cache
 from django.core.mail import EmailMultiAlternatives, send_mail
+from django.template.loader import render_to_string
+from django.utils import timezone
 
-from users.models import User
 from api.models import VerificationCode
 from api.utils import generate_6_digit_code
+from users.models import User
 
 
 class VerificationService:
@@ -67,21 +67,19 @@ class VerificationService:
     @staticmethod
     def verify_email(user_code, token):
         try:
-            code_entry = VerificationCode.objects.get(
-                token=token, is_used=False
-            )
+            code_entry = VerificationCode.objects.get(token=token, is_used=False)
             if timezone.now() > code_entry.expiry_time:
                 raise ValueError(
                     'Code expired. Please tap on "Resend" to get a new verification code sent to your email.'
                 )
-            
+
             if code_entry.code != user_code:
-                raise ValueError('Incorrect code.')
+                raise ValueError("Incorrect code.")
 
             code_entry.is_used = True
             code_entry.save()
 
             return code_entry.email
-        
+
         except VerificationCode.DoesNotExist:
             raise ValueError("Invalid or used token.")

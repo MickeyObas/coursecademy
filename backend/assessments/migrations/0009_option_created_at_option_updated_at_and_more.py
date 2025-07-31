@@ -7,35 +7,39 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0008_alter_question_unique_together'),
+        ("assessments", "0008_alter_question_unique_together"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='option',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="option",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='option',
-            name='updated_at',
+            model_name="option",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AddField(
-            model_name='question',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="question",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='question',
-            name='type',
-            field=models.CharField(default='MCQ', max_length=4),
+            model_name="question",
+            name="type",
+            field=models.CharField(default="MCQ", max_length=4),
         ),
         migrations.AddField(
-            model_name='question',
-            name='updated_at',
+            model_name="question",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
     ]

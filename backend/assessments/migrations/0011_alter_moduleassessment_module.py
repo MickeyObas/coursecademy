@@ -7,14 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0010_question_is_true'),
-        ('courses', '0002_alter_module_unique_together'),
+        ("assessments", "0010_question_is_true"),
+        ("courses", "0002_alter_module_unique_together"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='moduleassessment',
-            name='module',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='courses.module'),
+            model_name="moduleassessment",
+            name="module",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE, to="courses.module"
+            ),
         ),
     ]

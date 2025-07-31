@@ -11,11 +11,13 @@ from .managers import CustomUserManager
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     class AccountTypes(models.TextChoices):
-        ADMIN = 'A', 'Admin'
-        STUDENT = 'S', 'Student'
-        INSTRUCTOR = 'I', 'Instructor'
+        ADMIN = "A", "Admin"
+        STUDENT = "S", "Student"
+        INSTRUCTOR = "I", "Instructor"
 
-    account_type = models.CharField(max_length=500, default=AccountTypes.STUDENT, choices=AccountTypes.choices)
+    account_type = models.CharField(
+        max_length=500, default=AccountTypes.STUDENT, choices=AccountTypes.choices
+    )
     full_name = models.CharField(max_length=255)
     email = models.EmailField(_("email address"), unique=True)
     is_staff = models.BooleanField(default=False)
@@ -23,7 +25,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_verified = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
     is_first_login = models.BooleanField(default=True)
-    
+
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
@@ -39,7 +41,9 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 class Profile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    profile_picture = models.ImageField(upload_to='profile_pictures', null=True, blank=True)
-    
+    profile_picture = models.ImageField(
+        upload_to="profile_pictures", null=True, blank=True
+    )
+
     def __str__(self):
         return f"{self.user.email}'s Profile"

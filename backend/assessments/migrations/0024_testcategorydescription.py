@@ -7,17 +7,31 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0023_testblueprint_testsession_testsessionquestion_and_more'),
-        ('categories', '0002_alter_category_options'),
+        ("assessments", "0023_testblueprint_testsession_testsessionquestion_and_more"),
+        ("categories", "0002_alter_category_options"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TestCategoryDescription',
+            name="TestCategoryDescription",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.TextField()),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='categories.category')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.TextField()),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="categories.category",
+                    ),
+                ),
             ],
         ),
     ]

@@ -1,8 +1,7 @@
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
 
-from courses.models import Lesson, Course, Module
-
+from courses.models import Course, Lesson, Module
 
 User = get_user_model()
 
@@ -14,7 +13,7 @@ class LessonProgress(models.Model):
     completed_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        unique_together = ['user', 'lesson']
+        unique_together = ["user", "lesson"]
 
 
 class ModuleProgress(models.Model):
@@ -24,7 +23,7 @@ class ModuleProgress(models.Model):
     completed_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        unique_together = ['user', 'module']
+        unique_together = ["user", "module"]
 
 
 class CourseProgress(models.Model):
@@ -34,5 +33,4 @@ class CourseProgress(models.Model):
     completed_at = models.DateTimeField(blank=True, null=True)
 
     class Meta:
-        unique_together = ['user', 'course']
-
+        unique_together = ["user", "course"]

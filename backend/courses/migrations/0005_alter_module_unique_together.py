@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0004_alter_module_order'),
+        ("courses", "0004_alter_module_order"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='module',
+            name="module",
             unique_together=set(),
         ),
     ]

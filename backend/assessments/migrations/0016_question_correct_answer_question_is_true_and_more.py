@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0015_alter_option_question'),
+        ("assessments", "0015_alter_option_question"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='question',
-            name='correct_answer',
+            model_name="question",
+            name="correct_answer",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='question',
-            name='is_true',
+            model_name="question",
+            name="is_true",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterField(
-            model_name='question',
-            name='is_active',
+            model_name="question",
+            name="is_active",
             field=models.BooleanField(blank=True, null=True),
         ),
     ]

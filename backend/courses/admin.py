@@ -1,10 +1,12 @@
 from django.contrib import admin
 
-from .models import Course, CourseRating, CourseSkill, CourseLearningPoint, Module
+from .models import (Course, CourseLearningPoint, CourseRating, CourseSkill,
+                     Module)
 
 
 class ModuleModelAdmin(admin.ModelAdmin):
-    ordering = ['order']
+    ordering = ["order"]
+
 
 admin.site.register(Course)
 admin.site.register(CourseRating)

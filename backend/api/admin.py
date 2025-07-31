@@ -4,6 +4,7 @@ from .models import VerificationCode
 
 
 class VerificationCodeModelAdmin(admin.ModelAdmin):
-    list_display = ['email', 'is_expired']
+    list_display = ["email", "is_expired"]
+
 
 admin.site.register(VerificationCode)

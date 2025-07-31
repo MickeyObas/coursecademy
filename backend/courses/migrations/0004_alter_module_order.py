@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0003_alter_module_course'),
+        ("courses", "0003_alter_module_course"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='module',
-            name='order',
+            model_name="module",
+            name="order",
             field=models.PositiveSmallIntegerField(),
         ),
     ]

@@ -6,13 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0018_alter_question_is_true'),
+        ("assessments", "0018_alter_question_is_true"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='question',
-            name='type',
-            field=models.CharField(choices=[('MCQ', 'Multiple Choice'), ('TF', 'True or False'), ('FIB', 'Fill in the Blank')], max_length=4),
+            model_name="question",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("MCQ", "Multiple Choice"),
+                    ("TF", "True or False"),
+                    ("FIB", "Fill in the Blank"),
+                ],
+                max_length=4,
+            ),
         ),
     ]

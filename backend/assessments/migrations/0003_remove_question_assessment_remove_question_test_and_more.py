@@ -7,28 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0002_courseassessment_title'),
-        ('contenttypes', '0002_remove_content_type_name'),
+        ("assessments", "0002_courseassessment_title"),
+        ("contenttypes", "0002_remove_content_type_name"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='question',
-            name='assessment',
+            model_name="question",
+            name="assessment",
         ),
         migrations.RemoveField(
-            model_name='question',
-            name='test',
+            model_name="question",
+            name="test",
         ),
         migrations.AddField(
-            model_name='question',
-            name='content_type',
-            field=models.ForeignKey(default='', on_delete=django.db.models.deletion.CASCADE, to='contenttypes.contenttype'),
+            model_name="question",
+            name="content_type",
+            field=models.ForeignKey(
+                default="",
+                on_delete=django.db.models.deletion.CASCADE,
+                to="contenttypes.contenttype",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='question',
-            name='object_id',
+            model_name="question",
+            name="object_id",
             field=models.PositiveIntegerField(default=0),
             preserve_default=False,
         ),

@@ -1,0 +1,234 @@
+[
+  {
+    "type": "FIB",
+    "text": "Django is a web development framework built with the ______ programming language.",
+    "correct_answer": "Python",
+    "difficulty": "EASY"
+  },
+  {
+    "type": "FIB",
+    "text": "CSS stands for Cascading ______ Sheets.",
+    "correct_answer": "Style",
+    "difficulty": "EASY"
+  },
+  {
+    "type": "FIB",
+    "text": "The ______ element is used in HTML to define a hyperlink.",
+    "correct_answer": "a",
+    "difficulty": "EASY"
+  },
+  {
+    "type": "FIB",
+    "text": "A commonly used version control system in web development is ______.",
+    "correct_answer": "Git",
+    "difficulty": "EASY"
+  },
+  {
+    "type": "FIB",
+    "text": "To create a responsive layout, developers often use the ______ meta tag in HTML.",
+    "correct_answer": "viewport",
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "FIB",
+    "text": "AJAX stands for Asynchronous JavaScript and ______.",
+    "correct_answer": "XML",
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "FIB",
+    "text": "The process of converting code into machine-readable format is called ______.",
+    "correct_answer": "compilation",
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "FIB",
+    "text": "In CSS, to apply a style to a class, you use a ______ before the class name.",
+    "correct_answer": ".",
+    "difficulty": "EASY"
+  },
+  {
+    "type": "FIB",
+    "text": "Node.js uses the ______ engine to execute JavaScript code.",
+    "correct_answer": "V8",
+    "difficulty": "HARD"
+  },
+  {
+    "type": "FIB",
+    "text": "A Promise in JavaScript can be in one of three states: pending, fulfilled, or ______.",
+    "correct_answer": "rejected",
+    "difficulty": "NORMAL"
+  },
+
+  {
+    "type": "TF",
+    "text": "HTML is a programming language.",
+    "is_true": false,
+    "difficulty": "EASY"
+  },
+  {
+    "type": "TF",
+    "text": "CSS Grid is used to create complex web layouts.",
+    "is_true": true,
+    "difficulty": "EASY"
+  },
+  {
+    "type": "TF",
+    "text": "The <form> element in HTML can submit data using both GET and POST methods.",
+    "is_true": true,
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "TF",
+    "text": "In JavaScript, the keyword `const` allows reassignment of a variable.",
+    "is_true": false,
+    "difficulty": "EASY"
+  },
+  {
+    "type": "TF",
+    "text": "React is a backend framework used for server-side rendering.",
+    "is_true": false,
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "TF",
+    "text": "A REST API uses HTTP methods such as GET, POST, PUT, and DELETE.",
+    "is_true": true,
+    "difficulty": "EASY"
+  },
+  {
+    "type": "TF",
+    "text": "A div is an inline element in HTML.",
+    "is_true": false,
+    "difficulty": "EASY"
+  },
+  {
+    "type": "TF",
+    "text": "WebSockets are used for real-time communication in web apps.",
+    "is_true": true,
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "TF",
+    "text": "Tailwind CSS is a utility-first CSS framework.",
+    "is_true": true,
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "TF",
+    "text": "In Django, models.py is where database schema is defined.",
+    "is_true": true,
+    "difficulty": "EASY"
+  },
+
+  {
+    "type": "MCQ",
+    "text": "Which of the following is not a frontend framework?",
+    "options": [
+      { "text": "React", "is_correct": false },
+      { "text": "Vue", "is_correct": false },
+      { "text": "Angular", "is_correct": false },
+      { "text": "Flask", "is_correct": true }
+    ],
+    "difficulty": "EASY"
+  },
+  {
+    "type": "MCQ",
+    "text": "Which tag is used to create a list in HTML?",
+    "options": [
+      { "text": "<ul>", "is_correct": true },
+      { "text": "<div>", "is_correct": false },
+      { "text": "<form>", "is_correct": false },
+      { "text": "<link>", "is_correct": false }
+    ],
+    "difficulty": "EASY"
+  },
+  {
+    "type": "MCQ",
+    "text": "Which HTTP status code means 'Not Found'?",
+    "options": [
+      { "text": "200", "is_correct": false },
+      { "text": "301", "is_correct": false },
+      { "text": "404", "is_correct": true },
+      { "text": "500", "is_correct": false }
+    ],
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "MCQ",
+    "text": "What does CSS stand for?",
+    "options": [
+      { "text": "Color Style Sheets", "is_correct": false },
+      { "text": "Creative Styling Sheets", "is_correct": false },
+      { "text": "Cascading Style Sheets", "is_correct": true },
+      { "text": "Computer Style Sheets", "is_correct": false }
+    ],
+    "difficulty": "EASY"
+  },
+  {
+    "type": "MCQ",
+    "text": "Which attribute is used to define inline styles in HTML?",
+    "options": [
+      { "text": "class", "is_correct": false },
+      { "text": "style", "is_correct": true },
+      { "text": "id", "is_correct": false },
+      { "text": "css", "is_correct": false }
+    ],
+    "difficulty": "EASY"
+  },
+  {
+    "type": "MCQ",
+    "text": "Which of these is a NoSQL database?",
+    "options": [
+      { "text": "PostgreSQL", "is_correct": false },
+      { "text": "SQLite", "is_correct": false },
+      { "text": "MongoDB", "is_correct": true },
+      { "text": "MySQL", "is_correct": false }
+    ],
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "MCQ",
+    "text": "What command is used to create a new React app?",
+    "options": [
+      { "text": "npm create react-app my-app", "is_correct": false },
+      { "text": "npx create-react-app my-app", "is_correct": true },
+      { "text": "yarn react-new", "is_correct": false },
+      { "text": "npx react-new my-app", "is_correct": false }
+    ],
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "MCQ",
+    "text": "What keyword is used to define a function in JavaScript?",
+    "options": [
+      { "text": "function", "is_correct": true },
+      { "text": "def", "is_correct": false },
+      { "text": "func", "is_correct": false },
+      { "text": "define", "is_correct": false }
+    ],
+    "difficulty": "EASY"
+  },
+  {
+    "type": "MCQ",
+    "text": "Which of these is a valid HTTP method?",
+    "options": [
+      { "text": "FETCH", "is_correct": false },
+      { "text": "GET", "is_correct": true },
+      { "text": "PULL", "is_correct": false },
+      { "text": "DOWNLOAD", "is_correct": false }
+    ],
+    "difficulty": "NORMAL"
+  },
+  {
+    "type": "MCQ",
+    "text": "Which protocol is commonly used for secure communication over the internet?",
+    "options": [
+      { "text": "HTTP", "is_correct": false },
+      { "text": "FTP", "is_correct": false },
+      { "text": "HTTPS", "is_correct": true },
+      { "text": "SMTP", "is_correct": false }
+    ],
+    "difficulty": "HARD"
+  }
+]

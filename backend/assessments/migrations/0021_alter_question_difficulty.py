@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0020_alter_question_is_active'),
+        ("assessments", "0020_alter_question_is_active"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='question',
-            name='difficulty',
-            field=models.CharField(choices=[('EASY', 'Easy'), ('NORMAL', 'Normal'), ('HARD', 'Hard')], default='EASY', max_length=6),
+            model_name="question",
+            name="difficulty",
+            field=models.CharField(
+                choices=[("EASY", "Easy"), ("NORMAL", "Normal"), ("HARD", "Hard")],
+                default="EASY",
+                max_length=6,
+            ),
         ),
     ]

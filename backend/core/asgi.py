@@ -16,17 +16,16 @@
 # application = get_asgi_application()
 
 
-
 import os
-from django.core.asgi import get_asgi_application
-from django.conf import settings
 
+from django.conf import settings
+from django.core.asgi import get_asgi_application
+from starlette.applications import Starlette
+from starlette.middleware.wsgi import WSGIMiddleware
 # 👇 Only for static file serving
 from starlette.staticfiles import StaticFiles
-from starlette.middleware.wsgi import WSGIMiddleware
-from starlette.applications import Starlette
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
 
 # Wrap Django ASGI app in Starlette
 django_app = get_asgi_application()

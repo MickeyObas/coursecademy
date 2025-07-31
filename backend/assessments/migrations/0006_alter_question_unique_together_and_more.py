@@ -7,42 +7,59 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0005_question_category_delete_testassessment'),
-        ('categories', '0002_alter_category_options'),
+        ("assessments", "0005_question_category_delete_testassessment"),
+        ("categories", "0002_alter_category_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='question',
-            name='course_assessment',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='assessments.courseassessment'),
+            model_name="question",
+            name="course_assessment",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="assessments.courseassessment",
+            ),
         ),
         migrations.AddField(
-            model_name='question',
-            name='module_assessment',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='assessments.moduleassessment'),
+            model_name="question",
+            name="module_assessment",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="assessments.moduleassessment",
+            ),
         ),
         migrations.AddField(
-            model_name='question',
-            name='order',
+            model_name="question",
+            name="order",
             field=models.PositiveSmallIntegerField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='question',
-            name='category',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='categories.category'),
+            model_name="question",
+            name="category",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="categories.category",
+            ),
             preserve_default=False,
         ),
         migrations.RemoveField(
-            model_name='question',
-            name='content_type',
+            model_name="question",
+            name="content_type",
         ),
         migrations.RemoveField(
-            model_name='question',
-            name='object_id',
+            model_name="question",
+            name="object_id",
         ),
         migrations.AlterUniqueTogether(
-            name='question',
-            unique_together={('order', 'course_assessment'), ('order', 'module_assessment')},
+            name="question",
+            unique_together={
+                ("order", "course_assessment"),
+                ("order", "module_assessment"),
+            },
         ),
     ]
