@@ -14,7 +14,7 @@ from assessments.serializers import (QuestionSerializer,
 from assessments.services import start_test_session
 
 logger = logging.getLogger(__name__)
-TOTAL_QUESTIONS_PER_SESSION = 15
+
 
 class StartTestAssessmentSession(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -43,7 +43,7 @@ class StartTestAssessmentSession(APIView):
             ).data
 
             return Response(
-                {"message": "Session started", "questions": data}
+                {"sessionId": test_session.id, "message": "Session started", "questions": data}
             )
         except TestAssessment.DoesNotExist:
             logger.error("TestAssessment does not exist")

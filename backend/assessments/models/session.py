@@ -52,23 +52,30 @@ class TestSession(TimeStampedModel):
     )
 
     def __str__(self):
-        return f"{self.user} - TestSession #{self.pk}"
+        return f"{'Mickey'} - TestSession #{self.pk}"
 
 
 class TestSessionQuestion(TimeStampedModel):
     test_session = models.ForeignKey(
         TestSession, on_delete=models.CASCADE, related_name="questions"
     )
-    question = models.ForeignKey("assessments.Question", on_delete=models.PROTECT)
+    question = models.ForeignKey("assessments.Question", on_delete=models.CASCADE)
     order = models.PositiveIntegerField()
     snapshot_text = models.TextField()
     snapshot_options = models.JSONField(blank=True, null=True)
 
+    class Meta:
+        unique_together = ['test_session', 'question']
+
 
 class TestSessionAnswer(TimeStampedModel):
-    session_question = models.ForeignKey(
+    session_question = models.OneToOneField(
         TestSessionQuestion, on_delete=models.CASCADE, related_name="answer"
     )
-    selected_option = models.CharField(max_length=100, blank=True, null=True)
+    input = models.CharField(max_length=100, blank=True, null=True)
     answered_at = models.DateTimeField(auto_now=True)
     is_correct = models.BooleanField(default=False)
+    option_id = models.IntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.session_question.test_session}"

@@ -1,11 +1,13 @@
 import logging
 import random
+from datetime import datetime
+from pprint import pprint
 
 from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
 
-from assessments.models import (Question, TestAssessment, TestBlueprint,
-                                TestSession, TestSessionQuestion)
+from assessments.models import (Question, Option, TestAssessment, TestBlueprint,
+                                TestSession, TestSessionQuestion, TestSessionAnswer)
 
 logger = logging.getLogger(__name__)
 TOTAL_QUESTIONS_PER_SESSION = 15
@@ -17,7 +19,6 @@ def start_test_session(user, category, difficulty):
         test_blueprint = TestBlueprint.objects.get(
             test_assessment=test_assessment, difficulty=difficulty
         )
-        logger.info("TestBlueprint rules type: %s", type(test_blueprint.rules))
 
         test_session = TestSession.objects.create(
             user=user,
@@ -53,3 +54,65 @@ def start_test_session(user, category, difficulty):
             )
 
         return test_session
+    
+
+def mark_test_session(user, session_id):
+    test_session = TestSession.objects.get(
+        user=user,
+        id=session_id
+        )
+    
+    try:
+        test_session.submitted_at = datetime.now()
+        test_session_answers= TestSessionAnswer.objects.filter(
+            session_question__test_session=test_session
+        )
+        for test_answer in test_session_answers:
+            _mark_test_answer(test_answer)
+        
+        test_session.status = TestSession.Status.SUBMITTED
+        test_session.save()
+
+    except Exception as e:
+        logger.error("Error ----> %s" % str(e))
+        test_session.status = TestSession.Status.ERROR
+        test_session.save()
+
+
+def _mark_test_answer(test_answer: TestSessionAnswer):
+    question = test_answer.session_question.question
+
+    if question.type == 'MCQ':
+        correct_option = Option.objects.get(
+            question=question,
+            is_correct=True
+        )
+        if test_answer.option_id == correct_option.id:
+            test_answer.is_correct = True
+        else:
+            test_answer.is_correct = False
+
+        test_answer.save()
+
+    elif question.type == 'FIB':
+        # TODO: Mutate model to allow FIB questions to have multiple allowed answers (besides case-sensitivity)
+
+        correct_answer = question.correct_answer.strip().lower()
+        if test_answer.input.strip().lower() == correct_answer:
+            test_answer.is_correct = True
+        else:
+            test_answer.is_correct = False
+        
+        test_answer.save()
+
+    elif question.type == 'TF':
+        correct_answer = str(question.is_true).lower()
+        if test_answer.input == correct_answer:
+            test_answer.is_correct = True
+        else:
+            test_answer.is_correct = False
+        
+        test_answer.save()
+
+    else:
+        logger.error("Invalid question type found: %s" % question.type)

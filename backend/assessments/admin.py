@@ -21,10 +21,23 @@ class QuestionModelAdmin(admin.ModelAdmin):
     list_display_links = ["__str__"]
 
 
+class TestSessionModelAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'test_assessment', 'status', 'started_at', 'submitted_at' ]
+
+
+class TestSessionQuestionModelAdmin(admin.ModelAdmin):
+    list_display = ['test_session', 'question']
+
+
+class TestSessionAnswerModelAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'session_question__question', 'input', 'option_id', 'is_correct', 'answered_at']
+
+
+
 admin.site.register(TestBlueprint, TestBlueprintModelAdmin)
-admin.site.register(TestSession)
-admin.site.register(TestSessionAnswer)
-admin.site.register(TestSessionQuestion)
+admin.site.register(TestSession, TestSessionModelAdmin)
+admin.site.register(TestSessionAnswer, TestSessionAnswerModelAdmin)
+admin.site.register(TestSessionQuestion, TestSessionQuestionModelAdmin)
 admin.site.register(ModuleAssessment)
 admin.site.register(CourseAssessment)
 admin.site.register(TestAssessment, TestAssessmentModelAdmin)

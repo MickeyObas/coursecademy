@@ -12,6 +12,7 @@ import Certifications from "../pages/Certifications";
 import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
 import TestDetails from "../pages/TestDetails";
+import TakeTest from "../pages/TakeTest";
 
 
 const AppRoutes = () => {
@@ -31,6 +32,7 @@ const AppRoutes = () => {
           <Route path="courses" element={<Courses />} />
           <Route path="tests" element={<Tests />} />
           <Route path="tests/:categoryId" element={<TestDetails />} />
+          <Route path="take-test/:sessionId" element={<TakeTest />} />
           <Route path="certifications" element={<Certifications />} />
           <Route path="profile" element={<Profile />} />
           <Route path="settings" element={<Settings />} />

@@ -101,7 +101,7 @@ class QuestionDisplaySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ["text", "details"]
+        fields = ["id", "type", "text", "details"]
 
     def get_details(self, obj):
         if obj.type == Question.QuestionTypes.MCQ:
@@ -147,7 +147,7 @@ class OptionSerializer(serializers.ModelSerializer):
 class PublicOptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ["text"]
+        fields = ["id", "text"]
 
 
 # Assessment Serializers
@@ -167,3 +167,9 @@ class TestSessionQuestionSerializer(serializers.ModelSerializer):
             "order",
             "question",
         ]
+
+
+class SaveTestAssessmentAnswerSerializer(serializers.Serializer):
+    question_id = serializers.IntegerField()
+    test_session_id = serializers.IntegerField()
+    answer = serializers.CharField()

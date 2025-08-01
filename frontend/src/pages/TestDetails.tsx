@@ -9,7 +9,7 @@ const TestDetails = () => {
   const { categoryId } = useParams();
   const [category, setCategory] = useState<Category | null>(null);
   const [description, setDescription] = useState('');
-  const [difficulty, setDifficulty] = useState<string>('HARD');
+  const [difficulty, setDifficulty] = useState<string>('EASY');
 
   useEffect(() => {
     const fetchTestData = async () => {
@@ -39,6 +39,7 @@ const TestDetails = () => {
       });
       const data = await response.data;
       console.log(data);
+      navigate(`/take-test/${data.sessionId}`, {state: {questions: data.questions}})
     }catch(err: any){
       if(err.response){
         console.error(err.response.data);
