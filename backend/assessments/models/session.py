@@ -1,5 +1,9 @@
+from datetime import datetime, timedelta, timezone
+from decimal import Decimal
+
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.core.validators import MaxValueValidator
 
 from api.models import TimeStampedModel
 
@@ -38,13 +42,13 @@ class TestSession(TimeStampedModel):
     )
     started_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
-    total_score = models.FloatField(default=0.0)
-    is_submitted = models.BooleanField(default=False)
+    score = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, validators=[MaxValueValidator(Decimal(100.00))])
+    marked_at = models.DateTimeField(null=True, blank=True)
 
     blueprint = models.ForeignKey(
         TestBlueprint, null=True, blank=True, on_delete=models.SET_NULL
     )
-    duration_minutes = models.IntegerField(default=30)
+    # duration_minutes = models.IntegerField(default=30)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(null=True, blank=True)
     status = models.CharField(
@@ -53,6 +57,13 @@ class TestSession(TimeStampedModel):
 
     def __str__(self):
         return f"{'Mickey'} - TestSession #{self.pk}"
+    
+    @property
+    def is_expired(self):
+        if not self.started_at or not self.test_assessment.duration_minutes:
+            return False
+        end_time = self.started_at + timedelta(minutes=self.test_assessment.duration_minutes)
+        return datetime.now(timezone.utc) > end_time
 
 
 class TestSessionQuestion(TimeStampedModel):

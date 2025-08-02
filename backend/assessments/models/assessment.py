@@ -20,14 +20,8 @@ class CourseAssessment(TimeStampedModel):
 
 class TestAssessment(TimeStampedModel):
     category = models.OneToOneField("categories.Category", on_delete=models.CASCADE)
+    duration_minutes = models.PositiveIntegerField(default=15)
+    description = models.TextField()
 
     def __str__(self):
         return f"{self.category}"
-
-
-class TestAssessmentCategoryDescription(models.Model):
-    category = models.ForeignKey("categories.Category", on_delete=models.CASCADE)
-    text = models.TextField()
-
-    def __str__(self):
-        return f"Description for TestAssessment: {self.category.title}"

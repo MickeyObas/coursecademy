@@ -5,8 +5,18 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import Question, TestSession, TestSessionQuestion, TestSessionAnswer
-from ..serializers import SaveTestAssessmentAnswerSerializer
-from ..services import mark_test_session
+from ..serializers import SaveTestAssessmentAnswerSerializer, TestSessionSerializer
+from ..services import mark_test_session, save_test_answer
+
+
+class UserTestSessionList(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        test_sessions = TestSession.objects.filter(user=user).order_by('-created_at')
+        serializer = TestSessionSerializer(test_sessions, many=True)
+        return Response(serializer.data)
 
 
 class SaveTestAssesmentAnswer(APIView):
@@ -23,21 +33,11 @@ class SaveTestAssesmentAnswer(APIView):
         test_session_id = data.get('test_session_id')
         answer = data.get('answer')
 
-        question = Question.objects.get(id=question_id)
-        test_session = TestSession.objects.get(id=test_session_id, user=request.user)
-        session_question = TestSessionQuestion.objects.get(
-            test_session=test_session,
-            question=question
-        )
+        result = save_test_answer(request.user, question_id, test_session_id, answer)
 
-        tsa, created = TestSessionAnswer.objects.get_or_create(
-            session_question=session_question
-        )
-        tsa.input=answer if session_question.question.type != 'MCQ' else None
-        tsa.option_id = answer if session_question.question.type == 'MCQ' else None
-        tsa.save()
-
-        return Response({'message': 'Answer saved successfully'}, status=201)
+        if result.get('error'):
+            return Response({'error': result['error']}, status=400)
+        return Response({'message': result['message']})
 
 
 class SubmitTestSession(APIView):
@@ -50,6 +50,9 @@ class SubmitTestSession(APIView):
         if not test_session_id:
             return Response({'error': 'test_session_id is required'}, status=400)
 
-        mark_test_session(request.user, test_session_id)
+        result = mark_test_session(request.user, test_session_id)
 
-        return Response({'message': 'Test submitted successfully'}, status=200)
+        if result.get('error'):
+            return Response({'error': result['error']}, status=400)
+
+        return Response({'message': result['message']})

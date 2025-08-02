@@ -1,26 +1,21 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../utils/axios";
-import type { Category } from "../types/Category";
+import type { TestAssessment } from "../types/TestAssessment";
 
 
 const TestDetails = () => {
   const navigate = useNavigate();
   const { categoryId } = useParams();
-  const [category, setCategory] = useState<Category | null>(null);
-  const [description, setDescription] = useState('');
   const [difficulty, setDifficulty] = useState<string>('EASY');
+  const [test, setTest] = useState<TestAssessment | null>(null);
 
   useEffect(() => {
     const fetchTestData = async () => {
       try {
-        const [categoryRes, descriptionRes] = await Promise.all([
-          api.get(`/api/categories/${categoryId}/`),
-          api.get(`/api/categories/${categoryId}/testdescription/`)
-        ])
-        setCategory(categoryRes.data);
-        setDescription(descriptionRes.data);
-        console.log(categoryRes, descriptionRes);
+        const response = await api.get(`/api/assessments/${categoryId}/test/`);
+        const data = response.data;
+        setTest(data);
       }catch(error: any){
         if(error.response){
           console.log(error.response.data);
@@ -38,8 +33,13 @@ const TestDetails = () => {
         difficulty: difficulty
       });
       const data = await response.data;
-      console.log(data);
-      navigate(`/take-test/${data.sessionId}`, {state: {questions: data.questions}})
+      navigate(`/take-test/${data.sessionId}`, {
+        state: {
+          questions: data.questions,
+          startedAt: data.started_at,
+          durationMinutes: data.duration_minutes
+        }
+      })
     }catch(err: any){
       if(err.response){
         console.error(err.response.data);
@@ -52,13 +52,13 @@ const TestDetails = () => {
 
   return (
     <div className="px-6 py-10 max-w-3xl">
-      <h1 className="text-2xl font-bold mb-4">{category?.title}</h1>
+      <h1 className="text-2xl font-bold mb-4">{test?.category?.title}</h1>
 
-      <p className="text-gray-700 mb-4">{description}</p>
+      <p className="text-gray-700 mb-4">{test?.description}</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 mb-6">
         <p>
-          <span className="font-medium">Duration:</span> 15 minutes
+          <span className="font-medium">Duration:</span> {test?.duration_minutes} minutes
         </p>
         <p>
           <span className="font-medium">Total Questions:</span> 15 Questions

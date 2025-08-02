@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import (CourseAssessment, ModuleAssessment, Option, Question,
-                     TestAssessment, TestAssessmentCategoryDescription,
+                     TestAssessment,
                      TestBlueprint, TestSession, TestSessionAnswer,
                      TestSessionQuestion)
 
@@ -12,7 +12,7 @@ class TestBlueprintModelAdmin(admin.ModelAdmin):
 
 
 class TestAssessmentModelAdmin(admin.ModelAdmin):
-    list_display = ["id", "__str__"]
+    list_display = ["id", "__str__", "duration_minutes"]
     list_display_links = ["__str__"]
 
 
@@ -22,7 +22,7 @@ class QuestionModelAdmin(admin.ModelAdmin):
 
 
 class TestSessionModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'test_assessment', 'status', 'started_at', 'submitted_at' ]
+    list_display = ['id', 'user', 'test_assessment', 'status', 'started_at', 'submitted_at', 'marked_at', 'score', 'is_expired']
 
 
 class TestSessionQuestionModelAdmin(admin.ModelAdmin):
@@ -41,6 +41,5 @@ admin.site.register(TestSessionQuestion, TestSessionQuestionModelAdmin)
 admin.site.register(ModuleAssessment)
 admin.site.register(CourseAssessment)
 admin.site.register(TestAssessment, TestAssessmentModelAdmin)
-admin.site.register(TestAssessmentCategoryDescription)
 admin.site.register(Question, QuestionModelAdmin)
 admin.site.register(Option)

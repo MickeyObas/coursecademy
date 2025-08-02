@@ -7,5 +7,6 @@ urlpatterns = [
     path("enrollments/", include("enrollments.urls")),
     path("questions/", include("assessments.question_urls")),
     path("assessments/", include("assessments.assessment_urls")),
+    path('sessions/', include('assessments.session_urls')),
     path("users/", include("users.user_urls")),
 ]

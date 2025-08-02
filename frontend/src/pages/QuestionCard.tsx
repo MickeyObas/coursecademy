@@ -70,18 +70,7 @@ export default function QuestionCard({
   const handleAnswerSave = async () => {
     // Save to local storage?
     localStorage.setItem('answers', JSON.stringify(answers));
-    switch (current.question.type){
-      case 'MCQ':
-        console.log("This is an MCQ question");
-        break;
-      case 'FIB':
-        console.log("This is an FIB question");
-        break;
-      case 'TF':
-        console.log("This is a TF question");
-        break;
-    };
-
+  
     try {
       const response = await api.post(`/api/assessments/${sessionId}/save-answer/`, {
         question_id: current.question.id,
@@ -89,7 +78,6 @@ export default function QuestionCard({
         answer: answers[current.question.id]
       });
       const data = await response.data;
-      console.log(data);
     } catch (error: any){
       if(error.response.data){
         console.error(error.response.data);
@@ -97,7 +85,6 @@ export default function QuestionCard({
         console.error(error);
       }
     }
-    console.log("Saving Answer!");
   }
 
   return (

@@ -1,16 +1,19 @@
 import logging
 import random
-from datetime import datetime
 from pprint import pprint
+from decimal import Decimal
 
 from django.db import transaction
+from django.utils.timezone import now
 from django.contrib.contenttypes.models import ContentType
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 
 from assessments.models import (Question, Option, TestAssessment, TestBlueprint,
                                 TestSession, TestSessionQuestion, TestSessionAnswer)
 
 logger = logging.getLogger(__name__)
-TOTAL_QUESTIONS_PER_SESSION = 15
+TOTAL_QUESTIONS_PER_SESSION = 10
 
 
 def start_test_session(user, category, difficulty):
@@ -57,26 +60,59 @@ def start_test_session(user, category, difficulty):
     
 
 def mark_test_session(user, session_id):
-    test_session = TestSession.objects.get(
+    test_session = get_object_or_404(
+        TestSession,
         user=user,
         id=session_id
         )
     
+    if test_session.submitted_at:
+        return {'error': 'Test already submitted'}
+
+    test_session.submitted_at = now()
+    test_session.status = TestSession.Status.SUBMITTED
+    
     try:
-        test_session.submitted_at = datetime.now()
         test_session_answers= TestSessionAnswer.objects.filter(
             session_question__test_session=test_session
         )
         for test_answer in test_session_answers:
             _mark_test_answer(test_answer)
-        
-        test_session.status = TestSession.Status.SUBMITTED
-        test_session.save()
+
+        # Save the scores 
+        question_count = test_session.questions.count()
+        correct_answer_count = test_session_answers.filter(is_correct=True).count()
+        test_session.score = Decimal((correct_answer_count / question_count) * 100)
+        test_session.marked_at = now()
 
     except Exception as e:
         logger.error("Error ----> %s" % str(e))
         test_session.status = TestSession.Status.ERROR
-        test_session.save()
+
+    test_session.save()
+    return {'success': True, 'message': 'Test submitted successfully'}
+
+
+def save_test_answer(user, question_id, session_id, answer):
+    question = Question.objects.get(id=question_id)
+    test_session = TestSession.objects.get(id=session_id, user=user)
+
+    if test_session.is_expired:
+        mark_test_session(user, session_id)
+        return {'error': 'Session expired. Test auto-submitted.'}
+
+    session_question = TestSessionQuestion.objects.get(
+        test_session=test_session,
+        question=question
+    )
+
+    tsa, created = TestSessionAnswer.objects.get_or_create(
+        session_question=session_question
+    )
+    tsa.input=answer if session_question.question.type != 'MCQ' else None
+    tsa.option_id = answer if session_question.question.type == 'MCQ' else None
+    tsa.save()
+    return {"success": True, "message": "Answer saved successfully."}
 
 
 def _mark_test_answer(test_answer: TestSessionAnswer):
