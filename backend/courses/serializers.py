@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from .models import Course, CourseLearningPoint, CourseSkill, Module
-
+from users.serializers import UserSerializer
+from categories.serializers import CategorySerializer
 
 class ModuleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +26,8 @@ class CourseSerializer(serializers.ModelSerializer):
     learning_points = CourseLearningPointSerializer(many=True)
     skills = CourseSkillSerializer(many=True, required=False)
     modules = ModuleSerializer(many=True, read_only=True)
+    instructor = UserSerializer()
+    category = CategorySerializer()
 
     class Meta:
         model = Course
@@ -80,4 +83,4 @@ class ThinCourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ["id", "title", "category", "average_rating"]
+        fields = ["id", "title", "slug", "category", "average_rating"]

@@ -1,6 +1,12 @@
 import { Clipboard, ClipboardCheck, Play } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useEnrolledCourses } from "../hooks/useEnrolledCourses";
+
 
 const Dashboard = () => {
+  const { enrolledCourses } = useEnrolledCourses();
+  console.log("Enrolled Courses ---> ", enrolledCourses);
+
   return (
     <main className="bg-slate-100 h-full p-4 flex flex-col gap-y-4">
       <div className="flex items-center bg-white p-4 rounded-lg">
@@ -57,7 +63,7 @@ const Dashboard = () => {
               <div></div>
             </div>
             <h3 className="font-bold text-xl">99</h3>
-            <p>Lessons</p>
+            <p>Modules</p>
             <p className="text-blue-600">of 99 completed</p>
           </div>
           <div className="bg-green-100 p-4 flex flex-col rounded-lg gap-y-1">
@@ -68,7 +74,7 @@ const Dashboard = () => {
               <div></div>
             </div>
             <h3 className="font-bold text-xl">99</h3>
-            <p>Lessons</p>
+            <p>Courses</p>
             <p className="text-blue-600">of 99 completed</p>
           </div>
         </div>
@@ -94,13 +100,13 @@ const Dashboard = () => {
           </thead>
 
           <tbody>
-            {[1, 2, 3, 4, 5].map((_, i) => (
-              <tr key={i} className="rounded-lg">
+            {enrolledCourses.map((course, idx) => (
+              <tr key={idx} className="rounded-lg">
                 <td className="py-3 px-2">
                   <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
                 </td>
                 <td className="py-3 px-2">
-                  <p className="truncate">Web Design and some other...</p>
+                  <p className="truncate">{course.title}</p>
                 </td>
                 <td className="py-3 px-2">
                   <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">

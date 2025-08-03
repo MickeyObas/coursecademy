@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Enrollment
+from courses.models import Course
+from courses.serializers import ThinCourseSerializer
 from .serializers import EnrollmentSerializer
 
 
@@ -21,14 +23,8 @@ class EnrollmentDetailView(generics.RetrieveUpdateDestroyAPIView):
 class UserEnrollmentList(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, user_id):
-        if request.user.id != user_id and not request.user.is_staff:
-            return Response(
-                {"error": "You are not authorized to view these enrollments"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        user_enrollments = Enrollment.objects.filter(user=request.user)
-        serializer = EnrollmentSerializer(user_enrollments, many=True)
+    def get(self, request):
+        enrolled_qs = Course.objects.filter(enrollments__user=request.user)
+        serializer = ThinCourseSerializer(enrolled_qs, many=True)
 
         return Response(serializer.data)

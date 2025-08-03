@@ -8,7 +8,7 @@ User = get_user_model()
 
 class Enrollment(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    course = models.ForeignKey("courses.Course", on_delete=models.CASCADE)
+    course = models.ForeignKey("courses.Course", on_delete=models.CASCADE, related_name='enrollments')
     progress = models.PositiveSmallIntegerField(default=0)
 
     class Meta:

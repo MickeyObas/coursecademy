@@ -13,6 +13,7 @@ import Profile from "../pages/Profile";
 import Settings from "../pages/Settings";
 import TestDetails from "../pages/TestDetails";
 import TakeTest from "../pages/TakeTest";
+import CourseDetail from "../pages/CourseDetail";
 
 
 const AppRoutes = () => {
@@ -30,6 +31,7 @@ const AppRoutes = () => {
         <Route path="/" element={<DashboardLayout />}>
           <Route index path="" element={<Dashboard />} />
           <Route path="courses" element={<Courses />} />
+          <Route path="courses/:courseSlug/" element={<CourseDetail />} />
           <Route path="tests" element={<Tests />} />
           <Route path="tests/:categoryId" element={<TestDetails />} />
           <Route path="take-test/:sessionId" element={<TakeTest />} />

@@ -3,7 +3,7 @@ from django.db import models
 
 class Lesson(models.Model):
     order = models.PositiveSmallIntegerField(default=1)
-    module = models.ForeignKey("courses.Module", on_delete=models.CASCADE)
+    module = models.ForeignKey("courses.Module", on_delete=models.CASCADE, related_name='lessons')
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 
