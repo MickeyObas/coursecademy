@@ -1,13 +1,28 @@
 from rest_framework import serializers
 
-from .models import Course, CourseLearningPoint, CourseSkill, Module
+from .models import Course, CourseLearningPoint, CourseSkill, Module, Lesson, LessonProgress, ModuleProgress
 from users.serializers import UserSerializer
 from categories.serializers import CategorySerializer
 
+
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = [
+            "id",
+            "title",
+            "type",
+            "content",
+            "order",
+            "description"
+        ]
+
+
 class ModuleSerializer(serializers.ModelSerializer):
+    lessons = LessonSerializer(many=True)
     class Meta:
         model = Module
-        fields = ["order", "title", "description"]
+        fields = ["id", "order", "title", "description", "lessons"]
 
 
 class CourseLearningPointSerializer(serializers.ModelSerializer):
@@ -84,3 +99,50 @@ class ThinCourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = ["id", "title", "slug", "category", "average_rating"]
+
+
+class CourseUserSerializer(serializers.Serializer):
+    course = serializers.SerializerMethodField()
+    progress = serializers.SerializerMethodField()
+
+    def get_course(self, obj):
+        return {
+            'id': obj.id,
+            'title': obj.title,
+            'slug': obj.slug
+        }
+
+    def get_progress(self, obj):
+        user = self.context['request'].user
+
+        module_ids = Module.objects.filter(course_id=obj.id).values_list('id', flat=True)
+        lesson_ids = Lesson.objects.filter(module_id__in=module_ids).values_list('id', flat=True)
+        lesson_total = len(lesson_ids)
+        module_total = len(module_ids)
+    
+        lesson_completed = LessonProgress.objects.filter(
+            user=user,
+            completed_at__isnull=False,
+            lesson_id__in=lesson_ids
+        ).count()
+        module_completed = ModuleProgress.objects.filter(
+            user=user,
+            completed_at__isnull=False,
+            module_id__in=module_ids
+        ).count()
+
+        lesson_part = lesson_completed / lesson_total if lesson_total else 0
+        module_part = module_completed / module_total if module_total else 0
+        lesson_weight = 0.7
+        module_weight = 0.3
+
+        total_progress = (lesson_part * lesson_weight) + (module_part * module_weight)
+        total_progress_percentage = round(total_progress * 100, 2)
+        
+        return {
+            'percentage': total_progress_percentage,
+            'lesson': lesson_completed,
+            'module': module_completed
+        }
+
+    pass

@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import VerifyEmail from '../pages/VerifyEmail';
@@ -14,6 +14,8 @@ import Settings from "../pages/Settings";
 import TestDetails from "../pages/TestDetails";
 import TakeTest from "../pages/TakeTest";
 import CourseDetail from "../pages/CourseDetail";
+import CoursePlayer from "../pages/CoursePlayer";
+import { CoursePlayerLayout } from "../components/layouts/CoursePlayerLayout";
 
 
 const AppRoutes = () => {
@@ -28,18 +30,26 @@ const AppRoutes = () => {
       
       {/* Private Routes */}
       <Route element={<PrivateRoutes />}>
-        <Route path="/" element={<DashboardLayout />}>
-          <Route index path="" element={<Dashboard />} />
+
+        <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route index element={<Dashboard />} />
           <Route path="courses" element={<Courses />} />
-          <Route path="courses/:courseSlug/" element={<CourseDetail />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="tests" element={<Tests />} />
           <Route path="tests/:categoryId" element={<TestDetails />} />
           <Route path="take-test/:sessionId" element={<TakeTest />} />
           <Route path="certifications" element={<Certifications />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="courses/:courseSlug/" element={<CourseDetail />} />
         </Route>
+
+        <Route path="/course-player/:courseSlug/" element={<CoursePlayerLayout />}>
+          <Route index element={<CoursePlayer />} />
+        </Route>
+
       </Route>
+
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
     </Routes>
   )

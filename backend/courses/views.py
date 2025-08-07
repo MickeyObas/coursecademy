@@ -2,10 +2,11 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from enrollments.models import Enrollment
+from django.utils.timezone import now
 
+from enrollments.models import Enrollment
 from .models import Course, Module, Lesson, CourseProgress, ModuleProgress, LessonProgress
-from .serializers import CourseSerializer, ThinCourseSerializer
+from .serializers import CourseSerializer, ThinCourseSerializer, CourseUserSerializer
 
 
 class CourseListCreateView(generics.ListCreateAPIView):
@@ -25,8 +26,8 @@ class CourseDetailView(generics.RetrieveAPIView):
 class OtherCoursesView(APIView):
     def get(self, request):
         user = request.user
-        enrolled_courses_qs = Course.objects.filter(enrollments__user=user)
-        other_courses_qs = Course.objects.exclude(id__in=[enrolled_courses_qs.values_list('id', flat=True)])
+        enrolled_ids = Course.objects.filter(enrollments__user=user).values_list('id', flat=True)
+        other_courses_qs = Course.objects.exclude(id__in=enrolled_ids)
         serializer = CourseSerializer(other_courses_qs, many=True)
         return Response(serializer.data)
 
@@ -82,3 +83,53 @@ class MyEnrolledProgresssSummary(APIView):
             "modules": {"total": module_total, "completed": module_completed},
             "courses": {"total": course_total, "completed": course_completed},
         })
+    
+
+class LastAccessedCourseView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        course_progress = CourseProgress.objects.latest('last_accessed_at')
+        last_accessed_course = course_progress.course
+        course_enrollment = Enrollment.objects.get(user=user, course=last_accessed_course)
+        serializer = CourseUserSerializer(last_accessed_course, context={'request': request})
+        return Response(serializer.data)
+
+
+
+class LessonAccessedView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, lesson_id):
+        user = request.user
+
+        try:
+            lesson = Lesson.objects.select_related('module__course').get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            return Response({'error': 'Lesson not found'}, status=400)
+
+        lesson_progress, _ = LessonProgress.objects.get_or_create(
+            user=user,
+            lesson=lesson
+        )
+        lesson_progress.last_accessed_at = now()
+        lesson_progress.save()
+
+        module = lesson.module
+        module_progress, _ = ModuleProgress.objects.get_or_create(
+            user=user,
+            module=module
+        )
+        module_progress.last_accessed_at = now()
+        module_progress.save()
+
+        course = module.course
+        course_progress, _ = CourseProgress.objects.get_or_create(
+            user=user,
+            course=course
+        )
+        course_progress.last_accessed_at = now()
+        course_progress.save()
+
+        return Response({'message': 'Access time updated'})

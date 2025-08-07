@@ -11,23 +11,23 @@ const Sidebar = () => {
   return (
     <div className="max-w-[270px] border-r bg-white border-slate-200 h-[calc(100vh-73px)] flex flex-col select-none">
       <div className="flex flex-col py-7 px-5 gap-y-5">
-          <NavLink to='/' className={linkClasses}>
+          <NavLink to='/dashboard' className={linkClasses}>
             <LayoutDashboardIcon />
             <span>Dashboard</span>
           </NavLink>
-        <NavLink to='/courses' className={linkClasses}>
+        <NavLink to='/dashboard/courses' className={linkClasses}>
           <Book />
           <span>Courses</span>
         </NavLink>
-        <NavLink to='/tests' className={linkClasses}>
+        <NavLink to='/dashboard/tests' className={linkClasses}>
           <Pencil />
           <span>Tests</span>
         </NavLink>
-        <NavLink to='/certifications' className={linkClasses}>
+        <NavLink to='/dashboard/certifications' className={linkClasses}>
           <Scroll />
           <span>Certifications</span>
         </NavLink>
-        <NavLink to='/profile' className={linkClasses}>
+        <NavLink to='/dashboard/profile' className={linkClasses}>
           <User />
           <span>Profile</span>
         </NavLink>

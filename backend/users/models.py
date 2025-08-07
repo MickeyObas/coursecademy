@@ -40,7 +40,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
 
 class Profile(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     profile_picture = models.ImageField(
         upload_to="profile_pictures", null=True, blank=True
     )

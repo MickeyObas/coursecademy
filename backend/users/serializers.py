@@ -10,7 +10,7 @@ from rest_framework import serializers
 from api.models import VerificationCode
 from api.utils import is_valid_email, is_valid_full_name
 
-from .models import User
+from .models import User, Profile
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -95,7 +95,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["id", "email"]
+        fields = ["id", "email", "full_name"]
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
@@ -139,3 +139,13 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.set_password(self.validated_data["new_password"])
         user.save()
         cache.delete(f"password_reset_{self.validated_data['token']}")
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = Profile
+        fields = [
+            'user',
+            'profile_picture'
+        ]

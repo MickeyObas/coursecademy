@@ -1,27 +1,44 @@
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db.models import Q
-from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework import status, generics, permissions, parsers
+from rest_framework.generics import get_object_or_404
+from rest_framework.decorators import api_view, parser_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from api.utils import is_valid_email
-from users.models import User
+from users.models import User, Profile
 from users.serializers import (PasswordResetConfirmSerializer,
                                PasswordResetRequestSerializer,
-                               UserRegistrationSerializer, UserSerializer)
+                               UserRegistrationSerializer, UserSerializer, ProfileSerializer)
 
 from .services import VerificationService
 
 
 @api_view(["GET"])
 def get_profile(request):
-    return Response({"email": request.user.email, "message": "Welcome buddy!"})
+    profile = get_object_or_404(Profile, user=request.user)
+    serializer = ProfileSerializer(profile)
+    return Response(serializer.data)
+
+
+@api_view(['PATCH'])
+@parser_classes([parsers.FormParser, parsers.MultiPartParser])
+def update_profile(request):
+    user = request.user
+    profile = user.profile
+    serializer = ProfileSerializer(profile, data=request.data, partial=True)
+    if serializer.is_valid():
+        updated_profile = serializer.save()
+        serializer = ProfileSerializer(updated_profile)
+        return Response(serializer.data)
+    return Response(serializer.errors, status=400)
 
 
 @api_view(["POST"])
