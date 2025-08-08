@@ -5,7 +5,40 @@ from users.serializers import UserSerializer
 from categories.serializers import CategorySerializer
 
 
+class LessonListSerializer(serializers.ModelSerializer):
+    is_unlocked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lesson
+        fields = [
+            'id',
+            'title',
+            "order",
+            "is_unlocked"
+        ]
+
+    def get_is_unlocked(self, obj):
+        user = self.context['request'].user
+            
+        prev_modules = Module.objects.filter(
+            course=obj.module.course,
+            order__lt=obj.module.order
+        )
+        if prev_modules.exists():
+            if LessonProgress.objects.filter(
+                user=user,
+                lesson__module__in=prev_modules,
+                completed_at__isnull=True
+            ).exists():
+                return False
+            
+        return True
+
+
 class LessonSerializer(serializers.ModelSerializer):
+    is_completed = serializers.SerializerMethodField()
+    is_unlocked = serializers.SerializerMethodField()
+
     class Meta:
         model = Lesson
         fields = [
@@ -14,15 +47,66 @@ class LessonSerializer(serializers.ModelSerializer):
             "type",
             "content",
             "order",
-            "description"
+            "description",
+            "is_completed",
+            "is_unlocked"
         ]
+
+    def get_is_unlocked(self, obj):
+        user = self.context['request'].user
+
+        # NOTE: Uncomment these if I eventually want to use sequential unlocking per module
+        # prev_lessons = Lesson.objects.filter(
+        #     module=obj.module,
+        #     order__lt=obj.order,
+        # )
+        # if prev_lessons.exists():
+        #     if LessonProgress.objects.filter(
+        #         user=user,
+        #         lesson_id__in=prev_lessons,
+        #         completed_at__isnull=True
+        #     ).exists():
+        #         return False
+            
+        prev_modules = Module.objects.filter(
+            course=obj.module.course,
+            order__lt=obj.module.order
+        )
+        if prev_modules.exists():
+            if LessonProgress.objects.filter(
+                user=user,
+                lesson__module__in=prev_modules,
+                completed_at__isnull=True
+            ).exists():
+                return False
+            
+        return True
+
+
+    def get_is_completed(self, obj):
+        user = self.context['request'].user
+        is_completed = LessonProgress.objects.filter(
+            user=user,
+            lesson=obj,
+            completed_at__isnull=False
+        ).exists()
+        return is_completed
+
 
 
 class ModuleSerializer(serializers.ModelSerializer):
-    lessons = LessonSerializer(many=True)
+    lessons = serializers.SerializerMethodField()
+
     class Meta:
         model = Module
         fields = ["id", "order", "title", "description", "lessons"]
+
+    def get_lessons(self, obj):
+        return LessonListSerializer(
+            obj.lessons.all(),
+            context=self.context,
+            many=True
+        ).data
 
 
 class CourseLearningPointSerializer(serializers.ModelSerializer):
@@ -106,9 +190,12 @@ class CourseUserSerializer(serializers.Serializer):
     progress = serializers.SerializerMethodField()
 
     def get_course(self, obj):
+        request = self.context['request']
         return {
             'id': obj.id,
             'title': obj.title,
+            'category': obj.category.title,
+            'thumbnail': request.build_absolute_uri(obj.thumbnail.url),
             'slug': obj.slug
         }
 

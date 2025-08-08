@@ -51,25 +51,26 @@ const dummyCourse = {
 export default function CoursePlayer() {
   const { courseSlug } = useParams();
   const {course} = useCourse(courseSlug || '');
-  console.log(course);
+  // console.log(course);
   const navigate = useNavigate();
-  // const [course] = useState(dummyCourse);
-  // const [currentLesson, setCurrentLesson] = useState(course?.modules[0].lessons[0]);
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const currentLesson = allLessons[currentLessonIndex];
-  console.log("CURRENT: ", currentLesson)
+  const [lessonContent, setLessonContent] = useState(null);
+  // console.log("CURRENT: ", currentLesson);
 
 
-  console.log("All Lessons: ", allLessons);
+  // console.log("All Lessons: ", allLessons);
 
   const handleLessonSelect = (lessonId) => {
     const selectedLessonIndex = allLessons.findIndex((lesson) => lesson.id == lessonId);
+    const selectedLesson = allLessons[selectedLessonIndex];
+    if(!selectedLesson.is_unlocked) return;
     setCurrentLessonIndex(selectedLessonIndex);
   };
 
   const goToNext = () => {
-    if(currentLessonIndex < allLessons.length - 1){
+    if(currentLessonIndex < allLessons.length - 1 || allLessons[currentLessonIndex+1]?.is_unlocked){
       setCurrentLessonIndex(prev => prev + 1);
     }
   }
@@ -79,6 +80,21 @@ export default function CoursePlayer() {
       setCurrentLessonIndex(prev => prev - 1);
     }
   }
+
+  useEffect(() => {
+    const fetchLessonContent = async () => {
+      if(!currentLesson) return;
+      try{
+        const response = await api.get(`/api/lessons/${currentLesson?.id}/`);
+        const data = response.data;
+        setLessonContent(data);
+        console.log("Lesson Content --------->", data);
+      }catch(err){
+        console.error(err);
+      }
+    };
+    fetchLessonContent();
+  }, [currentLesson?.id])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -113,6 +129,10 @@ export default function CoursePlayer() {
                     currentLesson?.id === lesson.id
                       ? "bg-blue-100 text-blue-700"
                       : "hover:bg-slate-100"
+                  } ${
+                    lesson?.is_unlocked
+                      ? ""
+                      : "text-gray-400 !cursor-not-allowed hover:!bg-slate-50"
                   }`}
                 >
                   {lesson?.title}
@@ -131,12 +151,12 @@ export default function CoursePlayer() {
           <video
             controls
             className="w-full max-w-4xl mb-6 rounded-lg shadow"
-            src={currentLesson.content}
+            src={lessonContent?.content}
           />
         ) : (
           <div
             className="prose max-w-3xl mb-6"
-            dangerouslySetInnerHTML={{ __html: currentLesson?.content }}
+            dangerouslySetInnerHTML={{ __html: lessonContent?.content }}
           />
         )}
 
@@ -150,7 +170,7 @@ export default function CoursePlayer() {
           </button>
           <button
             onClick={goToNext}
-            disabled={currentLessonIndex == allLessons.length-1}
+            disabled={currentLessonIndex == allLessons.length-1 || !allLessons[currentLessonIndex+1]?.is_unlocked }
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
           >
             Next

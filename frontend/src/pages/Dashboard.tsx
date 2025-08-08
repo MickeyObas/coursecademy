@@ -48,7 +48,9 @@ const Dashboard = () => {
     <main className="bg-slate-100 h-full p-4 flex flex-col gap-y-4">
       <div className="flex items-center bg-white p-4 rounded-lg">
         <div className="flex gap-x-4 items-center">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
+          <div className="w-10 h-10 rounded-xl">
+            <img className="w-full h-full object-cover" src={lastAccessedCourse?.course.thumbnail} alt="" />
+          </div>
           <div className="flex flex-col gap-y-1.5">
             <span>{lastAccessedCourse?.course.title}</span>
             <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
@@ -179,9 +181,14 @@ const Dashboard = () => {
 
           <tbody>
             {enrolledCourses.map((course, idx) => (
-              <tr key={idx} className="rounded-lg">
+              <tr
+                onClick={() => navigate(`/course-player/${course?.course.slug}/`)} 
+                key={idx} 
+                className="rounded-lg hover:bg-slate-50 cursor-pointer">
                 <td className="py-3 px-2">
-                  <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
+                  <div className="border border-slate-300 p-0.5 w-10 h-10 rounded-xl">
+                    <img src={course?.course.thumbnail} alt="" />
+                  </div>
                 </td>
                 <td className="py-3 px-2">
                   <p className="truncate">{course?.course.title}</p>

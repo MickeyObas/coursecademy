@@ -6,7 +6,7 @@ from django.utils.timezone import now
 
 from enrollments.models import Enrollment
 from .models import Course, Module, Lesson, CourseProgress, ModuleProgress, LessonProgress
-from .serializers import CourseSerializer, ThinCourseSerializer, CourseUserSerializer
+from .serializers import CourseSerializer, ThinCourseSerializer, CourseUserSerializer, LessonListSerializer, LessonSerializer
 
 
 class CourseListCreateView(generics.ListCreateAPIView):
@@ -28,7 +28,7 @@ class OtherCoursesView(APIView):
         user = request.user
         enrolled_ids = Course.objects.filter(enrollments__user=user).values_list('id', flat=True)
         other_courses_qs = Course.objects.exclude(id__in=enrolled_ids)
-        serializer = CourseSerializer(other_courses_qs, many=True)
+        serializer = CourseSerializer(other_courses_qs, many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -97,7 +97,6 @@ class LastAccessedCourseView(APIView):
         return Response(serializer.data)
 
 
-
 class LessonAccessedView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -133,3 +132,25 @@ class LessonAccessedView(APIView):
         course_progress.save()
 
         return Response({'message': 'Access time updated'})
+    
+
+class LessonDetailView(APIView):
+    def get(self, request, *args, **kwargs):
+        lesson = generics.get_object_or_404(Lesson, id=kwargs.get('pk'))
+
+        prev_modules = Module.objects.filter(
+            course=lesson.module.course,
+            order__lt=lesson.module.order
+        )
+        if prev_modules.exists():
+            if LessonProgress.objects.filter(
+                user=request.user,
+                lesson__module__in=prev_modules,
+                completed_at__isnull=True
+            ).exists():
+                return Response({'error': 'You are not allowed to access this lesson yet'}, status=403)
+            
+        return Response(LessonSerializer(lesson, context={'request': request}).data)
+        
+            
+    

@@ -53,7 +53,7 @@ const Courses = () => {
               <div key={idx} className="flex-flex-col bg-white p-1 rounded-lg">
                 <div className="bg-red-100 w-full h-18 rounded-lg"></div>
                 <div className="p-3">
-                  <p className="font-bold text-sm">{course.title}</p>
+                  <p className="font-bold text-sm">{course?.course.title}</p>
                   <div className='flex justify-between mt-4'>
                     <div className="flex items-center gap-x-2">
                       <div className='flex'>
@@ -76,7 +76,7 @@ const Courses = () => {
                     <div className="flex gap-x-2 items-center border-l border-l-slate-200 pl-2">
                       <div className='flex'>
                         <CircularProgressbar
-                          value={course.progress}
+                          value={course?.progress.percentage}
                           strokeWidth={18}
                           className='h-6'
                           styles={buildStyles({
@@ -88,13 +88,13 @@ const Courses = () => {
                       </div>
                       <div className='flex flex-col'>
                         <span className='text-xs text-slate-500'>Completion Rate</span>
-                        <span className='text-sm font-medium'>{course.progress}%</span>
+                        <span className='text-sm font-medium'>{course.progress.percentage}%</span>
                       </div>
                     </div>
                   </div>
                   <div className='flex justify-between mt-4'>
                     <div className='flex w-[80%]'>
-                      <span className='bg-slate-100 text-xs rounded-2xl px-2 py-1'>{course.category}</span>
+                      <span className='bg-slate-100 text-xs rounded-2xl px-2 py-1'>{course?.course.category}</span>
                     </div>
                     <span className='flex items-center rounded-full bg-white justify-end border border-slate-300 p-1'>
                       <UserCheck size={16}/>
