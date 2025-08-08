@@ -11,7 +11,7 @@ const Sidebar = () => {
   return (
     <div className="max-w-[270px] border-r bg-white border-slate-200 h-[calc(100vh-73px)] flex flex-col select-none">
       <div className="flex flex-col py-7 px-5 gap-y-5">
-          <NavLink to='/dashboard' className={linkClasses}>
+          <NavLink to='/dashboard' end className={linkClasses}>
             <LayoutDashboardIcon />
             <span>Dashboard</span>
           </NavLink>

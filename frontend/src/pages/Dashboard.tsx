@@ -96,7 +96,7 @@ const Dashboard = () => {
               <div>
                 <CircularProgressbar
                   value={(courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100}
-                  text={`${(courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100}%`}
+                  text={`${Math.floor((courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100)}%`}
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
@@ -119,7 +119,7 @@ const Dashboard = () => {
               <div>
                 <CircularProgressbar
                   value={(courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100}
-                  text={`${(courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100}%`}
+                  text={`${Math.floor((courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100)}%`}
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
