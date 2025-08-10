@@ -7,17 +7,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0029_rename_selected_option_testsessionanswer_input_and_more'),
+        ("assessments", "0029_rename_selected_option_testsessionanswer_input_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='testsessionanswer',
-            name='session_question',
-            field=models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='answer', to='assessments.testsessionquestion'),
+            model_name="testsessionanswer",
+            name="session_question",
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="answer",
+                to="assessments.testsessionquestion",
+            ),
         ),
         migrations.AlterUniqueTogether(
-            name='testsessionquestion',
-            unique_together={('test_session', 'question')},
+            name="testsessionquestion",
+            unique_together={("test_session", "question")},
         ),
     ]

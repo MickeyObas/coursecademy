@@ -7,25 +7,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0007_courseprogress_lessonprogress_moduleprogress'),
+        ("courses", "0007_courseprogress_lessonprogress_moduleprogress"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='courseprogress',
-            name='is_completed',
+            model_name="courseprogress",
+            name="is_completed",
         ),
         migrations.RemoveField(
-            model_name='lessonprogress',
-            name='is_completed',
+            model_name="lessonprogress",
+            name="is_completed",
         ),
         migrations.RemoveField(
-            model_name='moduleprogress',
-            name='is_completed',
+            model_name="moduleprogress",
+            name="is_completed",
         ),
         migrations.AlterField(
-            model_name='lesson',
-            name='module',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='lessons', to='courses.module'),
+            model_name="lesson",
+            name="module",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="lessons",
+                to="courses.module",
+            ),
         ),
     ]

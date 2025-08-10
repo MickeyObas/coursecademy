@@ -1,7 +1,8 @@
 from django.contrib import admin
 
-from .models import (Course, CourseLearningPoint, CourseRating, CourseSkill,
-                     Module, Lesson, CourseProgress, LessonProgress, ModuleProgress)
+from .models import (Course, CourseLearningPoint, CourseProgress, CourseRating,
+                     CourseSkill, Lesson, LessonProgress, Module,
+                     ModuleProgress)
 
 
 class ModuleModelAdmin(admin.ModelAdmin):

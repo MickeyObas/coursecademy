@@ -10,7 +10,7 @@ from rest_framework import serializers
 from api.models import VerificationCode
 from api.utils import is_valid_email, is_valid_full_name
 
-from .models import User, Profile
+from .models import Profile, User
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -143,9 +143,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer()
+
     class Meta:
         model = Profile
-        fields = [
-            'user',
-            'profile_picture'
-        ]
+        fields = ["user", "profile_picture"]

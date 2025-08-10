@@ -1,16 +1,20 @@
 import logging
 import random
 
-from rest_framework import permissions, status, generics
+from django.contrib.contenttypes.models import ContentType
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from assessments.models import (Question, TestAssessment, TestBlueprint,
-                                TestSession, TestSessionQuestion)
-from assessments.serializers import (QuestionSerializer,
+from assessments.models import (AssessmentSession, LessonAssessment, Question,
+                                TestAssessment, TestBlueprint, TestSession,
+                                TestSessionQuestion)
+from assessments.serializers import (AssessmentQuestionSerializer,
+                                     QuestionDisplaySerializer,
+                                     QuestionSerializer,
                                      StartTestSessionSerializer,
-                                     TestSessionQuestionSerializer, TestAssessmentSerializer)
-
+                                     TestAssessmentSerializer,
+                                     TestSessionQuestionSerializer)
 from assessments.services import start_test_session
 
 logger = logging.getLogger(__name__)
@@ -20,7 +24,7 @@ class TestAssessmentDetail(generics.RetrieveAPIView):
     serializer_class = TestAssessmentSerializer
     queryset = TestAssessment.objects.all()
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'category_id'
+    lookup_field = "category_id"
 
 
 class StartTestAssessmentSession(APIView):
@@ -45,17 +49,15 @@ class StartTestAssessmentSession(APIView):
             session_questions = TestSessionQuestion.objects.filter(
                 test_session=test_session
             )
-            data = TestSessionQuestionSerializer(
-                session_questions, many=True
-            ).data
+            data = TestSessionQuestionSerializer(session_questions, many=True).data
 
             return Response(
                 {
-                    "sessionId": test_session.id, 
-                    "message": "Session started", 
+                    "sessionId": test_session.id,
+                    "message": "Session started",
                     "started_at": test_session.started_at,
                     "duration_minutes": test_session.test_assessment.duration_minutes,
-                    "questions": data
+                    "questions": data,
                 }
             )
         except TestAssessment.DoesNotExist:
@@ -71,3 +73,34 @@ class StartTestAssessmentSession(APIView):
                 },
                 status=404,
             )
+
+
+class StartLessonAssessmentSession(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        lesson_assessment = LessonAssessment.objects.get(
+            lesson_id=kwargs.get("lesson_id")
+        )
+        print("Ze lesson", lesson_assessment)
+
+        # Start new lessons attempt/session
+        content_type = ContentType.objects.get_for_model(LessonAssessment)
+        user_lesson_session, created = AssessmentSession.objects.get_or_create(
+            user=request.user,
+            content_type=content_type,
+            object_id=lesson_assessment.id,
+        )
+
+        questions = Question.objects.filter(
+            content_type=content_type, object_id=lesson_assessment.id
+        )
+
+        return Response(
+            {
+                "assessmentId": lesson_assessment.id,
+                "sessionId": user_lesson_session.id,
+                "questions": AssessmentQuestionSerializer(questions, many=True).data,
+                "course": lesson_assessment.lesson.module.course.slug
+            }
+        )

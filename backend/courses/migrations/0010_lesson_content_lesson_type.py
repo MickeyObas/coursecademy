@@ -6,19 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0009_alter_moduleprogress_user'),
+        ("courses", "0009_alter_moduleprogress_user"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='lesson',
-            name='content',
+            model_name="lesson",
+            name="content",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='lesson',
-            name='type',
-            field=models.CharField(choices=[('ARTICLE', 'Article'), ('VIDEO', 'Video')], default='ARTICLE', max_length=10),
+            model_name="lesson",
+            name="type",
+            field=models.CharField(
+                choices=[("ARTICLE", "Article"), ("VIDEO", "Video")],
+                default="ARTICLE",
+                max_length=10,
+            ),
             preserve_default=False,
         ),
     ]

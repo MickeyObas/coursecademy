@@ -3,13 +3,15 @@ from django.db import models
 
 class Lesson(models.Model):
     class LessonTypes(models.TextChoices):
-        ARTICLE = 'ARTICLE', 'Article'
-        VIDEO = 'VIDEO', 'Video'
+        ARTICLE = "ARTICLE", "Article"
+        VIDEO = "VIDEO", "Video"
 
     type = models.CharField(max_length=10, choices=LessonTypes.choices)
     content = models.TextField(blank=True, null=True)
     order = models.PositiveSmallIntegerField(default=1)
-    module = models.ForeignKey("courses.Module", on_delete=models.CASCADE, related_name='lessons')
+    module = models.ForeignKey(
+        "courses.Module", on_delete=models.CASCADE, related_name="lessons"
+    )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
 

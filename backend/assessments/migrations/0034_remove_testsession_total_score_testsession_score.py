@@ -7,17 +7,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0033_remove_testsession_is_marked_testsession_marked_at'),
+        ("assessments", "0033_remove_testsession_is_marked_testsession_marked_at"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='testsession',
-            name='total_score',
+            model_name="testsession",
+            name="total_score",
         ),
         migrations.AddField(
-            model_name='testsession',
-            name='score',
-            field=models.DecimalField(decimal_places=2, default=0.0, max_digits=5, validators=[django.core.validators.MaxValueValidator(100.0)]),
+            model_name="testsession",
+            name="score",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=0.0,
+                max_digits=5,
+                validators=[django.core.validators.MaxValueValidator(100.0)],
+            ),
         ),
     ]

@@ -1,8 +1,11 @@
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from .models import Option, Question, TestSessionQuestion, TestAssessment, TestSession
 from categories.serializers import CategorySerializer
+
+from .models import (AssessmentAnswer, AssessmentQuestion, AssessmentSession,
+                     Option, Question, TestAssessment, TestSession,
+                     TestSessionQuestion)
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -154,19 +157,16 @@ class PublicOptionSerializer(serializers.ModelSerializer):
 # Assessment Serializers
 class TestAssessmentSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
+
     class Meta:
         model = TestAssessment
-        fields = [
-            'id',
-            'category',
-            'description',
-            'duration_minutes'
-        ]
+        fields = ["id", "category", "description", "duration_minutes"]
 
 
 class StartTestSessionSerializer(serializers.Serializer):
     category = serializers.CharField()
     difficulty = serializers.CharField()
+
 
 class TestSessionQuestionSerializer(serializers.ModelSerializer):
     question = QuestionDisplaySerializer()
@@ -178,22 +178,38 @@ class TestSessionQuestionSerializer(serializers.ModelSerializer):
             "question",
         ]
 
+
+class AssessmentQuestionSerializer(serializers.Serializer):
+    question = serializers.SerializerMethodField()
+
+    def get_question(self, obj):
+        return QuestionDisplaySerializer(obj).data
+
+
 class SaveTestAssessmentAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
     test_session_id = serializers.IntegerField()
     answer = serializers.CharField()
 
 
+class SaveAssessmentAnswerSerializer(serializers.Serializer):
+    assessment_type = serializers.CharField()
+    question_id = serializers.IntegerField()
+    session_id = serializers.IntegerField()
+    answer = serializers.CharField()
+
+
 # Session Serializers
 class TestSessionSerializer(serializers.ModelSerializer):
     test_assessment = TestAssessmentSerializer()
+
     class Meta:
         model = TestSession
         fields = [
-            'id',
-            'test_assessment',
-            'submitted_at',
-            'score',
-            'status',
-            'is_expired'
+            "id",
+            "test_assessment",
+            "submitted_at",
+            "score",
+            "status",
+            "is_expired",
         ]

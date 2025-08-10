@@ -2,9 +2,10 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Enrollment
 from courses.models import Course
-from courses.serializers import ThinCourseSerializer, CourseUserSerializer
+from courses.serializers import CourseUserSerializer, ThinCourseSerializer
+
+from .models import Enrollment
 from .serializers import EnrollmentSerializer
 
 
@@ -25,6 +26,8 @@ class UserEnrollmentList(APIView):
 
     def get(self, request):
         enrolled_qs = Course.objects.filter(enrollments__user=request.user)
-        serializer = CourseUserSerializer(enrolled_qs, many=True, context={'request': request})
+        serializer = CourseUserSerializer(
+            enrolled_qs, many=True, context={"request": request}
+        )
 
         return Response(serializer.data)

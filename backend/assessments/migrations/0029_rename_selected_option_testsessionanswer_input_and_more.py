@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0028_alter_testsession_status_and_more'),
+        ("assessments", "0028_alter_testsession_status_and_more"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='testsessionanswer',
-            old_name='selected_option',
-            new_name='input',
+            model_name="testsessionanswer",
+            old_name="selected_option",
+            new_name="input",
         ),
         migrations.AddField(
-            model_name='testsessionanswer',
-            name='option_id',
+            model_name="testsessionanswer",
+            name="option_id",
             field=models.IntegerField(blank=True, null=True),
         ),
     ]

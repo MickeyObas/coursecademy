@@ -7,14 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0007_courseprogress_lessonprogress_moduleprogress'),
-        ('enrollments', '0002_enrollment_progress'),
+        ("courses", "0007_courseprogress_lessonprogress_moduleprogress"),
+        ("enrollments", "0002_enrollment_progress"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='enrollment',
-            name='course',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='enrollments', to='courses.course'),
+            model_name="enrollment",
+            name="course",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="enrollments",
+                to="courses.course",
+            ),
         ),
     ]

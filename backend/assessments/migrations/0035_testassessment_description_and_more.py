@@ -6,19 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assessments', '0034_remove_testsession_total_score_testsession_score'),
+        ("assessments", "0034_remove_testsession_total_score_testsession_score"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='testassessment',
-            name='description',
-            field=models.TextField(default=''),
+            model_name="testassessment",
+            name="description",
+            field=models.TextField(default=""),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='testassessment',
-            name='duration_minutes',
+            model_name="testassessment",
+            name="duration_minutes",
             field=models.PositiveIntegerField(default=15),
         ),
     ]

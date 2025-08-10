@@ -2,8 +2,10 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator
+from django.db import models
 
 from api.models import TimeStampedModel
 
@@ -42,7 +44,12 @@ class TestSession(TimeStampedModel):
     )
     started_at = models.DateTimeField(auto_now_add=True)
     submitted_at = models.DateTimeField(null=True, blank=True)
-    score = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, validators=[MaxValueValidator(Decimal(100.00))])
+    score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        validators=[MaxValueValidator(Decimal(100.00))],
+    )
     marked_at = models.DateTimeField(null=True, blank=True)
 
     blueprint = models.ForeignKey(
@@ -57,12 +64,14 @@ class TestSession(TimeStampedModel):
 
     def __str__(self):
         return f"{'Mickey'} - TestSession #{self.pk}"
-    
+
     @property
     def is_expired(self):
         if not self.started_at or not self.test_assessment.duration_minutes:
             return False
-        end_time = self.started_at + timedelta(minutes=self.test_assessment.duration_minutes)
+        end_time = self.started_at + timedelta(
+            minutes=self.test_assessment.duration_minutes
+        )
         return datetime.now(timezone.utc) > end_time
 
 
@@ -76,7 +85,7 @@ class TestSessionQuestion(TimeStampedModel):
     snapshot_options = models.JSONField(blank=True, null=True)
 
     class Meta:
-        unique_together = ['test_session', 'question']
+        unique_together = ["test_session", "question"]
 
 
 class TestSessionAnswer(TimeStampedModel):
@@ -90,3 +99,44 @@ class TestSessionAnswer(TimeStampedModel):
 
     def __str__(self):
         return f"{self.session_question.test_session}"
+
+
+class AssessmentSession(TimeStampedModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, null=True, blank=True
+    )
+    object_id = models.PositiveIntegerField(null=True, blank=True)
+    assessment_object = GenericForeignKey("content_type", "object_id")
+    score = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        validators=[MaxValueValidator(Decimal(100.00))],
+    )
+    completed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ["user", "content_type", "object_id"]
+
+    def __str__(self):
+        return f"Assessment attempt for {self.user}"
+
+
+class AssessmentQuestion(TimeStampedModel):
+    assessment_session = models.ForeignKey(AssessmentSession, on_delete=models.CASCADE)
+    question = models.OneToOneField("assessments.Question", on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ["assessment_session", "question"]
+
+
+class AssessmentAnswer(TimeStampedModel):
+    session = models.ForeignKey(AssessmentSession, on_delete=models.CASCADE)
+    question = models.ForeignKey("assessments.Question", on_delete=models.CASCADE)
+    input = models.CharField(max_length=100, blank=True, null=True)
+    is_correct = models.BooleanField(default=False)
+    option_id = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.session.user} answer for {self.question}"

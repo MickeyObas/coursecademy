@@ -1,9 +1,9 @@
 from django.contrib import admin
 
-from .models import (CourseAssessment, ModuleAssessment, Option, Question,
-                     TestAssessment,
-                     TestBlueprint, TestSession, TestSessionAnswer,
-                     TestSessionQuestion)
+from .models import (AssessmentAnswer, AssessmentSession, CourseAssessment,
+                     LessonAssessment, ModuleAssessment, Option, Question,
+                     TestAssessment, TestBlueprint, TestSession,
+                     TestSessionAnswer, TestSessionQuestion)
 
 
 class TestBlueprintModelAdmin(admin.ModelAdmin):
@@ -22,16 +22,44 @@ class QuestionModelAdmin(admin.ModelAdmin):
 
 
 class TestSessionModelAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'test_assessment', 'status', 'started_at', 'submitted_at', 'marked_at', 'score', 'is_expired']
+    list_display = [
+        "id",
+        "user",
+        "test_assessment",
+        "status",
+        "started_at",
+        "submitted_at",
+        "marked_at",
+        "score",
+        "is_expired",
+    ]
 
 
 class TestSessionQuestionModelAdmin(admin.ModelAdmin):
-    list_display = ['test_session', 'question']
+    list_display = ["test_session", "question"]
 
 
 class TestSessionAnswerModelAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'session_question__question', 'input', 'option_id', 'is_correct', 'answered_at']
+    list_display = [
+        "__str__",
+        "session_question__question",
+        "input",
+        "option_id",
+        "is_correct",
+        "answered_at",
+    ]
 
+
+class AssessmentSessionModelAdmin(admin.ModelAdmin):
+    list_display = ["user", "assessment_object", "score", "completed_at"]
+
+
+class AssessmentAnswerModelAdmin(admin.ModelAdmin):
+    list_display = ["__str__", "question", "input", "option_id", "is_correct"]
+
+
+class LessonAssessmentModelAdmin(admin.ModelAdmin):
+    list_display = ['id', '__str__']
 
 
 admin.site.register(TestBlueprint, TestBlueprintModelAdmin)
@@ -43,3 +71,6 @@ admin.site.register(CourseAssessment)
 admin.site.register(TestAssessment, TestAssessmentModelAdmin)
 admin.site.register(Question, QuestionModelAdmin)
 admin.site.register(Option)
+admin.site.register(LessonAssessment, LessonAssessmentModelAdmin)
+admin.site.register(AssessmentSession, AssessmentSessionModelAdmin)
+admin.site.register(AssessmentAnswer, AssessmentAnswerModelAdmin)

@@ -16,4 +16,3 @@ class CategoryDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = CategorySerializer
-

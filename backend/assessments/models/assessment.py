@@ -3,6 +3,13 @@ from django.db import models
 from api.models import TimeStampedModel
 
 
+class LessonAssessment(TimeStampedModel):
+    lesson = models.OneToOneField("courses.Lesson", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Lesson Assessment: {self.lesson.module.course.title} - {self.lesson.order}"
+
+
 class ModuleAssessment(TimeStampedModel):
     module = models.OneToOneField("courses.Module", on_delete=models.CASCADE)
 
@@ -21,7 +28,7 @@ class CourseAssessment(TimeStampedModel):
 class TestAssessment(TimeStampedModel):
     category = models.OneToOneField("categories.Category", on_delete=models.CASCADE)
     duration_minutes = models.PositiveIntegerField(default=15)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.category}"
