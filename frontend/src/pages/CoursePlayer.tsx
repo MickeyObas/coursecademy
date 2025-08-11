@@ -92,7 +92,7 @@ export default function CoursePlayer() {
         setCurrentLessonIndex(lessonIndex + 1);
       }else{
         setCurrentLessonIndex(lessonIndex);
-        alert("Whoops. You didn't get a pass mark. Try taking the assessment again");
+        
       }
 
       navigate(location.pathname, { replace: true, state: null})

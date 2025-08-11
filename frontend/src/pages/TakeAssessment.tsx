@@ -75,6 +75,7 @@ const TakeAssessment = () => {
       if(score >= 50){
         navigate(`/course-player/${assessment?.courseSlug}/`, { state: {assessmentResult: 'pass', lessonId: data.lessonId}}); // To the next lesson setCurrentLessonIndex
       }else{
+        alert("Whoops. You didn't get a pass mark. Try taking the assessment again");
         navigate(`/course-player/${assessment?.courseSlug}/`, { state: {assessmentResult: 'fail', lessonId: data.lessonId}});
       }
       localStorage.removeItem('answers');
