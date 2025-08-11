@@ -33,7 +33,7 @@ const TestDetails = () => {
         difficulty: difficulty
       });
       const data = await response.data;
-      navigate(`/take-test/${data.sessionId}`, {
+      navigate(`/dashboard/take-test/${data.sessionId}`, {
         state: {
           questions: data.questions,
           startedAt: data.started_at,

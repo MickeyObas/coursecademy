@@ -1,66 +1,21 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { UserRound, Loader2 } from "lucide-react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCourse } from "../hooks/useCourse";
 import api from "../utils/axios";
 
-// Dummy data
-const dummyCourse = {
-  id: 1,
-  title: "Mastering JavaScript",
-  modules: [
-    {
-      id: 1,
-      title: "Introduction",
-      lessons: [
-        {
-          id: 101,
-          title: "Welcome to the Course",
-          type: "text",
-          content: "<p>This course will teach you the fundamentals of JavaScript step-by-step.</p>",
-        },
-        {
-          id: 102,
-          title: "What is JavaScript?",
-          type: "video",
-          content: "https://www.w3schools.com/html/mov_bbb.mp4", // demo video
-        },
-      ],
-    },
-    {
-      id: 2,
-      title: "Core Concepts",
-      lessons: [
-        {
-          id: 201,
-          title: "Variables and Data Types",
-          type: "text",
-          content: "<p>Learn about <strong>var</strong>, <strong>let</strong>, and <strong>const</strong> in JavaScript.</p>",
-        },
-        {
-          id: 202,
-          title: "Functions and Scope",
-          type: "video",
-          content: "https://www.w3schools.com/html/movie.mp4",
-        },
-      ],
-    },
-  ],
-};
 
 export default function CoursePlayer() {
+  const location = useLocation();
+  const { assessmentResult, lessonId } = location.state || {};
+  console.log("This is the STAttettee ---> ", assessmentResult, lessonId);
   const { courseSlug } = useParams();
-  const {course} = useCourse(courseSlug || '');
-  // console.log(course);
+  const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
+  console.log(allLessons);
   const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const currentLesson = allLessons[currentLessonIndex];
   const [lessonContent, setLessonContent] = useState(null);
-  // console.log("CURRENT: ", currentLesson);
-
-
-  // console.log("All Lessons: ", allLessons);
 
   const handleLessonSelect = (lessonId) => {
     const selectedLessonIndex = allLessons.findIndex((lesson) => lesson.id == lessonId);
@@ -69,9 +24,31 @@ export default function CoursePlayer() {
     setCurrentLessonIndex(selectedLessonIndex);
   };
 
-  const goToNext = () => {
+  const goToNext = async () => {
+
+    if(currentLesson.has_assessment){
+      const response = await api.post(`/api/assessments/lessons/${currentLesson?.id}/start/`);
+      const data = response.data;
+      const assessment = {
+        assessmentId: data.assessmentId,
+        sessionId: data.sessionId,
+        questions: data.questions,
+        courseSlug: courseSlug
+      }
+      navigate(`/take-assessment/lesson/${currentLesson?.id}/`, {
+        state: assessment
+      })
+      sessionStorage.setItem('assessment', JSON.stringify(assessment));
+      return;
+    }
+
     if(currentLessonIndex < allLessons.length - 1 || allLessons[currentLessonIndex+1]?.is_unlocked){
+      // Hit endpoint to mark lesson as completed
+      const response = await api.patch(`/api/lessons/${currentLesson?.id}/complete/`);
+      const data = response.data;
+      await refetchCourse();
       setCurrentLessonIndex(prev => prev + 1);
+
     }
   }
 
@@ -88,7 +65,6 @@ export default function CoursePlayer() {
         const response = await api.get(`/api/lessons/${currentLesson?.id}/`);
         const data = response.data;
         setLessonContent(data);
-        console.log("Lesson Content --------->", data);
       }catch(err){
         console.error(err);
       }
@@ -104,6 +80,24 @@ export default function CoursePlayer() {
     }, 3000);
     return () => clearInterval(timer);
   }, [currentLesson?.id])
+
+  useEffect(() => {
+    if(!allLessons.length) return;
+    console.log("ALL LESSONS ---> ", allLessons);
+    if(assessmentResult && lessonId){
+      console.log(lessonId, typeof lessonId, allLessons[0]?.id, typeof allLessons[0]?.id);
+      const lessonIndex = allLessons.findIndex(lesson => String(lesson.id) === String(lessonId));
+      if(assessmentResult == 'pass'){
+        console.log("New lesson Index ---> ", lessonIndex);
+        setCurrentLessonIndex(lessonIndex + 1);
+      }else{
+        setCurrentLessonIndex(lessonIndex);
+        alert("Whoops. You didn't get a pass mark. Try taking the assessment again");
+      }
+
+      navigate(location.pathname, { replace: true, state: null})
+    }
+  }, [assessmentResult, lessonId, allLessons])
 
   return (
     <div className="flex h-screen font-sans">
@@ -168,13 +162,22 @@ export default function CoursePlayer() {
           >
             Previous
           </button>
-          <button
-            onClick={goToNext}
-            disabled={currentLessonIndex == allLessons.length-1 || !allLessons[currentLessonIndex+1]?.is_unlocked }
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            Next
-          </button>
+          {currentLesson?.has_assessment ? (
+            <button
+              onClick={goToNext}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+            >
+              Proceed to Test
+            </button>
+          ) : (
+            <button
+              onClick={goToNext}
+              disabled={currentLessonIndex == allLessons.length-1 }
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              Next
+            </button>
+          )}
         </div>
       </div>
     </div>

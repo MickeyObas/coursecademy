@@ -36,7 +36,7 @@ const Tests = () => {
 
   const handleTestResume = (sessionId: number) => {
     // Check if test session still valid
-    navigate(`/take-test/${sessionId}/`)
+    navigate(`/dashboard/take-test/${sessionId}/`)
   }
 
   useEffect(() => {
@@ -82,7 +82,7 @@ const Tests = () => {
           {categories.map((category, idx) => (
             <span 
               key={idx}
-              onClick={() => navigate(`/tests/${category.id}/`)}
+              onClick={() => navigate(`/dashboard/tests/${category.id}/`)}
               className="bg-blue-200 rounded-full p-2 cursor-pointer hover:bg-blue-300">{category.title}</span>
           ))}
         </div>

@@ -31,7 +31,7 @@ const TakeTest = () => {
 
   useEffect(() => {
     if (location.state) {
-      localStorage.setItem("questions", JSON.stringify(location.state.questions));
+      localStorage.setItem("questions", JSON.stringify(location.state?.questions));
       localStorage.setItem("startedAt", location.state.startedAt);
       localStorage.setItem("durationMinutes", location.state.durationMinutes.toString());
     }
@@ -78,7 +78,7 @@ const TakeTest = () => {
   }
 
   const handleMCQInput = (questionId: number, optionId: number) => {
-    if(current.question.type == "MCQ"){
+    if(current?.question.type == "MCQ"){
       setAnswers((prev) => ({...prev, [questionId]: optionId}))
     }
   }

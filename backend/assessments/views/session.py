@@ -103,4 +103,4 @@ class SubmitAssessmentSession(APIView):
         if result.get("error"):
             return Response({"error": result["error"]}, status=400)
 
-        return Response({"message": result["message"]})
+        return Response({"message": result["message"], "score": result["score"], "lessonId": result['lessonId']})

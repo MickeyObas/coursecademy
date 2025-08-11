@@ -154,7 +154,7 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
     except Exception as e:
         logger.error("Error ----> %s" % str(e))
 
-    return {"success": True, "message": "Test submitted successfully"}
+    return {"success": True, "message": "Test submitted successfully", "score": session.score, "lessonId": session.assessment_object.lesson.id}
 
 
 def save_test_answer(user, question_id, session_id, answer):

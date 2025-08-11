@@ -31,7 +31,7 @@ type QuestionCardProps = {
   handleTFInput: (questionId: number, tfInput: string) => void,
   handleNext: () => void,
   handlePrev: () => void,
-  submitTest: () => void
+  submitAssessment: () => void
 }
 
 type FIBQuestionProps = {
@@ -63,21 +63,36 @@ export default function QuestionCard({
   handleTFInput,
   handleNext,
   handlePrev,
-  submitTest
+  submitAssessment
 }: QuestionCardProps) {
 
-  const { sessionId } = useParams(); 
+  const location = useLocation();
+  const { modelId, assessmentType } = useParams();
+  const stored = sessionStorage.getItem('assessment');
+  const assessment = stored ? JSON.parse(stored) : null;
+  const sessionId = assessment.sessionId || null;
   const handleAnswerSave = async () => {
     // Save to local storage?
     localStorage.setItem('answers', JSON.stringify(answers));
   
     try {
-      const response = await api.post(`/api/assessments/${sessionId}/save-answer/`, {
-        question_id: current.question.id,
-        test_session_id: sessionId,
-        answer: answers[current.question.id]
-      });
-      const data = await response.data;
+      // Check what the question belongs to
+      let response;
+      if(assessmentType){
+        response = await api.post(`/api/assessments/lesson/${sessionId}/save-answer/`, {
+          question_id: current.question.id,
+          session_id: sessionId,
+          answer: answers[current.question.id],
+          assessment_type: assessmentType
+        })
+      }else{
+        response = await api.post(`/api/assessments/${sessionId}/save-answer/`, {
+          question_id: current.question.id,
+          test_session_id: sessionId,
+          answer: answers[current.question.id]
+        });
+      }
+      const data = response.data;
     } catch (error: any){
       if(error.response.data){
         console.error(error.response.data);
@@ -88,7 +103,7 @@ export default function QuestionCard({
   }
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-2xl shadow-md select-none">
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md select-none">
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-gray-800">
           Question {currentIndex+1} of {totalQuestions}
@@ -141,7 +156,7 @@ export default function QuestionCard({
           </button>
           {currentIndex === totalQuestions - 1 ? (
             <button
-            onClick={submitTest}
+            onClick={submitAssessment}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Finish

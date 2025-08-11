@@ -14,7 +14,6 @@ type User = {
 
 interface LoginResponseData {
   access: string,
-  // refresh: string,
   user: {
     username: string,
     email: string,
@@ -31,7 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (data: LoginResponseData) => {
     localStorage.setItem('accessToken', data.access);
-    // localStorage.setItem('refreshToken', data.refresh);
     localStorage.setItem('user', JSON.stringify(data.user))
     setUser(data.user);
   }

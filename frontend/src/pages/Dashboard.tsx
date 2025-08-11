@@ -46,45 +46,47 @@ const Dashboard = () => {
 
   return (
     <main className="bg-slate-100 h-full p-4 flex flex-col gap-y-4">
-      <div className="flex items-center bg-white p-4 rounded-lg">
-        <div className="flex gap-x-4 items-center">
-          <div className="w-10 h-10 rounded-xl">
-            <img className="w-full h-full object-cover" src={lastAccessedCourse?.course.thumbnail} alt="" />
+      {lastAccessedCourse && (
+        <div className="flex items-center bg-white p-4 rounded-lg">
+          <div className="flex gap-x-4 items-center">
+            <div className="w-10 h-10 rounded-xl">
+              <img className="w-full h-full object-cover" src={lastAccessedCourse?.course.thumbnail} alt="" />
+            </div>
+            <div className="flex flex-col gap-y-1.5">
+              <span>{lastAccessedCourse?.course.title}</span>
+              <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
+                <div
+                  className="h-full bg-blue-700"
+                  style={{ width: `${lastAccessedCourse?.progress.percentage}%` }}
+                ></div>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col gap-y-1.5">
-            <span>{lastAccessedCourse?.course.title}</span>
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div
-                className="h-full bg-blue-700"
-                style={{ width: `${lastAccessedCourse?.progress.percentage}%` }}
-              ></div>
+          <div className="bg-slate-100 h-3/4 w-0.5 mx-15"></div>
+          <div className="flex items-center w-full ">
+            <div className="flex gap-x-3">
+              <span className="flex items-center gap-1.5">
+                <Clipboard color="gray" />
+                <span>{lastAccessedCourse?.progress.module}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clipboard color="gray" />
+                <span>{lastAccessedCourse?.progress.lesson}</span>
+              </span>
+              {/* <span className="flex items-center gap-1.5">
+                <Clipboard color="gray" />
+                <span>15</span>
+              </span> */}
+            </div>
+            <div
+              onClick={() => navigate(`/course-player/${lastAccessedCourse?.course.slug}/`)} 
+              className="flex bg-slate-100 px-2 py-1.5 rounded-lg ms-auto gap-x-2">
+              <Play color="blue"/>
+              <span>Resume</span>
             </div>
           </div>
         </div>
-        <div className="bg-slate-100 h-3/4 w-0.5 mx-15"></div>
-        <div className="flex items-center w-full ">
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1.5">
-              <Clipboard color="gray" />
-              <span>{lastAccessedCourse?.progress.module}</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Clipboard color="gray" />
-              <span>{lastAccessedCourse?.progress.lesson}</span>
-            </span>
-            {/* <span className="flex items-center gap-1.5">
-              <Clipboard color="gray" />
-              <span>15</span>
-            </span> */}
-          </div>
-          <div
-            onClick={() => navigate(`/course-player/${lastAccessedCourse?.course.slug}/`)} 
-            className="flex bg-slate-100 px-2 py-1.5 rounded-lg ms-auto gap-x-2">
-            <Play color="blue"/>
-            <span>Resume</span>
-          </div>
-        </div>
-      </div>
+      )}
       <div className="flex flex-col bg-white p-4 rounded-lg">
         <h2 className="text-xl font-bold">Status</h2>
         <div className="grid grid-cols-3 mt-5 gap-x-3">
@@ -96,7 +98,7 @@ const Dashboard = () => {
               <div>
                 <CircularProgressbar
                   value={(courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100}
-                  text={`${Math.floor((courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100)}%`}
+                  text={`${Math.floor((courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100) || 0}%`}
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
@@ -119,7 +121,7 @@ const Dashboard = () => {
               <div>
                 <CircularProgressbar
                   value={(courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100}
-                  text={`${Math.floor((courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100)}%`}
+                  text={`${Math.floor((courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100) || 0}%`}
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
@@ -142,7 +144,7 @@ const Dashboard = () => {
               <div>
                 <CircularProgressbar
                   value={(courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100}
-                  text={`${Math.floor((courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100)}%`}
+                  text={`${Math.floor((courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100) || 0}%`}
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
@@ -223,212 +225,6 @@ const Dashboard = () => {
         </table>
       </div>
 
-        {/* <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-2">
-          <span>#</span>
-          <span>Course Name</span>
-          <span>Completed</span>
-          <span>Status</span>
-        </div> */}
-        {/* <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-[10%_1fr_1fr_0.5fr] mt-5">
-          <div className="bg-red-200 w-10 h-10 rounded-xl"></div>
-          <div className="flex items-center">
-            <p className="">Web Design and some other...</p>  
-          </div>
-          <div className="flex items-center">
-            <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
-              <div className="h-full w-3/4 bg-blue-700"></div>
-            </div>
-          </div>
-          <div className="flex gap-x-3">
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <Clipboard size={18} color="gray" />
-              <span>15</span>
-            </span>
-          </div>
-        </div> */}
       </div>
     </main>
   )

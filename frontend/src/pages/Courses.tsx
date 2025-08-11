@@ -1,4 +1,4 @@
-import { ClipboardList, Dot, Ellipsis, MessageCircleQuestionMark, PenBoxIcon, PencilIcon, PencilLineIcon, UserCheck } from 'lucide-react';
+import { ClipboardList, Dot, Ellipsis, MessageCircleQuestionMark, PencilLineIcon, UserCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -42,6 +42,15 @@ const Courses = () => {
     };
     fetchOtherCourses();
   }, [])
+
+  const handleCourseEnroll = async (courseId) => {
+    try {
+      const response = await api.post(`/api/courses/${courseId}/enroll/`);
+      const data = response.data;
+    } catch(err){
+      console.error(err);
+    }
+  }
 
   return (
     <main className="bg-slate-100 h-full px-6 py-10 flex flex-col">
@@ -136,7 +145,10 @@ const Courses = () => {
                   <PencilLineIcon />
                   40 Lessons
                 </span>
-                <span className='text-sm bg-blue-200 flex items-center px-2 py-1.5 rounded-full'>Web Development</span>
+                <span className='text-sm bg-blue-200 flex items-center px-2 py-1.5 rounded-full'>{course.category.title}</span>
+                <button 
+                  onClick={() => handleCourseEnroll(course.id)}
+                  className='bg-green-500 px-2 py-1 rounded-xl'>Enroll</button>
               </div>
             ))}
           </div>

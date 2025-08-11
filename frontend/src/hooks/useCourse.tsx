@@ -6,8 +6,7 @@ export const useCourse = (courseSlug: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchCourse = async () => {
+  const fetchCourse = async () => {
     try {
       const response = await api.get(`/api/courses/${courseSlug}/`);
       const data = response.data;
@@ -23,9 +22,12 @@ export const useCourse = (courseSlug: string) => {
       setLoading(false);
     }
   };
-    fetchCourse();
-  }, [])
 
-  return { course, loading, error }
+  useEffect(() => {
+    fetchCourse();
+  }, [courseSlug]);
+
+
+  return { course, loading, error, refetchCourse: fetchCourse }
 
 }

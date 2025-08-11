@@ -16,6 +16,7 @@ import TakeTest from "../pages/TakeTest";
 import CourseDetail from "../pages/CourseDetail";
 import CoursePlayer from "../pages/CoursePlayer";
 import { CoursePlayerLayout } from "../components/layouts/CoursePlayerLayout";
+import TakeAssessment from "../pages/TakeAssessment";
 
 
 const AppRoutes = () => {
@@ -46,6 +47,8 @@ const AppRoutes = () => {
         <Route path="/course-player/:courseSlug/" element={<CoursePlayerLayout />}>
           <Route index element={<CoursePlayer />} />
         </Route>
+
+        <Route path="take-assessment/:assessmentType/:modelId/" element={<TakeAssessment />}></Route>
 
       </Route>
 
