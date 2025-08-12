@@ -35,7 +35,9 @@ const Dashboard = () => {
       try {
         const response = await api.get('/api/courses/last-accessed/');
         const data = response.data;
-        setLastAccessedCourse(data);
+        if(data?.status !== 'empty'){
+          setLastAccessedCourse(data);
+        }
       }catch(err){
         console.error(err);
       }

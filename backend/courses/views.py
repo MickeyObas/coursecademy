@@ -77,13 +77,13 @@ class MyEnrolledProgresssSummary(APIView):
         course_total = len(enrolled_course_ids)
 
         lesson_completed = LessonProgress.objects.filter(
-            user=user, completed_at__isnull=False, lesson_id__in=lesson_ids
+            enrollment__user=user, completed_at__isnull=False, lesson_id__in=lesson_ids
         ).count()
         module_completed = ModuleProgress.objects.filter(
-            user=user, completed_at__isnull=False, module_id__in=module_ids
+            enrollment__user=user, completed_at__isnull=False, module_id__in=module_ids
         ).count()
         course_completed = CourseProgress.objects.filter(
-            user=user, completed_at__isnull=False, course_id__in=enrolled_course_ids
+            enrollment__user=user, completed_at__isnull=False, enrollment__course_id__in=enrolled_course_ids
         ).count()
 
         return Response(
@@ -100,14 +100,14 @@ class LastAccessedCourseView(APIView):
 
     def get(self, request):
         user = request.user
-        course_progress = CourseProgress.objects.filter(user=user)
+        course_progress = CourseProgress.objects.filter(enrollment__user=user)
         if course_progress.exists():
-            last_accessed_course = course_progress.latest('last_accessed_at').course
+            last_accessed_course = course_progress.latest('last_accessed_at').enrollment.course
             serializer = CourseUserSerializer(
                 last_accessed_course, context={"request": request}
             )
             return Response(serializer.data)
-        return Response({'message': 'No course accessed'}, status=404)
+        return Response({'status': 'empty', 'message': 'No course accessed'}, status=200)
 
 
 class LessonAccessedView(APIView):
@@ -121,20 +121,20 @@ class LessonAccessedView(APIView):
         except Lesson.DoesNotExist:
             return Response({"error": "Lesson not found"}, status=400)
 
-        lesson_progress = LessonProgress.objects.get(user=user, lesson=lesson)
+        lesson_progress = LessonProgress.objects.get(enrollment__user=user, lesson=lesson)
         lesson_progress.last_accessed_at = now()
         lesson_progress.save()
 
         module = lesson.module
         module_progress, _ = ModuleProgress.objects.get_or_create(
-            user=user, module=module
+            enrollment__user=user, module=module
         )
         module_progress.last_accessed_at = now()
         module_progress.save()
 
         course = module.course
         course_progress, _ = CourseProgress.objects.get_or_create(
-            user=user, course=course
+            enrollment__user=user, enrollment__course=course
         )
         course_progress.last_accessed_at = now()
         course_progress.save()
@@ -151,7 +151,7 @@ class LessonDetailView(APIView):
         )
         if prev_modules.exists():
             if LessonProgress.objects.filter(
-                user=request.user,
+                enrollment__user=request.user,
                 lesson__module__in=prev_modules,
                 completed_at__isnull=True,
             ).exists():
@@ -169,7 +169,7 @@ class LessonCompleteView(APIView):
         lesson_id = kwargs.get('lesson_id')
         lesson = Lesson.objects.get(id=lesson_id)
         user_lesson_progress= LessonProgress.objects.get(
-            user=user,
+            enrollment__user=user,
             lesson=lesson
         )
         user_lesson_progress.completed_at = now()

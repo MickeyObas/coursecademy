@@ -70,7 +70,7 @@ export default function CoursePlayer() {
       }
     };
     fetchLessonContent();
-  }, [currentLesson?.id])
+  }, [currentLessonIndex, currentLesson?.id])
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -92,7 +92,6 @@ export default function CoursePlayer() {
         setCurrentLessonIndex(lessonIndex + 1);
       }else{
         setCurrentLessonIndex(lessonIndex);
-        
       }
 
       navigate(location.pathname, { replace: true, state: null})

@@ -32,7 +32,7 @@ class LessonListSerializer(serializers.ModelSerializer):
 
         if prev_lessons.exists():
             if LessonProgress.objects.filter(
-                user=user, lesson__in=prev_lessons, completed_at__isnull=True
+                enrollment__user=user, lesson__in=prev_lessons, completed_at__isnull=True
             ).exists():
                 return False
 
@@ -42,7 +42,7 @@ class LessonListSerializer(serializers.ModelSerializer):
         print("PREVIOUS MODULES --> ", prev_modules)
         if prev_modules.exists():
             if LessonProgress.objects.filter(
-                user=user, lesson__module__in=prev_modules, completed_at__isnull=True
+                enrollment__user=user, lesson__module__in=prev_modules, completed_at__isnull=True
             ).exists():
                 return False
 
@@ -93,7 +93,7 @@ class LessonSerializer(serializers.ModelSerializer):
         )
         if prev_modules.exists():
             if LessonProgress.objects.filter(
-                user=user, lesson__module__in=prev_modules, completed_at__isnull=True
+                enrollment__user=user, lesson__module__in=prev_modules, completed_at__isnull=True
             ).exists():
                 return False
 
@@ -102,7 +102,7 @@ class LessonSerializer(serializers.ModelSerializer):
     def get_is_completed(self, obj):
         user = self.context["request"].user
         is_completed = LessonProgress.objects.filter(
-            user=user, lesson=obj, completed_at__isnull=False
+            enrollment__user=user, lesson=obj, completed_at__isnull=False
         ).exists()
         return is_completed
 
@@ -223,10 +223,10 @@ class CourseUserSerializer(serializers.Serializer):
         module_total = len(module_ids)
 
         lesson_completed = LessonProgress.objects.filter(
-            user=user, completed_at__isnull=False, lesson_id__in=lesson_ids
+            enrollment__user=user, completed_at__isnull=False, lesson_id__in=lesson_ids
         ).count()
         module_completed = ModuleProgress.objects.filter(
-            user=user, completed_at__isnull=False, module_id__in=module_ids
+            enrollment__user=user, completed_at__isnull=False, module_id__in=module_ids
         ).count()
 
         lesson_part = lesson_completed / lesson_total if lesson_total else 0

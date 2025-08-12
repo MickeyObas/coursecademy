@@ -145,7 +145,7 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
         # Mark lesson as completed if scored about half
         if session.score >= 50:
             user_lesson_progress = LessonProgress.objects.get(
-                user=user,
+                enrollment__user=user,
                 lesson=session.assessment_object.lesson
             )
             user_lesson_progress.completed_at = now()
