@@ -1,4 +1,5 @@
 from django.utils.timezone import now
+from django.db import transaction
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -137,6 +138,7 @@ class LessonAccessedView(APIView):
             enrollment__user=user, enrollment__course=course
         )
         course_progress.last_accessed_at = now()
+        course_progress.last_accessed_lesson = lesson
         course_progress.save()
 
         return Response({"message": "Access time updated"})
@@ -168,11 +170,34 @@ class LessonCompleteView(APIView):
         user = request.user
         lesson_id = kwargs.get('lesson_id')
         lesson = Lesson.objects.get(id=lesson_id)
-        user_lesson_progress= LessonProgress.objects.get(
-            enrollment__user=user,
-            lesson=lesson
-        )
-        user_lesson_progress.completed_at = now()
-        user_lesson_progress.save()
+
+        with transaction.atomic():
+            user_lesson_progress= LessonProgress.objects.get(
+                enrollment__user=user,
+                lesson=lesson
+            )
+            user_lesson_progress.completed_at = now()
+            user_lesson_progress.save()
+
+            module = lesson.module
+            all_completed = all(
+                LessonProgress.objects.filter(enrollment__user=user, lesson=l, completed_at__isnull=False).exists()
+                for l in module.lessons.all())
+            if all_completed:
+                module_progress = ModuleProgress.objects.get(enrollment__user=user, module=module)
+                module_progress.completed_at = now()
+                module_progress.save()
         
         return Response({'message': 'Lesson complete status updated'})
+    
+
+class LastAccessedLessonView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        course = Course.objects.get(slug=kwargs.get('course_slug'))
+        course_progress = CourseProgress.objects.get(enrollment__course=course)
+        if course_progress.last_accessed_lesson:
+            return Response({'lessonId': course_progress.last_accessed_lesson.id})
+        else:
+            return Response({'error': 'No last accessed course'})

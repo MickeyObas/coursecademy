@@ -34,3 +34,4 @@ class CourseProgress(models.Model):
     enrollment = models.OneToOneField('enrollments.Enrollment', on_delete=models.CASCADE)
     completed_at = models.DateTimeField(blank=True, null=True)
     last_accessed_at = models.DateTimeField(blank=True, null=True)
+    last_accessed_lesson = models.ForeignKey('courses.Lesson', on_delete=models.SET_NULL, null=True, blank=True)

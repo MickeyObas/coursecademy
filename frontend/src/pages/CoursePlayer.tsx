@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCourse } from "../hooks/useCourse";
 import api from "../utils/axios";
@@ -7,15 +7,16 @@ import api from "../utils/axios";
 export default function CoursePlayer() {
   const location = useLocation();
   const { assessmentResult, lessonId } = location.state || {};
-  console.log("This is the STAttettee ---> ", assessmentResult, lessonId);
+  // console.log("This is the STAttettee ---> ", assessmentResult, lessonId);
   const { courseSlug } = useParams();
   const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
-  console.log(allLessons);
-  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
+  // console.log(allLessons);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState<null | number>(null);
   const currentLesson = allLessons[currentLessonIndex];
   const [lessonContent, setLessonContent] = useState(null);
+  const lastLessonSpawned = useRef(false);
 
   const handleLessonSelect = (lessonId) => {
     const selectedLessonIndex = allLessons.findIndex((lesson) => lesson.id == lessonId);
@@ -48,7 +49,6 @@ export default function CoursePlayer() {
       const data = response.data;
       await refetchCourse();
       setCurrentLessonIndex(prev => prev + 1);
-
     }
   }
 
@@ -81,22 +81,47 @@ export default function CoursePlayer() {
     return () => clearInterval(timer);
   }, [currentLesson?.id])
 
-  useEffect(() => {
-    if(!allLessons.length) return;
-    console.log("ALL LESSONS ---> ", allLessons);
-    if(assessmentResult && lessonId){
-      console.log(lessonId, typeof lessonId, allLessons[0]?.id, typeof allLessons[0]?.id);
-      const lessonIndex = allLessons.findIndex(lesson => String(lesson.id) === String(lessonId));
-      if(assessmentResult == 'pass'){
-        console.log("New lesson Index ---> ", lessonIndex);
-        setCurrentLessonIndex(lessonIndex + 1);
-      }else{
-        setCurrentLessonIndex(lessonIndex);
-      }
 
-      navigate(location.pathname, { replace: true, state: null})
+  useEffect(() => {
+    if(!allLessons.length || lastLessonSpawned.current) return;
+    
+    const mode = location.state?.assessmentResult  ? "afterAssessment" : "resumeProgress";
+
+    switch (mode) {
+      case "afterAssessment":
+        lastLessonSpawned.current = true;
+        const lessonIndex = allLessons.findIndex(lesson => String(lesson.id) === String(lessonId));
+        if(assessmentResult == 'pass'){
+          setCurrentLessonIndex(lessonIndex + 1);
+        }else{
+          setCurrentLessonIndex(lessonIndex);
+        }
+        break;
+
+      case "resumeProgress":
+        const fetchLastAccessedLesson = async () => {
+          if(!allLessons.length || lastLessonSpawned.current) return;
+          try{
+            const response = await api.get( `/api/courses/${courseSlug}/last-accessed-lesson/`);
+            const data = response.data;
+            const lessonIndex = allLessons.findIndex(lesson => String(lesson.id) === String(data.lessonId));
+            setCurrentLessonIndex(lessonIndex !== -1 ? lessonIndex : 0);
+            lastLessonSpawned.current = true;
+            navigate(location.pathname, { replace: true, state: null});
+          }catch(err: any){
+            console.error(err.response?.data);
+            setCurrentLessonIndex(0);
+          }
+        };
+        fetchLastAccessedLesson();
+        break;
     }
-  }, [assessmentResult, lessonId, allLessons])
+
+  }, [courseSlug, location.state, allLessons])
+
+  if (!course || !currentLesson || !lessonContent) {
+  return <div className="p-6">Loading lesson...</div>;
+}
 
   return (
     <div className="flex h-screen font-sans">
