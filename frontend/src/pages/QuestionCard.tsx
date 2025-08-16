@@ -31,7 +31,7 @@ type QuestionCardProps = {
   handleTFInput: (questionId: number, tfInput: string) => void,
   handleNext: () => void,
   handlePrev: () => void,
-  submitAssessment: () => void
+  onSubmit: () => void,
 }
 
 type FIBQuestionProps = {
@@ -63,14 +63,19 @@ export default function QuestionCard({
   handleTFInput,
   handleNext,
   handlePrev,
-  submitAssessment
+  onSubmit
 }: QuestionCardProps) {
 
   const location = useLocation();
-  const { modelId, assessmentType } = useParams();
+  const { modelId, assessmentType, testSessionId } = useParams();
+  // assessmentType = enum(lesson, module, course);
+  // moduleId is the lesson|module|course + id
+  // If it's a lession assessment, an assessment key will be in the session storage
   const stored = sessionStorage.getItem('assessment');
   const assessment = stored ? JSON.parse(stored) : null;
-  const sessionId = assessment.sessionId || null;
+  const sessionId = assessment?.sessionId || null;
+
+
   const handleAnswerSave = async () => {
     // Save to local storage?
     localStorage.setItem('answers', JSON.stringify(answers));
@@ -86,9 +91,9 @@ export default function QuestionCard({
           assessment_type: assessmentType
         })
       }else{
-        response = await api.post(`/api/assessments/${sessionId}/save-answer/`, {
+        response = await api.post(`/api/assessments/${testSessionId}/save-answer/`, {
           question_id: current.question.id,
-          test_session_id: sessionId,
+          test_session_id: testSessionId,
           answer: answers[current.question.id]
         });
       }
@@ -156,7 +161,7 @@ export default function QuestionCard({
           </button>
           {currentIndex === totalQuestions - 1 ? (
             <button
-            onClick={submitAssessment}
+            onClick={onSubmit}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Finish

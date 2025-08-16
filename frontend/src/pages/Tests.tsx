@@ -101,7 +101,7 @@ const Tests = () => {
                     <p>Date: {formatDate(testSession.submitted_at)}</p>
                   )}
                 </div>
-                {!testSession.is_expired && (
+                {(!testSession.is_expired && !(testSession.status === 'S')) && (
                   <button 
                     onClick={() => handleTestResume(testSession.id)}
                     className="bg-blue-400 px-2 py-1.5 rounded-lg text-white cursor-pointer">Resume Test</button>

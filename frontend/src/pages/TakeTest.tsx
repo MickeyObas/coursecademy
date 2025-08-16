@@ -5,8 +5,9 @@ import api from "../utils/axios";
 
 const TakeTest = () => {
   const navigate = useNavigate();
-  const { sessionId } = useParams();
+  const { testSessionId } = useParams();
   const location = useLocation();
+  console.log("LOCATION", location.state);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState(
     JSON.parse(localStorage.getItem("answers") || "{}")
@@ -14,6 +15,7 @@ const TakeTest = () => {
   const questions = location.state?.questions || JSON.parse(localStorage.getItem("questions") || "[]");
   const startedAt = location.state?.startedAt || localStorage.getItem("startedAt");
   const durationMinutes = location.state?.durationMinutes || parseInt(localStorage.getItem("durationMinutes") || "0");
+  
   const current = questions[currentQuestionIndex];
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [timerReady, setTimeReady] = useState(false);
@@ -53,7 +55,7 @@ const TakeTest = () => {
     const interval = setInterval(updateRemaining, 1000);
 
     return () => clearInterval(interval);
-  }, [sessionId]);
+  }, [testSessionId]);
 
   useEffect(() => {
     if(!timerReady) return;
@@ -96,8 +98,8 @@ const TakeTest = () => {
     console.log(`You have ${unsavedAnswers} unanswered or unsaved questions left.`);
 
     try{
-      const response = await api.post(`/api/assessments/${sessionId}/test/submit/`, {
-        test_session_id: sessionId
+      const response = await api.post(`/api/assessments/${testSessionId}/test/submit/`, {
+        test_session_id: testSessionId
       })
       const data = response.data;
       localStorage.removeItem('answers');
@@ -106,7 +108,7 @@ const TakeTest = () => {
       localStorage.removeItem('durationMinutes');
       navigate('/');
     }catch(error: any){
-      if(error.response.data){
+      if(error.response?.data){
         console.error(error.response.data);
       }else{
         console.error(error);
@@ -130,7 +132,7 @@ const TakeTest = () => {
         handleTFInput={handleTFInput}
         handleNext={handleNext}
         handlePrev={handlePrev}
-        submitTest={submitTest}
+        onSubmit={submitTest}
       />
     </>
   );

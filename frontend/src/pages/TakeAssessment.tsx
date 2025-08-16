@@ -103,7 +103,7 @@ const TakeAssessment = () => {
           handleTFInput={handleTFInput}
           handleNext={handleNext}
           handlePrev={handlePrev}
-          submitAssessment={submitAsssessment}
+          onSubmit={submitAsssessment}
         />
       </div>
     </div>

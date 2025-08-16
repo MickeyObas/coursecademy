@@ -35,10 +35,10 @@ export default function CoursePlayer() {
         questions: data.questions,
         courseSlug: courseSlug
       }
+      sessionStorage.setItem('assessment', JSON.stringify(assessment));
       navigate(`/take-assessment/lesson/${currentLesson?.id}/`, {
         state: assessment
       })
-      sessionStorage.setItem('assessment', JSON.stringify(assessment));
       return;
     }
 
