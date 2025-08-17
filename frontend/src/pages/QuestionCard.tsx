@@ -67,13 +67,12 @@ export default function QuestionCard({
 }: QuestionCardProps) {
 
   const location = useLocation();
-  const { modelId, assessmentType, testSessionId } = useParams();
+  const { modelId, assessmentType, sessionId, testSessionId } = useParams();
   // assessmentType = enum(lesson, module, course);
   // moduleId is the lesson|module|course + id
   // If it's a lession assessment, an assessment key will be in the session storage
   const stored = sessionStorage.getItem('assessment');
   const assessment = stored ? JSON.parse(stored) : null;
-  const sessionId = assessment?.sessionId || null;
 
 
   const handleAnswerSave = async () => {
@@ -85,16 +84,16 @@ export default function QuestionCard({
       let response;
       if(assessmentType){
         response = await api.post(`/api/assessments/lesson/${sessionId}/save-answer/`, {
-          question_id: current.question.id,
+          question_id: current?.id,
           session_id: sessionId,
-          answer: answers[current.question.id],
+          answer: answers[current?.id],
           assessment_type: assessmentType
         })
       }else{
         response = await api.post(`/api/assessments/${testSessionId}/save-answer/`, {
-          question_id: current.question.id,
+          question_id: current?.id,
           test_session_id: testSessionId,
-          answer: answers[current.question.id]
+          answer: answers[current?.id]
         });
       }
       const data = response.data;
@@ -114,7 +113,7 @@ export default function QuestionCard({
           Question {currentIndex+1} of {totalQuestions}
         </h2>
 
-        {current.question.type === 'FIB' && (
+        {current?.type === 'FIB' && (
           <FIBQuestion 
             current={current}
             handleFIBInput={handleFIBInput}
@@ -123,7 +122,7 @@ export default function QuestionCard({
         )}
       </div>
 
-      {current.question.type === 'MCQ' && (
+      {current?.type === 'MCQ' && (
         <MCQQuestion 
           current={current}
           handleMCQInput={handleMCQInput}
@@ -131,7 +130,7 @@ export default function QuestionCard({
         />
       )}
 
-      {current.question.type === 'TF' && (
+      {current?.type === 'TF' && (
         <TFQuestion 
           current={current}
           handleTFInput={handleTFInput}
@@ -182,7 +181,7 @@ export default function QuestionCard({
 }
 
 const FIBQuestion = ({current, handleFIBInput, answers}: FIBQuestionProps) => {
-  const parts = current?.question.text.split("______");
+  const parts = current?.text.split("______");
   const value = 
     answers[current?.question.id] ??
     "";
@@ -193,7 +192,7 @@ const FIBQuestion = ({current, handleFIBInput, answers}: FIBQuestionProps) => {
       <input
         type="text"
         value={value}
-        onChange={(e) => handleFIBInput(current.question.id, e.target.value)}
+        onChange={(e) => handleFIBInput(current?.id, e.target.value)}
         className="border-b-2 border-blue-500 outline-none px-2 mx-1"
       />
       {parts[1]}
@@ -203,19 +202,19 @@ const FIBQuestion = ({current, handleFIBInput, answers}: FIBQuestionProps) => {
 
 const TFQuestion = ({current, answers, handleTFInput}: TFQuestionProps) => {
   const value = 
-    answers[current?.question.id] ??
+    answers[current?.id] ??
     // localAnswers[current?.question.id] ??
     "";
 
   return (
     <>
-      <p className="mt-2 text-gray-700">{current.question.text}</p>
+      <p className="mt-2 text-gray-700">{current?.text}</p>
       <div className="space-y-3 flex flex-col mt-4">
         <label className="gap-3 p-3 cursor-pointer">
           <input 
             type="radio" 
             checked={value === "true"}
-            onChange={() => handleTFInput(current.question.id, "true")}
+            onChange={() => handleTFInput(current?.id, "true")}
             />
           <span className="text-gray-800">True</span>
         </label>
@@ -223,7 +222,7 @@ const TFQuestion = ({current, answers, handleTFInput}: TFQuestionProps) => {
           <input 
             type="radio" 
             checked={value === "false"}
-            onChange={() => handleTFInput(current.question.id, "false")}
+            onChange={() => handleTFInput(current?.id, "false")}
             />
           <span className="text-gray-800">False</span>
         </label>
@@ -234,14 +233,14 @@ const TFQuestion = ({current, answers, handleTFInput}: TFQuestionProps) => {
 
 const MCQQuestion = ({current, answers, handleMCQInput}: MCQQuestionProps) => {
   const value = 
-    answers[current?.question.id] ??
+    answers[current?.id] ??
     "";
 
   return (
     <>
-      <p className="mt-2 text-gray-700">{current.question.text}</p>
+      <p className="mt-2 text-gray-700">{current?.text}</p>
       <div className="space-y-3 mt-4">
-        {current.question.details?.options?.map((opt) => (
+        {current?.details?.options?.map((opt) => (
           <label
             key={opt.id}
             className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50"
@@ -251,7 +250,7 @@ const MCQQuestion = ({current, answers, handleMCQInput}: MCQQuestionProps) => {
               name={`question-${current.order}`}
               value={opt.id}
               checked={value == opt.id}
-              onChange={() => handleMCQInput(current.question.id, opt.id)}
+              onChange={() => handleMCQInput(current?.id, opt.id)}
               className="form-radio text-blue-600"
             />
             <span className="text-gray-800">{opt.text}</span>

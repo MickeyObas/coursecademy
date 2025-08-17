@@ -35,6 +35,7 @@ const Dashboard = () => {
       try {
         const response = await api.get('/api/courses/last-accessed/');
         const data = response.data;
+        console.log(data);
         if(data?.status !== 'empty'){
           setLastAccessedCourse(data);
         }
@@ -81,7 +82,7 @@ const Dashboard = () => {
               </span> */}
             </div>
             <div
-              onClick={() => navigate(`/course-player/${lastAccessedCourse?.course.slug}/`)} 
+              onClick={() => navigate(`/courses/${lastAccessedCourse?.course.slug}/lessons/${lastAccessedCourse?.resume_lesson_id}`)} 
               className="flex bg-slate-100 px-2 py-1.5 rounded-lg ms-auto gap-x-2">
               <Play color="blue"/>
               <span>Resume</span>
@@ -186,7 +187,7 @@ const Dashboard = () => {
           <tbody>
             {enrolledCourses.map((course, idx) => (
               <tr
-                onClick={() => navigate(`/course-player/${course?.course.slug}/`)} 
+                onClick={() => navigate(`/courses/${course?.course.slug}/lessons/${course?.course.resume_lesson_id}`)} 
                 key={idx} 
                 className="rounded-lg hover:bg-slate-50 cursor-pointer">
                 <td className="py-3 px-2">

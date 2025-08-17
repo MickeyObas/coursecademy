@@ -5,16 +5,19 @@ import api from "../utils/axios";
 
 
 export default function CoursePlayer() {
+  // Lowkey don't think this is a good way to use location.state
+  // NOTE: Rewrite state mgmt logic later
+
   const location = useLocation();
-  const { assessmentResult, lessonId } = location.state || {};
-  // console.log("This is the STAttettee ---> ", assessmentResult, lessonId);
-  const { courseSlug } = useParams();
+  const { assessmentResult } = location.state || {};
+  const { courseSlug, lessonId } = useParams();
   const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
+
+
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
-  // console.log(allLessons);
   const [currentLessonIndex, setCurrentLessonIndex] = useState<null | number>(null);
-  const currentLesson = allLessons[currentLessonIndex];
+  const currentLesson = allLessons.find((l) => l.id == lessonId);
   const [lessonContent, setLessonContent] = useState(null);
   const lastLessonSpawned = useRef(false);
 
@@ -23,6 +26,8 @@ export default function CoursePlayer() {
     const selectedLesson = allLessons[selectedLessonIndex];
     if(!selectedLesson.is_unlocked) return;
     setCurrentLessonIndex(selectedLessonIndex);
+    navigate(`/courses/${courseSlug}/lessons/${lessonId}`);
+    return;
   };
 
   const goToNext = async () => {
@@ -30,47 +35,63 @@ export default function CoursePlayer() {
     if(currentLesson.has_assessment){
       const response = await api.post(`/api/assessments/lessons/${currentLesson?.id}/start/`);
       const data = response.data;
-      const assessment = {
-        assessmentId: data.assessmentId,
-        sessionId: data.sessionId,
-        questions: data.questions,
-        courseSlug: courseSlug
-      }
-      sessionStorage.setItem('assessment', JSON.stringify(assessment));
-      navigate(`/take-assessment/lesson/${currentLesson?.id}/`, {
-        state: assessment
-      })
+      const assessmentSessionId = data.assessmentSessionId;
+      // Create backend assessment session
+      // const assessment = {
+      //   assessmentId: data.assessmentId,
+      //   sessionId: data.sessionId,
+      //   questions: data.questions,
+      //   courseSlug: courseSlug
+      // }
+      // sessionStorage.setItem('assessment', JSON.stringify(assessment));
+      navigate(`/take-assessment/lesson/${currentLesson?.id}/sessions/${assessmentSessionId}/`);
       return;
     }
 
     if(currentLessonIndex < allLessons.length - 1 || allLessons[currentLessonIndex+1]?.is_unlocked){
-      // Hit endpoint to mark lesson as completed
       const response = await api.patch(`/api/lessons/${currentLesson?.id}/complete/`);
       const data = response.data;
-      await refetchCourse();
+      // await refetchCourse();
+      console.log("Current lesson IDX --->", currentLessonIndex);
+      const nextLesson = allLessons[currentLessonIndex+1];
+      navigate(`/courses/${courseSlug}/lessons/${nextLesson.id}`)
       setCurrentLessonIndex(prev => prev + 1);
     }
   }
 
   const goToPrevious = () => {
     if(currentLessonIndex > 0){
+      const previousLesson = allLessons[currentLessonIndex-1];
+      navigate(`/courses/${courseSlug}/lessons/${previousLesson.id}`)
       setCurrentLessonIndex(prev => prev - 1);
     }
   }
 
   useEffect(() => {
     const fetchLessonContent = async () => {
-      if(!currentLesson) return;
+      // if(!currentLesson) return;
       try{
-        const response = await api.get(`/api/lessons/${currentLesson?.id}/`);
+        const response = await api.get(`/api/lessons/${lessonId}/`);
         const data = response.data;
+        console.log(data);
         setLessonContent(data);
       }catch(err){
         console.error(err);
       }
     };
     fetchLessonContent();
-  }, [currentLessonIndex, currentLesson?.id])
+  }, [lessonId])
+
+  useEffect(() => {
+  if (allLessons.length > 0 && lessonId) {
+    const lessonIndex = allLessons.findIndex(
+      (lesson) => Number(lesson.id) === Number(lessonId)
+    );
+    if (lessonIndex !== -1) {
+      setCurrentLessonIndex(lessonIndex);
+    }
+  }
+}, [allLessons, lessonId]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -80,44 +101,7 @@ export default function CoursePlayer() {
     }, 3000);
     return () => clearInterval(timer);
   }, [currentLesson?.id])
-
-
-  useEffect(() => {
-    if(!allLessons.length || lastLessonSpawned.current) return;
-    
-    const mode = location.state?.assessmentResult  ? "afterAssessment" : "resumeProgress";
-
-    switch (mode) {
-      case "afterAssessment":
-        lastLessonSpawned.current = true;
-        const lessonIndex = allLessons.findIndex(lesson => String(lesson.id) === String(lessonId));
-        if(assessmentResult == 'pass'){
-          setCurrentLessonIndex(lessonIndex + 1);
-        }else{
-          setCurrentLessonIndex(lessonIndex);
-        }
-        break;
-
-      case "resumeProgress":
-        const fetchLastAccessedLesson = async () => {
-          if(!allLessons.length || lastLessonSpawned.current) return;
-          try{
-            const response = await api.get( `/api/courses/${courseSlug}/last-accessed-lesson/`);
-            const data = response.data;
-            const lessonIndex = allLessons.findIndex(lesson => String(lesson.id) === String(data.lessonId));
-            setCurrentLessonIndex(lessonIndex !== -1 ? lessonIndex : 0);
-            lastLessonSpawned.current = true;
-            navigate(location.pathname, { replace: true, state: null});
-          }catch(err: any){
-            console.error(err.response?.data);
-            setCurrentLessonIndex(0);
-          }
-        };
-        fetchLastAccessedLesson();
-        break;
-    }
-
-  }, [courseSlug, location.state, allLessons])
+ 
 
   if (!course || !currentLesson || !lessonContent) {
   return <div className="p-6">Loading lesson...</div>;

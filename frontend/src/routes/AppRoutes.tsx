@@ -44,11 +44,11 @@ const AppRoutes = () => {
           <Route path="courses/:courseSlug/" element={<CourseDetail />} />
         </Route>
 
-        <Route path="/course-player/:courseSlug/" element={<CoursePlayerLayout />}>
+        <Route path="/courses/:courseSlug/lessons/:lessonId" element={<CoursePlayerLayout />}>
           <Route index element={<CoursePlayer />} />
         </Route>
 
-        <Route path="take-assessment/:assessmentType/:modelId/" element={<TakeAssessment />}></Route>
+        <Route path="take-assessment/:assessmentType/:modelId/sessions/:sessionId/" element={<TakeAssessment />}></Route>
 
       </Route>
 

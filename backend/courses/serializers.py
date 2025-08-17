@@ -28,8 +28,6 @@ class LessonListSerializer(serializers.ModelSerializer):
             module=obj.module,
             order__lt=obj.order,
         )
-        print("PREVIOUS LESSONS --> ", prev_lessons)
-
         if prev_lessons.exists():
             if LessonProgress.objects.filter(
                 enrollment__user=user, lesson__in=prev_lessons, completed_at__isnull=True
@@ -39,7 +37,6 @@ class LessonListSerializer(serializers.ModelSerializer):
         prev_modules = Module.objects.filter(
             course=obj.module.course, order__lt=obj.module.order
         )
-        print("PREVIOUS MODULES --> ", prev_modules)
         if prev_modules.exists():
             if LessonProgress.objects.filter(
                 enrollment__user=user, lesson__module__in=prev_modules, completed_at__isnull=True
@@ -138,6 +135,7 @@ class CourseSerializer(serializers.ModelSerializer):
     modules = ModuleSerializer(many=True, read_only=True)
     instructor = UserSerializer()
     category = CategorySerializer()
+    resume_lesson_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -157,6 +155,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "price",
             "learning_points",
             "skills",
+            "resume_lesson_id"
         ]
 
     def create(self, validated_data):
@@ -180,6 +179,24 @@ class CourseSerializer(serializers.ModelSerializer):
 
     def get_skills(self, obj):
         return [skill.name for skill in obj.skills.all()]
+    
+    def get_resume_lesson_id(self, obj):
+        user = self.context['request'].user
+        current_lesson_progress = (
+            LessonProgress.objects
+            .filter(enrollment__user=user, enrollment__course=obj)
+            .order_by('last_accessed_at')
+            .first()
+        )
+        if current_lesson_progress:
+            return current_lesson_progress.lesson.id
+        
+        first_lesson = Lesson.objects.filter(module__course=obj).order_by("module__order", "order").first()
+
+        return first_lesson.id if first_lesson else None
+
+
+        pass
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -199,6 +216,7 @@ class ThinCourseSerializer(serializers.ModelSerializer):
 class CourseUserSerializer(serializers.Serializer):
     course = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
+    resume_lesson_id = serializers.SerializerMethodField()
 
     def get_course(self, obj):
         request = self.context["request"]
@@ -243,4 +261,17 @@ class CourseUserSerializer(serializers.Serializer):
             "module": module_completed,
         }
 
-    pass
+    def get_resume_lesson_id(self, obj):
+        user = self.context['request'].user
+        current_lesson_progress = (
+            LessonProgress.objects
+            .filter(enrollment__user=user, enrollment__course=obj, last_accessed_at__isnull=False)
+            .order_by('-last_accessed_at')
+            .first()
+        )
+        if current_lesson_progress:
+            return current_lesson_progress.lesson.id
+                
+        first_lesson = Lesson.objects.filter(module__course=obj).order_by("module__order", "order").first()
+
+        return first_lesson.id if first_lesson else None

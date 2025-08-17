@@ -40,7 +40,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         q_type = data.get("type")
-        print(data)
 
         if (q_type == "FIB") and not data.get("correct_answer"):
             raise serializers.ValidationError(

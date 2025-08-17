@@ -36,7 +36,6 @@ class StartTestAssessmentSession(APIView):
             "category": kwargs.get("category_id"),
             "difficulty": request.data.get("difficulty"),
         }
-        print(data)
         serializer = StartTestSessionSerializer(data=data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=400)
@@ -82,8 +81,6 @@ class StartLessonAssessmentSession(APIView):
         lesson_assessment = LessonAssessment.objects.get(
             lesson_id=kwargs.get("lesson_id")
         )
-        print("Ze lesson", lesson_assessment)
-
         # Start new lessons attempt/session
         content_type = ContentType.objects.get_for_model(LessonAssessment)
         user_lesson_session, created = AssessmentSession.objects.get_or_create(
@@ -92,15 +89,8 @@ class StartLessonAssessmentSession(APIView):
             object_id=lesson_assessment.id,
         )
 
-        questions = Question.objects.filter(
-            content_type=content_type, object_id=lesson_assessment.id
-        )
-
         return Response(
             {
-                "assessmentId": lesson_assessment.id,
-                "sessionId": user_lesson_session.id,
-                "questions": AssessmentQuestionSerializer(questions, many=True).data,
-                "course": lesson_assessment.lesson.module.course.slug
+                "assessmentSessionId": user_lesson_session.id, # Perhaps return just this ID?
             }
         )

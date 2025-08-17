@@ -5,16 +5,35 @@ import api from "../utils/axios";
 
 const TakeAssessment = () => {
   const navigate = useNavigate();
-  const { lessonId, assessmentType, modelId } = useParams();
+  const { assessmentType, modelId, sessionId } = useParams();
   const location = useLocation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState(
     JSON.parse(localStorage.getItem("answers") || "{}")
   );
   const [assessment, setAssessment] = useState(null);
-  const questions = location.state?.questions || assessment?.questions;
-  const current = questions[currentQuestionIndex];
+  // const questions = location.state?.questions || assessment?.questions;
+  const [questions, setQuestions] = useState([]);
+  const [current, setCurrent] = useState(null);
 
+  useEffect(() => {
+    const fetchAssessmentSessionData = async () => {
+      const response = await api.get(`/api/sessions/${sessionId}/`);
+      const data = response.data;
+      console.log(data);
+      setQuestions(data.questions);
+      setAssessment({
+        id: data.assessmentId,
+        courseSlug: data.courseSlug
+      })
+    } 
+    fetchAssessmentSessionData();
+  }, [sessionId])
+
+  useEffect(() => {
+    if(!questions.length) return;
+    setCurrent(questions[currentQuestionIndex]);
+  }, [questions, currentQuestionIndex])
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -26,18 +45,18 @@ const TakeAssessment = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  useEffect(() => {
-    if (location.state) {
-      setAssessment(location.state);
-    } else{
-      const saved = sessionStorage.getItem('assessment');
-      if(saved){
-        setAssessment(JSON.parse(saved));
-      }else{
-        console.log("Whoops, bad state management :(");
-      }
-    }
-  }, [location.state, lessonId]);
+  // useEffect(() => {
+  //   if (location.state) {
+  //     setAssessment(location.state);
+  //   } else{
+  //     const saved = sessionStorage.getItem('assessment');
+  //     if(saved){
+  //       setAssessment(JSON.parse(saved));
+  //     }else{
+  //       console.log("Whoops, bad state management :(");
+  //     }
+  //   }
+  // }, [location.state, lessonId]);
 
   const handleNext = () => {
     currentQuestionIndex < questions?.length - 1 && setCurrentQuestionIndex((curr) => curr + 1);
@@ -48,7 +67,7 @@ const TakeAssessment = () => {
   }
 
   const handleMCQInput = (questionId: number, optionId: number) => {
-    if(current?.question.type == "MCQ"){
+    if(current?.type == "MCQ"){
       setAnswers((prev) => ({...prev, [questionId]: optionId}))
     }
   }
@@ -66,21 +85,21 @@ const TakeAssessment = () => {
     console.log(`You have ${unsavedAnswers} unanswered or unsaved questions left.`);
 
     try{
-      const response = await api.post(`/api/assessments/${assessmentType}/${assessment?.assessmentId}/submit/${assessment?.sessionId}/`, {
+      const response = await api.post(`/api/assessments/${assessmentType}/${assessment.id}/submit/${sessionId}/`, {
         test_session_id: assessment?.sessionId
       })
       const data = response.data;
       console.log(data);
       const score = data.score;
       if(score >= 50){
-        navigate(`/course-player/${assessment?.courseSlug}/`, { state: {assessmentResult: 'pass', lessonId: data.lessonId}}); // To the next lesson setCurrentLessonIndex
+        navigate(`/courses/${assessment?.courseSlug}/lessons/${data.lessonId}/`); // To the next lesson setCurrentLessonIndex
       }else{
         alert("Whoops. You didn't get a pass mark. Try taking the assessment again");
-        navigate(`/course-player/${assessment?.courseSlug}/`, { state: {assessmentResult: 'fail', lessonId: data.lessonId}});
+        navigate(`/courses/${assessment?.courseSlug}/lessons/${data.lessonId}/`, { state: {assessmentResult: 'fail', lessonId: data.lessonId}});
       }
       localStorage.removeItem('answers');
       localStorage.removeItem('questions');
-      sessionStorage.removeItem('assessment');
+      // sessionStorage.removeItem('assessment');
     }catch(error: any){
       if(error.response.data){
         console.error(error.response.data);
@@ -96,7 +115,7 @@ const TakeAssessment = () => {
         <QuestionCard 
           current={current}
           currentIndex={currentQuestionIndex}
-          totalQuestions={questions.length}
+          totalQuestions={questions?.length}
           answers={answers}
           handleMCQInput={handleMCQInput}
           handleFIBInput={handleFIBInput}

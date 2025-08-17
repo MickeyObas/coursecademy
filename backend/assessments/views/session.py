@@ -1,16 +1,19 @@
 from datetime import datetime
 
+from django.contrib.contenttypes.models import ContentType
+
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import (Question, TestSession, TestSessionAnswer,
-                      TestSessionQuestion)
+                      TestSessionQuestion, LessonAssessment, AssessmentSession)
 from ..serializers import (SaveAssessmentAnswerSerializer,
                            SaveTestAssessmentAnswerSerializer,
                            TestSessionSerializer)
 from ..services import (mark_assessment_session, mark_test_session,
                         save_assessment_answer, save_test_answer)
+from assessments.serializers import QuestionDisplaySerializer
 
 
 class UserTestSessionList(APIView):
@@ -87,7 +90,6 @@ class SubmitAssessmentSession(APIView):
 
     def post(self, request, *args, **kwargs):
         data = request.data
-        print(kwargs)
 
         session_id = kwargs.get("session_id")
         assessment_id = kwargs.get("assessment_id")
@@ -104,3 +106,27 @@ class SubmitAssessmentSession(APIView):
             return Response({"error": result["error"]}, status=400)
 
         return Response({"message": result["message"], "score": result["score"], "lessonId": result['lessonId']})
+
+
+class LessonAssessmentSessionDetail(APIView):
+    parser_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        content_type = ContentType.objects.get_for_model(LessonAssessment)
+        session = AssessmentSession.objects.get(
+            user=request.user,
+            content_type=content_type
+        )
+        if session:
+            questions = Question.objects.filter(
+                content_type=content_type,
+                object_id=session.assessment_object.id
+            )
+            return Response({
+                'courseSlug': session.assessment_object.lesson.module.course.slug,
+                'sessionId': session.id,
+                'assessmentId': session.assessment_object.id,
+                'questions': QuestionDisplaySerializer(questions, many=True).data
+            })
+        
+        return Response({'error': 'No session found'}, status=404)

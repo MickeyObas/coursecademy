@@ -128,6 +128,8 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
             object_id=assessment_id,
         )
 
+    resume_lesson_id = session.assessment_object.lesson.id
+    
     try:
         session_answers = AssessmentAnswer.objects.filter(session=session)
         for session_answer in session_answers:
@@ -151,10 +153,25 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
             user_lesson_progress.completed_at = now()
             user_lesson_progress.save()
 
-    except Exception as e:
-        logger.error("Error ----> %s" % str(e))
+            # Get next lesson
+            lesson_ids = list(Lesson.objects.filter(module__course=user_lesson_progress.enrollment.course).order_by('module__order', 'order').values_list('id', flat=True))
+            current_id = user_lesson_progress.lesson.id
+            try:
+                current_index = lesson_ids.index(current_id)
+                print("THE CURRENT INDEX ____> ", current_index, sep=" ")
+            except ValueError:
+                current_index = None
 
-    return {"success": True, "message": "Test submitted successfully", "score": session.score, "lessonId": session.assessment_object.lesson.id}
+            if current_index is not None:
+                if current_index < len(lesson_ids) - 1:
+                    resume_lesson_id = lesson_ids[current_index + 1]
+
+        return {"success": True, "message": "Test submitted successfully", "score": session.score, "lessonId": resume_lesson_id}
+
+        
+    except Exception as e:
+        print(e)
+        return({"error": str(e)})
 
 
 def save_test_answer(user, question_id, session_id, answer):
@@ -191,8 +208,6 @@ def save_assessment_answer(user, question_id, answer):
     session_ans.input = answer if question.type != "MCQ" else None
     session_ans.option_id = answer if question.type == "MCQ" else None
     session_ans.save()
-
-    print("This is my session --> ", session)
 
     return {"success": True, "message": "Answer saved successfully."}
 

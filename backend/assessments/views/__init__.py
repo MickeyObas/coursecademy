@@ -3,4 +3,4 @@ from .assessments import (StartLessonAssessmentSession,
 from .questions import OptionCreateView, QuestionListCreateView
 from .session import (SaveAssessmentAnswer, SaveTestAssesmentAnswer,
                       SubmitAssessmentSession, SubmitTestSession,
-                      UserTestSessionList)
+                      UserTestSessionList, LessonAssessmentSessionDetail)
