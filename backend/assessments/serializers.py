@@ -168,14 +168,17 @@ class StartTestSessionSerializer(serializers.Serializer):
 
 
 class TestSessionQuestionSerializer(serializers.ModelSerializer):
-    question = QuestionDisplaySerializer()
 
     class Meta:
         model = TestSessionQuestion
         fields = [
             "order",
-            "question",
         ]
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        rep.update(QuestionDisplaySerializer(instance.question).data)
+        return rep
 
 
 class AssessmentQuestionSerializer(serializers.Serializer):

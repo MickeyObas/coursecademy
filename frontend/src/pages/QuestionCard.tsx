@@ -183,7 +183,7 @@ export default function QuestionCard({
 const FIBQuestion = ({current, handleFIBInput, answers}: FIBQuestionProps) => {
   const parts = current?.text.split("______");
   const value = 
-    answers[current?.question.id] ??
+    answers[current?.id] ??
     "";
 
   return (

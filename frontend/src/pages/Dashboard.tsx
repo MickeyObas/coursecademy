@@ -187,7 +187,7 @@ const Dashboard = () => {
           <tbody>
             {enrolledCourses.map((course, idx) => (
               <tr
-                onClick={() => navigate(`/courses/${course?.course.slug}/lessons/${course?.course.resume_lesson_id}`)} 
+                onClick={() => navigate(`/courses/${course?.course.slug}/lessons/${course?.resume_lesson_id}`)} 
                 key={idx} 
                 className="rounded-lg hover:bg-slate-50 cursor-pointer">
                 <td className="py-3 px-2">

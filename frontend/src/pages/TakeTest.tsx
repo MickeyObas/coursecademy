@@ -80,7 +80,7 @@ const TakeTest = () => {
   }
 
   const handleMCQInput = (questionId: number, optionId: number) => {
-    if(current?.question.type == "MCQ"){
+    if(current?.type == "MCQ"){
       setAnswers((prev) => ({...prev, [questionId]: optionId}))
     }
   }

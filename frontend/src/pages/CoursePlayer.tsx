@@ -50,6 +50,7 @@ export default function CoursePlayer() {
 
     if(currentLessonIndex < allLessons.length - 1 || allLessons[currentLessonIndex+1]?.is_unlocked){
       const response = await api.patch(`/api/lessons/${currentLesson?.id}/complete/`);
+      refetchCourse();
       const data = response.data;
       // await refetchCourse();
       console.log("Current lesson IDX --->", currentLessonIndex);
