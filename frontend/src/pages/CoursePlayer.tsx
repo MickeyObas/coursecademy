@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { data, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCourse } from "../hooks/useCourse";
 import api from "../utils/axios";
 
@@ -18,6 +18,7 @@ export default function CoursePlayer() {
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
   const [currentLessonIndex, setCurrentLessonIndex] = useState<null | number>(null);
   const currentLesson = allLessons.find((l) => l.id == lessonId);
+  console.log(currentLesson);
   const [lessonContent, setLessonContent] = useState(null);
   const lastLessonSpawned = useRef(false);
 
@@ -36,14 +37,6 @@ export default function CoursePlayer() {
       const response = await api.post(`/api/assessments/lessons/${currentLesson?.id}/start/`);
       const data = response.data;
       const assessmentSessionId = data.assessmentSessionId;
-      // Create backend assessment session
-      // const assessment = {
-      //   assessmentId: data.assessmentId,
-      //   sessionId: data.sessionId,
-      //   questions: data.questions,
-      //   courseSlug: courseSlug
-      // }
-      // sessionStorage.setItem('assessment', JSON.stringify(assessment));
       navigate(`/take-assessment/lesson/${currentLesson?.id}/sessions/${assessmentSessionId}/`);
       return;
     }
@@ -151,10 +144,9 @@ export default function CoursePlayer() {
         <h1 className="text-xl font-bold mb-4">{currentLesson?.title}</h1>
 
         {currentLesson?.type === "VIDEO" ? (
-          <video
-            controls
-            className="w-full max-w-4xl mb-6 rounded-lg shadow"
-            src={lessonContent?.content}
+          <VideoPlayer 
+            lessonId={lessonId}
+            videoUrl={lessonContent?.video_file}
           />
         ) : (
           <div
@@ -191,4 +183,61 @@ export default function CoursePlayer() {
       </div>
     </div>
   );
+}
+
+const VideoPlayer = ({lessonId, videoUrl}) => {
+  const videoRef = useRef(null);
+  const [savedProgress, setSavedProgress] = useState(null);
+
+  useEffect(() => {
+    const fetchLessonVideoProgress = async () => {
+      const response = await api.get(`/api/lessons/${lessonId}/progress/`);
+      const { data } = response;
+      console.log(data);
+      setSavedProgress(data.progress);
+    };
+    fetchLessonVideoProgress(); 
+  }, [lessonId])
+
+  useEffect(() => {
+  if(!videoRef.current || savedProgress == null) return;
+
+    const video = videoRef.current;
+
+    const seekToSaved = () => {
+      if(savedProgress > 0 && video.readyState >= 1){
+        video.currentTime = savedProgress;
+      }
+    }
+
+    video.addEventListener("loadedmetadata", seekToSaved);
+
+    return () => {
+      video.removeEventListener("loadedmetadata", seekToSaved)
+    }
+  }, [savedProgress]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if(videoRef.current){
+        const currentTime = Math.floor(videoRef.current.currentTime);
+        if(currentTime > 0){
+          api.post(`/api/lessons/${lessonId}/progress/update/`, {
+            current_time: Math.floor(videoRef.current.currentTime)}
+          );
+        }
+      }
+    }, 5000)
+    return () => clearInterval(interval);
+  }, [lessonId])
+
+  return (
+    <video
+      ref={videoRef}
+      controls
+      className="w-full max-w-4xl mb-6 rounded-lg shadow"
+      src={videoUrl}
+    />
+  )
+
 }

@@ -201,3 +201,31 @@ class LastAccessedLessonView(APIView):
             return Response({'lessonId': course_progress.last_accessed_lesson.id})
         else:
             return Response({'error': 'No last accessed course'})
+
+
+class LessonVideoProgress(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        lesson = Lesson.objects.get(id=kwargs.get('lesson_id'))
+        lesson_progress = LessonProgress.objects.get(
+            enrollment__user=request.user,
+            lesson=lesson
+        )
+        return Response({'progress': lesson_progress.progress})
+
+
+class SaveLessonVideoProgress(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):  
+        print("DATA", request.data)
+        current_time = request.data.get('current_time')
+        lesson = Lesson.objects.get(id=kwargs.get('lesson_id'))
+        lesson_progress = LessonProgress.objects.get(
+            enrollment__user=request.user,
+            lesson=lesson
+        ) 
+        lesson_progress.progress = current_time
+        lesson_progress.save()
+        return Response({'message': 'Watch time updated'})

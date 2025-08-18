@@ -14,6 +14,7 @@ class Lesson(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    video_file = models.FileField(upload_to="lessons/videos/", blank=True, null=True)
 
     class Meta:
         unique_together = ["order", "module"]

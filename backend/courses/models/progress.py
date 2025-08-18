@@ -11,6 +11,7 @@ class LessonProgress(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
     completed_at = models.DateTimeField(blank=True, null=True)
     last_accessed_at = models.DateTimeField(blank=True, null=True)
+    progress = models.PositiveIntegerField(default=0, blank=True, null=True)
 
     class Meta:
         unique_together = ['enrollment', 'lesson']
@@ -25,6 +26,7 @@ class ModuleProgress(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE)
     completed_at = models.DateTimeField(blank=True, null=True)
     last_accessed_at = models.DateTimeField(blank=True, null=True)
+    progress = models.PositiveIntegerField(default=0, blank=True, null=True)
 
     class Meta:
         unique_together = ['enrollment', 'module']
@@ -35,3 +37,4 @@ class CourseProgress(models.Model):
     completed_at = models.DateTimeField(blank=True, null=True)
     last_accessed_at = models.DateTimeField(blank=True, null=True)
     last_accessed_lesson = models.ForeignKey('courses.Lesson', on_delete=models.SET_NULL, null=True, blank=True)
+    progress = models.PositiveIntegerField(default=0, blank=True, null=True)

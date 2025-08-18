@@ -14,7 +14,7 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ["id", "title", "order", "is_unlocked", "has_assessment"]
+        fields = ["id", "title", "order", "is_unlocked", "has_assessment","type"]
 
     def get_has_assessment(self, obj):
         return LessonAssessment.objects.filter(lesson=obj).exists()
@@ -43,9 +43,7 @@ class LessonListSerializer(serializers.ModelSerializer):
             ).exists():
                 return False
 
-
         return True
-
 
 class LessonSerializer(serializers.ModelSerializer):
     is_completed = serializers.SerializerMethodField()
@@ -64,6 +62,7 @@ class LessonSerializer(serializers.ModelSerializer):
             "is_completed",
             "is_unlocked",
             "has_assessment",
+            "video_file"
         ]
 
     def get_has_assessment(self, obj):
@@ -71,19 +70,6 @@ class LessonSerializer(serializers.ModelSerializer):
 
     def get_is_unlocked(self, obj):
         user = self.context["request"].user
-
-        # NOTE: Uncomment these if I eventually want to use sequential unlocking per module
-        # prev_lessons = Lesson.objects.filter(
-        #     module=obj.module,
-        #     order__lt=obj.order,
-        # )
-        # if prev_lessons.exists():
-        #     if LessonProgress.objects.filter(
-        #         user=user,
-        #         lesson_id__in=prev_lessons,
-        #         completed_at__isnull=True
-        #     ).exists():
-        #         return False
 
         prev_modules = Module.objects.filter(
             course=obj.module.course, order__lt=obj.module.order
@@ -102,6 +88,15 @@ class LessonSerializer(serializers.ModelSerializer):
             enrollment__user=user, lesson=obj, completed_at__isnull=False
         ).exists()
         return is_completed
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.type == 'ARTICLE':
+            data.pop('video_file')
+        else:
+            data.pop('content')
+
+        return data
 
 
 class ModuleSerializer(serializers.ModelSerializer):
