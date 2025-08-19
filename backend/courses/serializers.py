@@ -68,6 +68,7 @@ class LessonSerializer(serializers.ModelSerializer):
 
     def get_video_file(self, obj):
         request = self.context.get('request')
+        # Temporary change for video lessons served via NGINX
         if obj.video_file:
             return f"http://localhost:8080/media/{obj.video_file.name}"
         return None

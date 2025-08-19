@@ -18,7 +18,7 @@ const TakeAssessment = () => {
 
   useEffect(() => {
     const fetchAssessmentSessionData = async () => {
-      const response = await api.get(`/api/sessions/${sessionId}/`);
+      const response = await api.get(`/api/sessions/${sessionId}/${assessmentType}/`);
       const data = response.data;
       console.log(data);
       setQuestions(data.questions);
@@ -89,10 +89,14 @@ const TakeAssessment = () => {
         test_session_id: assessment?.sessionId
       })
       const data = response.data;
-      console.log(data);
+      console.log("AFTER SUBMISSION --> ", data);
       const score = data.score;
       if(score >= 50){
-        navigate(`/courses/${assessment?.courseSlug}/lessons/${data.lessonId}/`); // To the next lesson setCurrentLessonIndex
+        if(data.isCourseAssessment){
+          navigate(`/`);
+        }else{    
+          navigate(`/courses/${assessment?.courseSlug}/lessons/${data.lessonId}/`); // To the next lesson setCurrentLessonIndex
+        }
       }else{
         alert("Whoops. You didn't get a pass mark. Try taking the assessment again");
         navigate(`/courses/${assessment?.courseSlug}/lessons/${data.lessonId}/`, { state: {assessmentResult: 'fail', lessonId: data.lessonId}});

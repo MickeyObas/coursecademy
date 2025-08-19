@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import (Question, TestSession, TestSessionAnswer,
-                      TestSessionQuestion, LessonAssessment, AssessmentSession)
+                      TestSessionQuestion, LessonAssessment, AssessmentSession, CourseAssessment)
 from ..serializers import (SaveAssessmentAnswerSerializer,
                            SaveTestAssessmentAnswerSerializer,
                            TestSessionSerializer)
@@ -105,28 +105,55 @@ class SubmitAssessmentSession(APIView):
         if result.get("error"):
             return Response({"error": result["error"]}, status=400)
 
-        return Response({"message": result["message"], "score": result["score"], "lessonId": result['lessonId']})
+        return Response({"message": result["message"], "score": result["score"], "lessonId": result['lessonId'], "isCourseAssessment": result['isCourseAssessment']})
 
 
-class LessonAssessmentSessionDetail(APIView):
+class AssessmentSessionDetail(APIView):
     parser_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        content_type = ContentType.objects.get_for_model(LessonAssessment)
-        session = AssessmentSession.objects.get(
-            user=request.user,
-            content_type=content_type
-        )
-        if session:
-            questions = Question.objects.filter(
-                content_type=content_type,
-                object_id=session.assessment_object.id
+        print(kwargs)
+        assessment_type = kwargs.get('assessment_type').lower()
+        session_id = kwargs.get('session_id')
+
+        if assessment_type not in ["lesson", "course"]:
+            return Response({'error': "Invalid request. Improper assessment type."}, status=400)
+        
+        if assessment_type == "lesson":
+            content_type = ContentType.objects.get_for_model(LessonAssessment)
+            session = AssessmentSession.objects.get(
+                id=session_id,
+                user=request.user,
+                content_type=content_type
             )
-            return Response({
-                'courseSlug': session.assessment_object.lesson.module.course.slug,
-                'sessionId': session.id,
-                'assessmentId': session.assessment_object.id,
-                'questions': QuestionDisplaySerializer(questions, many=True).data
-            })
+            if session:
+                questions = Question.objects.filter(
+                    content_type=content_type,
+                    object_id=session.assessment_object.id
+                )
+                return Response({
+                    'courseSlug': session.assessment_object.lesson.module.course.slug,
+                    'sessionId': session.id,
+                    'assessmentId': session.assessment_object.id,
+                    'questions': QuestionDisplaySerializer(questions, many=True).data
+                })
+        else:
+            content_type = ContentType.objects.get_for_model(CourseAssessment)
+            session = AssessmentSession.objects.get(
+                id=session_id,
+                user=request.user,
+                content_type=content_type
+            )
+            if session:
+                questions = Question.objects.filter(
+                    content_type=content_type,
+                    object_id=session.assessment_object.id
+                )
+                return Response({
+                    'courseSlug': session.assessment_object.course.slug,
+                    'sessionId': session.id,
+                    'assessmentId': session.assessment_object.id,
+                    'questions': QuestionDisplaySerializer(questions, many=True).data
+                })
         
         return Response({'error': 'No session found'}, status=404)

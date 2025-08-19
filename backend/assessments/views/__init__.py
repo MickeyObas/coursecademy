@@ -1,6 +1,6 @@
 from .assessments import (StartLessonAssessmentSession,
-                          StartTestAssessmentSession, TestAssessmentDetail)
+                          StartTestAssessmentSession, TestAssessmentDetail, StartCourseAssessmentSession)
 from .questions import OptionCreateView, QuestionListCreateView
 from .session import (SaveAssessmentAnswer, SaveTestAssesmentAnswer,
                       SubmitAssessmentSession, SubmitTestSession,
-                      UserTestSessionList, LessonAssessmentSessionDetail)
+                      UserTestSessionList, AssessmentSessionDetail)

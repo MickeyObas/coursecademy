@@ -61,6 +61,13 @@ export default function CoursePlayer() {
     }
   }
 
+  const handleFinishCourse = async () => {
+    const response = await api.patch(`/api/lessons/${currentLesson?.id}/complete/`);
+    const { data } = response.data;
+    console.log(data);
+    navigate(`/courses/${courseSlug}/assessment/`);
+  }
+
   useEffect(() => {
     const fetchLessonContent = async () => {
       // if(!currentLesson) return;
@@ -170,15 +177,23 @@ export default function CoursePlayer() {
             >
               Proceed to Test
             </button>
-          ) : (
-            <button
-              onClick={goToNext}
-              disabled={currentLessonIndex == allLessons.length-1 }
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              Next
-            </button>
-          )}
+          ) : currentLessonIndex == allLessons.length - 1 
+            ? (
+              <button
+                onClick={handleFinishCourse} // Take course assessment
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+              Finish Course
+              </button>
+            ) : (
+              <button
+                onClick={goToNext}
+                disabled={currentLessonIndex == allLessons.length-1 }
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+              >
+                Next
+              </button>
+            )}
         </div>
       </div>
     </div>

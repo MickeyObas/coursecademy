@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 
 from assessments.models import (AssessmentSession, LessonAssessment, Question,
                                 TestAssessment, TestBlueprint, TestSession,
-                                TestSessionQuestion)
+                                TestSessionQuestion, CourseAssessment)
 from assessments.serializers import (AssessmentQuestionSerializer,
                                      QuestionDisplaySerializer,
                                      QuestionSerializer,
@@ -92,5 +92,26 @@ class StartLessonAssessmentSession(APIView):
         return Response(
             {
                 "assessmentSessionId": user_lesson_session.id, # Perhaps return just this ID?
+            }
+        )
+
+
+class StartCourseAssessmentSession(APIView):
+    def post(self, request, *args, **kwargs):
+        course_slug = request.data.get('course_slug')
+        course_assessment = CourseAssessment.objects.get(
+            course__slug=course_slug
+        )
+        content_type = ContentType.objects.get_for_model(CourseAssessment)
+        user_course_session, created = AssessmentSession.objects.get_or_create(
+            user=request.user,
+            content_type=content_type,
+            object_id=course_assessment.id
+        )
+
+        return Response(
+            {
+                "assessmentSessionId": user_course_session.id,
+                "courseId": course_assessment.course.id
             }
         )
