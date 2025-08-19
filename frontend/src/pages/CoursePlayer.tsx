@@ -67,7 +67,7 @@ export default function CoursePlayer() {
       try{
         const response = await api.get(`/api/lessons/${lessonId}/`);
         const data = response.data;
-        console.log(data);
+        console.log("Lesson Content", data);
         setLessonContent(data);
       }catch(err){
         console.error(err);

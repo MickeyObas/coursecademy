@@ -49,6 +49,7 @@ class LessonSerializer(serializers.ModelSerializer):
     is_completed = serializers.SerializerMethodField()
     is_unlocked = serializers.SerializerMethodField()
     has_assessment = serializers.SerializerMethodField()
+    video_file = serializers.SerializerMethodField()
 
     class Meta:
         model = Lesson
@@ -64,6 +65,12 @@ class LessonSerializer(serializers.ModelSerializer):
             "has_assessment",
             "video_file"
         ]
+
+    def get_video_file(self, obj):
+        request = self.context.get('request')
+        if obj.video_file:
+            return f"http://localhost:8080/media/{obj.video_file.name}"
+        return None
 
     def get_has_assessment(self, obj):
         return LessonAssessment.objects.filter(lesson=obj).exists()
