@@ -18,6 +18,10 @@ import CoursePlayer from "../pages/CoursePlayer";
 import { CoursePlayerLayout } from "../components/layouts/CoursePlayerLayout";
 import TakeAssessment from "../pages/TakeAssessment";
 import CourseAsessmentDetail from "../pages/CourseAssessmentDetail";
+import CourseForm from "../pages/CoureeForm";
+import ModuleLessonBuilder from "../pages/ModuleLessonBuilder";
+import AssessmentBuilder from "../pages/AssessmentBuilder";
+import InstructorDashboardLayout from "../components/layouts/InstructorDashboardLayout";
 
 
 const AppRoutes = () => {
@@ -45,9 +49,16 @@ const AppRoutes = () => {
           <Route path="courses/:courseSlug/" element={<CourseDetail />} />
         </Route>
 
+        <Route path="/idashboard" element={<InstructorDashboardLayout />}>
+          <Route path="create-course" element={<CourseForm />} />
+          <Route path="module-lesson-builder" element={<ModuleLessonBuilder />} />
+          <Route path="assessment-builder" element={<AssessmentBuilder />}/>
+        </Route>
+
         <Route path="/courses/:courseSlug/lessons/:lessonId" element={<CoursePlayerLayout />}>
           <Route index element={<CoursePlayer />} />
         </Route>
+
 
         <Route path="take-assessment/:assessmentType/:modelId/sessions/:sessionId/" element={<TakeAssessment />}></Route>
         <Route path="courses/:courseSlug/assessment/" element={<CourseAsessmentDetail />}/>
