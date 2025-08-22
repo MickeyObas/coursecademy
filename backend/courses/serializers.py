@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from assessments.models import LessonAssessment
@@ -6,6 +7,7 @@ from users.serializers import UserSerializer
 
 from .models import (Course, CourseLearningPoint, CourseSkill, Lesson,
                      LessonProgress, Module, ModuleProgress)
+from categories.models import Category
 
 
 class LessonListSerializer(serializers.ModelSerializer):
@@ -44,6 +46,18 @@ class LessonListSerializer(serializers.ModelSerializer):
                 return False
 
         return True
+    
+    def to_representation(self, instance):
+        # Add actual lesson content for owner viewers
+        # TODO: Make owner fields present but None if unapplicable (Consistent Fields)
+        rep = super().to_representation(instance)
+        request = self.context.get('request')
+        if request and request.user == instance.module.course.instructor:
+            if instance.video_file:
+                rep["video_file"] = instance.video_file.url
+            elif instance.content:
+                rep["content"] = instance.content
+        return rep
 
 class LessonSerializer(serializers.ModelSerializer):
     is_completed = serializers.SerializerMethodField()
@@ -133,11 +147,18 @@ class CourseSkillSerializer(serializers.ModelSerializer):
 
 
 class CourseSerializer(serializers.ModelSerializer):
-    learning_points = CourseLearningPointSerializer(many=True)
+    learning_points = CourseLearningPointSerializer(many=True, read_only=True)
+    learning_points_input = serializers.ListField(child=serializers.CharField(), write_only=True)
     skills = CourseSkillSerializer(many=True, required=False)
+    skills_input = serializers.ListField(child=serializers.CharField(), write_only=True)
     modules = ModuleSerializer(many=True, read_only=True)
-    instructor = UserSerializer()
-    category = CategorySerializer()
+    instructor = UserSerializer(read_only=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        source='category',
+        write_only=True
+    )
     resume_lesson_id = serializers.SerializerMethodField()
 
     class Meta:
@@ -147,6 +168,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "title",
             "slug",
             "category",
+            "category_id",
             "instructor",
             "thumbnail",
             "modules",
@@ -157,25 +179,29 @@ class CourseSerializer(serializers.ModelSerializer):
             "enrollment_count",
             "price",
             "learning_points",
+            "learning_points_input",
             "skills",
+            "skills_input",
             "resume_lesson_id"
         ]
 
     def create(self, validated_data):
-        learning_points_data = validated_data.pop("learning_points", [])
-        skills_data = validated_data.pop("skills", [])
+        learning_points_data = validated_data.pop("learning_points_input", [])
+        skills_data = validated_data.pop("skills_input", [])
+        user = self.context.get('request').user
 
-        course = Course.objects.create(**validated_data)
+        with transaction.atomic():
+            course = Course.objects.create(**validated_data, instructor=user)
 
-        # Create learning points
-        for lp in learning_points_data:
-            CourseLearningPoint.objects.create(course=course, **lp)
+            # Create learning points
+            for lp in learning_points_data:
+                CourseLearningPoint.objects.create(course=course, text=lp)
 
-        # Create skills
-        for skill in skills_data:
-            CourseSkill.objects.create(course=course, **skill)
+            # Create skills
+            for skill in skills_data:
+                CourseSkill.objects.create(course=course, name=skill)
 
-        return course
+            return course
 
     def get_learning_points(self, obj):
         return [lp.text for lp in obj.learning_points.all()]

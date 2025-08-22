@@ -18,7 +18,7 @@ import CoursePlayer from "../pages/CoursePlayer";
 import { CoursePlayerLayout } from "../components/layouts/CoursePlayerLayout";
 import TakeAssessment from "../pages/TakeAssessment";
 import CourseAsessmentDetail from "../pages/CourseAssessmentDetail";
-import CourseForm from "../pages/CoureeForm";
+import CourseForm from "../pages/CourseForm";
 import ModuleLessonBuilder from "../pages/ModuleLessonBuilder";
 import AssessmentBuilder from "../pages/AssessmentBuilder";
 import InstructorDashboardLayout from "../components/layouts/InstructorDashboardLayout";

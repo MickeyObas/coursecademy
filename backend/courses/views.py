@@ -14,7 +14,19 @@ from .serializers import (CourseSerializer, CourseUserSerializer,
 from .services import enroll_user_in_course
 
 
-class CourseListCreateView(generics.ListCreateAPIView):
+class CourseCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        print(request.data)
+        serializer = CourseSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            course = serializer.save()
+            return Response(CourseSerializer(course, context={'request': request}).data, status=201)
+        return Response(serializer.errors, status=400)
+
+
+class CourseListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     queryset = Course.objects.all()
     serializer_class = ThinCourseSerializer
@@ -27,6 +39,13 @@ class CourseDetailView(generics.RetrieveAPIView):
     lookup_field = "slug"
     lookup_url_kwarg = "course_slug"
 
+
+class InstructorCourseListView(APIView):
+    def get(self, request, *args, **kwargs):
+        courses = Course.objects.filter(instructor=request.user)
+        serializer = ThinCourseSerializer(courses, many=True)
+        return Response(serializer.data)
+    
 
 class OtherCoursesView(APIView):
     def get(self, request):
