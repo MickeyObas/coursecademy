@@ -1,5 +1,6 @@
 from django.utils.timezone import now
 from django.db import transaction
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,6 +13,8 @@ from .serializers import (CourseSerializer, CourseUserSerializer,
                           LessonListSerializer, LessonSerializer,
                           ThinCourseSerializer, LessonUpdateSerializer, ModuleCreateSerializer, LessonCreateSerializer)
 from .services import enroll_user_in_course
+from assessments.models import Question, LessonAssessment
+from assessments.serializers import QuestionSerializer, QuestionDisplaySerializer
 
 
 class CourseCreateView(APIView):
@@ -54,6 +57,41 @@ class InstructorCourseListView(APIView):
         serializer = ThinCourseSerializer(courses, many=True)
         return Response(serializer.data)
     
+
+
+class CourseLessonListView(APIView):
+    def get(self, request, *args, **kwargs):
+        course_id = kwargs.get('course_id')
+        if not course_id:
+            return Response({'error':  'course_id is required'}, status=400)
+        
+        lessons = Lesson.objects.filter(module__course_id=course_id).order_by('module__order', 'order')
+        return Response(
+            LessonListSerializer(
+                lessons, 
+                context={'request': request},
+                many=True
+                ).data
+            )
+    
+class LessonAssessmentQuestionsView(APIView):
+    def get(self, request, *args, **kwargs):
+        lesson_id = kwargs.get('lesson_id')
+        if not lesson_id:
+            return Response({'error': 'lesson_id is required.'}, status=400)
+        
+        lesson = Lesson.objects.get(id=lesson_id)
+        if lesson.lessonassessment:
+            questions = Question.objects.filter(
+                content_type=ContentType.objects.get_for_model(LessonAssessment),
+                object_id=lesson.lessonassessment.id
+            )
+            serializer = QuestionSerializer(questions, many=True)
+            return Response(serializer.data)
+        else:
+            # No assessment and thus no questions
+            return Response([])
+
 
 class LessonCreateView(APIView):
     def post(self, request, *args, **kwargs):

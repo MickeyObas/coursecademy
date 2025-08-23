@@ -12,5 +12,6 @@ urlpatterns = [
     path("progress/summary/", views.MyEnrolledProgresssSummary.as_view()),
     path("<slug:course_slug>/", views.CourseDetailView.as_view()),
     path("<int:pk>/enroll/", views.CourseEnrollView.as_view()),
+    path("<int:course_id>/lessons/", views.CourseLessonListView.as_view()),
     path("<slug:course_slug>/last-accessed-lesson/", views.LastAccessedLessonView.as_view()),
 ]
