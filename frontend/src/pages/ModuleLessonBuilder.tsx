@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
+import RichTextEditor from "../components/ui/RichTextEditor";
 
 type Lesson = {
   id?: number;
@@ -7,6 +8,7 @@ type Lesson = {
   type: "VIDEO" | "ARTICLE";
   videoUrl?: string;
   content?: string;
+  isNewLesson: boolean
 };
 
 type Module = {
@@ -23,6 +25,8 @@ export default function ModuleLessonBuilder() {
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
   const [addingModule, setAddingModule] = useState(false);
   const [newModuleTitle, setNewModuleTitle] = useState("");
+  const [newModuleDescription, setNewModuleDescription] = useState("");
+  const [viewingPreview, setViewingPreview] = useState(false);
 
   // Load user’s courses
   useEffect(() => {
@@ -66,7 +70,16 @@ export default function ModuleLessonBuilder() {
   };
 
   const handleEditLesson = (lesson: Lesson) => {
-    setEditingLesson({ ...lesson });
+    // setEditingLesson({...lesson});
+
+    setEditingLesson({
+      "isNewLesson": false,
+      "id": lesson.id,
+      "title": lesson.title,
+      "type": lesson.type,
+      "content": lesson.content,
+      "videoUrl": lesson.videoUrl
+    });
   };
 
   const handleLessonChange = (field: keyof Lesson, value: string) => {
@@ -74,36 +87,103 @@ export default function ModuleLessonBuilder() {
     setEditingLesson({ ...editingLesson, [field]: value });
   };
 
-  const handleSaveLesson = () => {
+  const handleSaveLesson = async () => {
     if (!selectedModule || !editingLesson) return;
 
-    const updatedModules = modules.map((m) =>
-      m.id === selectedModule.id
-        ? {
-            ...m,
-            lessons: editingLesson.id
-              ? m.lessons.map((l) =>
-                  l.id === editingLesson.id ? editingLesson : l
-                )
-              : [...m.lessons, { ...editingLesson, id: Date.now() }],
-          }
-        : m
-    );
+    if(editingLesson.isNewLesson){
+      // Create new lesson
+      console.log("Creating new lesson at the backend");
 
-    setModules(updatedModules);
-    setEditingLesson(null);
+      // Optimistic Update 
+      const updatedModules = modules.map((m) =>
+        m.id === selectedModule.id
+          ? {
+              ...m,
+              lessons: editingLesson.id
+                ? m.lessons.map((l) =>
+                    l.id === editingLesson.id ? editingLesson : l
+                  )
+                : [...m.lessons, { ...editingLesson, id: Date.now() }],
+            }
+          : m
+      );
+
+      try {
+        const response = await api.post(`/api/lessons/create/`, {
+          title: editingLesson.title,
+          type: editingLesson.type,
+          content: editingLesson.content,
+          module_id: selectedModule.id,
+          course_id: selectedCourseId
+        });
+        const data = response.data;
+        console.log(data);
+        // TODO: Sync local state with respose or just refetch.
+        // FIX: Can't edit immediately after creation due to 👆
+
+        setModules(updatedModules);
+        const newSelectedModule = updatedModules.find((module) => module.id == selectedModule.id);
+        setSelectedModule(newSelectedModule || selectedModule);
+        setEditingLesson(null);
+      } catch (err){
+        console.error(err);
+      }
+    } else{
+      // Update existing Lesson
+      const updatedModules = modules.map((m) =>
+        m.id === selectedModule.id
+          ? {
+              ...m,
+              lessons: editingLesson.id
+                ? m.lessons.map((l) =>
+                    l.id === editingLesson.id ? editingLesson : l
+                  )
+                : [...m.lessons, { ...editingLesson, id: Date.now() }],
+            }
+          : m
+      );
+
+      try {
+        const response = await api.patch(`/api/lessons/${editingLesson.id}/update/`, {
+          ...editingLesson
+        });
+        const data = response.data;
+        console.log(data);
+        setModules(updatedModules);
+
+        const newSelectedModule = updatedModules.find((module) => module.id == selectedModule.id);
+        setSelectedModule(newSelectedModule || selectedModule);
+
+        setEditingLesson(null);
+      } catch (err){
+        console.error(err);
+      }
+    }
   };
 
-  const handleSaveModule = () => {
+  const handleSaveModule = async () => {
     if (!newModuleTitle.trim()) return;
     const newModule: Module = {
       id: Date.now(), // temporary client-side id
       title: newModuleTitle,
       lessons: [],
     };
-    setModules([...modules, newModule]);
-    setNewModuleTitle("");
-    setAddingModule(false);
+    try {
+      const response = await api.post(`/api/modules/create/`, {
+        course_id: selectedCourseId,
+        title: newModuleTitle,
+        description: newModuleDescription
+      });
+      const data = response.data;
+      console.log(data);
+    
+      setModules([...modules, newModule]);
+      setNewModuleTitle("");
+      setAddingModule(false);
+
+    } catch (err){
+      console.error(err);
+    }
   };
 
   return (
@@ -159,6 +239,11 @@ export default function ModuleLessonBuilder() {
             value={newModuleTitle}
             onChange={(e) => setNewModuleTitle(e.target.value)}
           />
+          <textarea 
+            className="border"
+            value={newModuleDescription}
+            onChange={(e) => setNewModuleDescription(e.target.value)}
+          ></textarea>
           <div className="flex gap-2">
             <button
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -202,7 +287,7 @@ export default function ModuleLessonBuilder() {
           <button
             className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
             onClick={() =>
-              setEditingLesson({ title: "", type: "ARTICLE", content: "" })
+              setEditingLesson({ isNewLesson: true, title: "", type: "ARTICLE", content: "" })
             }
           >
             + Add Lesson
@@ -251,12 +336,18 @@ export default function ModuleLessonBuilder() {
           </div>
 
           {editingLesson.type === "ARTICLE" ? (
-            <textarea
-              className="w-full border rounded-lg p-2"
-              placeholder="Lesson content"
-              value={editingLesson.content || ""}
-              onChange={(e) => handleLessonChange("content", e.target.value)}
-            />
+            <>
+              {/* <textarea
+                className="w-full border rounded-lg p-2"
+                placeholder="Lesson content"
+                value={editingLesson.content || ""}
+                onChange={(e) => handleLessonChange("content", e.target.value)}
+              /> */}
+              <RichTextEditor 
+                value={editingLesson.content} 
+                onChange={(content) => handleLessonChange("content", content)}
+              />
+            </>
           ) : (
             <input
               type="text"
@@ -279,6 +370,12 @@ export default function ModuleLessonBuilder() {
               onClick={() => setEditingLesson(null)}
             >
               Cancel
+            </button>
+            <button
+              className="px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-gray-500"
+              onClick={() => setEditingLesson(null)}
+            >
+              See Preview
             </button>
           </div>
         </div>

@@ -1,2 +1,12 @@
 @import "tailwindcss";
 @plugin '@tailwindcss/typography';
+
+.ql-editor {
+  min-height: 250px;   /* taller editor */
+  font-size: 18px;     /* increase text size */
+  line-height: 1.6;    /* better readability */
+}
+
+.ql-toolbar {
+  font-size: 18px;
+}

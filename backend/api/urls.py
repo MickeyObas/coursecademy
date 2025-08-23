@@ -6,6 +6,7 @@ urlpatterns = [
     path("courses/", include("courses.urls")),
     path("enrollments/", include("enrollments.urls")),
     path("lessons/", include("courses.lesson_urls")),
+    path("modules/", include("courses.module_urls")),
     path("questions/", include("assessments.question_urls")),
     path("assessments/", include("assessments.assessment_urls")),
     path("sessions/", include("assessments.session_urls")),

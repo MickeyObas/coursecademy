@@ -121,6 +121,22 @@ class LessonSerializer(serializers.ModelSerializer):
         return data
 
 
+class LessonUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = [
+            "title",
+            "type",
+            "content",
+            "description",
+            "video_file"
+        ]
+
+    def validate_title(self, value):
+        if len(value) < 5:
+            raise serializers.ValidationError("Title must be at least 5 characters")
+        return value
+
 class ModuleSerializer(serializers.ModelSerializer):
     lessons = serializers.SerializerMethodField()
 
@@ -132,6 +148,68 @@ class ModuleSerializer(serializers.ModelSerializer):
         return LessonListSerializer(
             obj.lessons.all(), context=self.context, many=True
         ).data
+    
+
+class ModuleCreateSerializer(serializers.ModelSerializer):
+    course_id = serializers.CharField(required=True)
+
+    class Meta:
+        model = Module
+        fields = [
+            "course_id",
+            "title",
+            "description",
+        ]
+
+    def create(self, validated_data):
+        course_id = validated_data.pop('course_id')
+        course = Course.objects.get(id=course_id)
+        last_module = course.modules.order_by('order').last()
+
+        # Get the order of the latest module
+
+        new_module = Module.objects.create(
+            course=course,
+            order=last_module.order + 1,
+            **validated_data
+        )
+        return new_module
+    
+
+class LessonCreateSerializer(serializers.ModelSerializer):
+    module_id = serializers.CharField(required=True)
+    course_id = serializers.CharField(required=True)
+
+    class Meta:
+        model = Lesson
+        fields = [
+            "title",
+            "description",
+            "type",
+            "content",
+            "module_id",
+            "course_id",
+            "video_file"
+        ]
+
+    def create(self, validated_data):
+        module_id = validated_data.pop("module_id")
+        course_id = validated_data.pop("course_id")
+        module = Module.objects.get(id=module_id, course_id=course_id)
+
+        # Get last lesson's order/positon in the module
+        if module.lessons.count() > 0:
+            last_lesson_pos = module.lessons.order_by('order').last().order
+        else:
+            last_lesson_pos = 0
+
+        lesson = Lesson.objects.create(
+            module=module, 
+            order=last_lesson_pos + 1, 
+            **validated_data
+        )
+
+        return lesson
 
 
 class CourseLearningPointSerializer(serializers.ModelSerializer):

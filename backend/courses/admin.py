@@ -7,6 +7,7 @@ from .models import (Course, CourseLearningPoint, CourseProgress, CourseRating,
 
 class ModuleModelAdmin(admin.ModelAdmin):
     ordering = ["order"]
+    list_display = ["id", "__str__"]
 
 
 class LessonModelAdmin(admin.ModelAdmin):

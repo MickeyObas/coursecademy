@@ -10,7 +10,7 @@ from .models import (Course, CourseProgress, Lesson, LessonProgress, Module,
                      ModuleProgress)
 from .serializers import (CourseSerializer, CourseUserSerializer,
                           LessonListSerializer, LessonSerializer,
-                          ThinCourseSerializer)
+                          ThinCourseSerializer, LessonUpdateSerializer, ModuleCreateSerializer, LessonCreateSerializer)
 from .services import enroll_user_in_course
 
 
@@ -40,12 +40,52 @@ class CourseDetailView(generics.RetrieveAPIView):
     lookup_url_kwarg = "course_slug"
 
 
+class ModuleCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = ModuleCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Module has been created!'})
+        return Response(serializer.errors, status=400)
+
 class InstructorCourseListView(APIView):
     def get(self, request, *args, **kwargs):
         courses = Course.objects.filter(instructor=request.user)
         serializer = ThinCourseSerializer(courses, many=True)
         return Response(serializer.data)
     
+
+class LessonCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = LessonCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            lesson = serializer.save()
+            return Response(
+                LessonSerializer(lesson, context={"request": request}).data,
+                status=201
+            )
+        return Response(serializer.errors, status=400)
+
+
+class LessonUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        lesson_id = kwargs.get("lesson_id")
+        if not lesson_id:
+            return Response({'error': "Lesson ID is required"}, status=400)
+        del kwargs['lesson_id']
+        print(kwargs)
+        
+        lesson = Lesson.objects.get(id=lesson_id)
+
+        serializer = LessonUpdateSerializer(lesson, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()    
+            return Response({'message': 'Lesson updated'}, status=200)
+    
+        return Response(serializer.errors, status=400)
+
 
 class OtherCoursesView(APIView):
     def get(self, request):
