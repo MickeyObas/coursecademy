@@ -93,6 +93,39 @@ class LessonAssessmentQuestionsView(APIView):
             return Response([])
 
 
+class LessonAssessmentUpdateView(APIView):
+    def post(self, request, *args, **kwargs):
+        lesson_id = kwargs.get('lesson_id')
+        if not lesson_id:
+            return Response({'error': 'Lesson ID is required'}, status=400)
+        
+        lesson = Lesson.objects.get(id=lesson_id)
+        questions = request.data.get('questions')
+        print(questions)
+
+        # Handle the actual saving/updating of each question
+        for q_item in questions:
+            question_id = q_item.get("id")
+            if question_id:
+                try:
+                    question = Question.objects.get(id=question_id)
+                    serializer = QuestionSerializer(question, data=q_item, partial=True)
+                except Question.DoesNotExist:
+                    return Response({'error': f"Question with ID {question_id} does not exist"})
+            else:
+                q_item['content_type'] = q_item.get('assessment_type')
+                q_item['object_id'] = q_item.get('assessment_id')
+
+                serializer = QuestionSerializer(data=q_item)
+        
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+
+
+
+        return Response({'test': 'test'})
+
+
 class LessonCreateView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = LessonCreateSerializer(data=request.data)

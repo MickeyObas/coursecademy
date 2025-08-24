@@ -62,6 +62,9 @@ class LessonAssessmentModelAdmin(admin.ModelAdmin):
     list_display = ['id', '__str__']
 
 
+class OptionModelAdmin(admin.ModelAdmin):
+    list_display = ['id', '__str__']
+
 admin.site.register(TestBlueprint, TestBlueprintModelAdmin)
 admin.site.register(TestSession, TestSessionModelAdmin)
 admin.site.register(TestSessionAnswer, TestSessionAnswerModelAdmin)
@@ -70,7 +73,7 @@ admin.site.register(ModuleAssessment)
 admin.site.register(CourseAssessment)
 admin.site.register(TestAssessment, TestAssessmentModelAdmin)
 admin.site.register(Question, QuestionModelAdmin)
-admin.site.register(Option)
+admin.site.register(Option, OptionModelAdmin)
 admin.site.register(LessonAssessment, LessonAssessmentModelAdmin)
 admin.site.register(AssessmentSession, AssessmentSessionModelAdmin)
 admin.site.register(AssessmentAnswer, AssessmentAnswerModelAdmin)

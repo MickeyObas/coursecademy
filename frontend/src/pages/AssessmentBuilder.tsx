@@ -57,13 +57,14 @@ export default function AssessmentBuilder() {
     // setEditingLesson(null);
   };
 
-  const handleLessonClick = async () => {
-    console.log("Lesson Clicked!!");
-    const response = await api.get(`/api/lessons/1/`)
-  }
-
   const handleSaveAssessment = async () => {
     console.log(questions);
+    const response = await api.post(`/api/lessons/${selectedLessonId}/questions/update/`, {
+      lesson_id: selectedLessonId,
+      questions
+    });
+    const data = response.data;
+    console.log(data);
   }
 
 
@@ -81,12 +82,19 @@ export default function AssessmentBuilder() {
             {text: "", is_correct: true}
           ]
         }, 
-        answer: "" 
+        answer: ""
       },
     ]);
 
   const updateQuestion = (index: number, updated: Question) => {
+    console.log(updated);
     const newQ = [...questions];
+    
+    // Handle MCQ
+    if(updated.type == "MCQ"){
+      
+    }
+
     newQ[index] = updated;
     setQuestions(newQ);
   };
@@ -187,9 +195,9 @@ export default function AssessmentBuilder() {
                   className="w-full border rounded-lg p-2"
                   value={opt.text}
                   onChange={(e) => {
-                    const opts = [...(q.options || [])];
-                    opts[j] = e.target.value;
-                    updateQuestion(i, { ...q, options: opts });
+                    const opts = [...(q.details.options || [])];
+                    opts[j] = {text: e.target.value, is_correct: e.target.value === q.answer};
+                    updateQuestion(i, { ...q, details: {...q.details, options: opts} });
                   }}
                 />
               ))}
@@ -197,9 +205,15 @@ export default function AssessmentBuilder() {
                 type="text"
                 placeholder="Correct Answer (type option exactly)"
                 className="w-full border rounded-lg p-2 bg-green-400"
-                value={q.details.options.find((opt) => opt.is_correct).text}
-                onChange={(e) =>
-                  updateQuestion(i, { ...q, answer: e.target.value })
+                defaultValue={q.details.options.find((opt) => opt.is_correct).text}
+                onChange={(e) => {
+                  let opts = [...(q.details.options || [])];
+                  opts = opts.map((opt) => ({...opt, is_correct: opt.text === e.target.value}))
+                  // const newCorrectOptIdx = opts.findIndex((opt) => opt.text === e.target.value)
+                  // console.log("New correct OPT idx", newCorrectOptIdx)
+                  // opts[newCorrectOptIdx] = {text: e.target.value, is_correct: e.target.value === e.target.value};
+                  updateQuestion(i, { ...q, details: {...q.details, options: opts},answer: e.target.value })
+                }
                 }
               />
             </div>
@@ -210,7 +224,7 @@ export default function AssessmentBuilder() {
               className="border rounded-lg p-2 w-full"
               value={q.details.is_true ? "True" : "False"}
               onChange={(e) =>
-                updateQuestion(i, { ...q, answer: e.target.value })
+                updateQuestion(i, { ...q, details: {...q.details, is_true: e.target.value == "True"} })
               }
             >
               <option value="">Select Answer</option>
@@ -226,7 +240,7 @@ export default function AssessmentBuilder() {
               className="w-full border rounded-lg p-2 bg-green-400"
               value={q.details.correct_answer}
               onChange={(e) =>
-                updateQuestion(i, { ...q, answer: e.target.value })
+                updateQuestion(i, { ...q, details: {...q.details, correct_answer: e.target.value} })
               }
             />
           )}

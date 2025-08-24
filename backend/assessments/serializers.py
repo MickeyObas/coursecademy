@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
@@ -18,6 +19,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = [
+            "id",
             "type",
             "category",
             "difficulty",
@@ -36,27 +38,31 @@ class QuestionSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "is_true": {"write_only": True},
             "correct_answer": {"write_only": True},
+            "category": {"read_only": True}
         }
 
     def validate(self, data):
         q_type = data.get("type")
 
-        if (q_type == "FIB") and not data.get("correct_answer"):
+        # NOTE: Change back to data later
+        details = self.initial_data.get('details', {})
+
+        if (q_type == "FIB") and not details.get("correct_answer"):
             raise serializers.ValidationError(
                 "FIB questions must have 'correct_answer' set."
             )
 
-        if (q_type != "FIB") and data.get("correct_answer"):
+        if (q_type != "FIB") and details.get("correct_answer"):
             raise serializers.ValidationError(
                 "Only FIB questions should have a direct 'correct_answer' value set."
             )
 
-        if q_type != "TF" and "is_true" in data:
+        if q_type != "TF" and "is_true" in details:
             raise serializers.ValidationError(
                 "Only TF questions should have the 'is_true' flag set"
             )
 
-        if q_type == "TF" and "is_true" not in data:
+        if q_type == "TF" and "is_true" not in details:
             raise serializers.ValidationError(
                 "TF questions should have the 'is_true' flag set"
             )
@@ -82,8 +88,8 @@ class QuestionSerializer(serializers.ModelSerializer):
         return obj.object_id
 
     def create(self, validated_data):
-        content_type_model = validated_data.pop("content_type")
-        object_id = validated_data.pop("object_id")
+        content_type_model = validated_data.pop("assessment_type")
+        object_id = validated_data.pop("assesssment_id")
 
         try:
             ct = ContentType.objects.get(model=content_type_model.lower())
@@ -92,11 +98,52 @@ class QuestionSerializer(serializers.ModelSerializer):
                 {"error": f'Invalid assessment type "{content_type_model}"'}
             )
 
-        question = Question.objects.create(
-            content_type=ct, object_id=object_id, **validated_data
-        )
+        with transaction.atomic():
+            question = Question.objects.create(
+                content_type=ct, 
+                object_id=object_id,
+                **validated_data
+                )
 
-        return question
+            if question.type == "MCQ":
+                options_data = details.get('options', [])
+                for option in options_data:
+                    Option.objects.create(question=question, **option)
+
+            elif question.type == "FIB":
+                question.correct_answer = details.get('correct_answer')
+                question.save()
+
+            elif question.type == "TF":
+                question.is_true = details.get('is_true')
+                question.save()
+
+            return question
+        
+    def update(self, instance, validated_data):
+        
+        details = self.initial_data.get('details', {})
+    
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+            
+        # instance.save()
+
+        if instance.type == "MCQ":
+            options_data = details.get('options', [])
+            instance.options.all().delete()
+            for option in options_data:
+                Option.objects.create(question=instance, **option)
+        elif instance.type == "TF":
+            instance.is_true = True if details.get('is_true') else False
+            instance.save()
+        elif instance.type == "FIB":
+            instance.correct_answer = details.get('correct_answer')
+            instance.save()
+
+        return instance
 
 
 class QuestionDisplaySerializer(serializers.ModelSerializer):
