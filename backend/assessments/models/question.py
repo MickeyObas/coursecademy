@@ -48,6 +48,9 @@ class Question(TimeStampedModel):
     type = models.CharField(max_length=4, choices=QuestionTypes.choices)
 
     def clean(self) -> None:
+        if not self.pk:
+            return 
+        
         if (self.type == self.QuestionTypes.FIB) and not self.correct_answer:
             raise ValidationError("FIB questions must have 'correct_answer' set.")
 
@@ -67,7 +70,8 @@ class Question(TimeStampedModel):
         return super().clean()
 
     def save(self, *args, **kwargs):
-        self.full_clean()
+        if self.pk:
+            self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -6,13 +6,17 @@ from categories.serializers import CategorySerializer
 
 from .models import (AssessmentAnswer, AssessmentQuestion, AssessmentSession,
                      Option, Question, TestAssessment, TestSession,
-                     TestSessionQuestion)
+                     TestSessionQuestion, LessonAssessment)
+from courses.models import Lesson
+from categories.models import Category
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    content_type = serializers.CharField(write_only=True)
-    object_id = serializers.IntegerField(write_only=True)
+    # content_type = serializers.CharField(write_only=True, required=False)
+    # object_id = serializers.IntegerField(write_only=True, required=False)
     assessment_type = serializers.SerializerMethodField()
+    assessment_type_input = serializers.CharField(write_only=True)
+    lesson_id = serializers.CharField(write_only=True, required=False)
     assessment_id = serializers.SerializerMethodField()
     details = serializers.SerializerMethodField()
 
@@ -33,7 +37,9 @@ class QuestionSerializer(serializers.ModelSerializer):
             "content_type",
             "object_id",
             "assessment_type",
+            "assessment_type_input",
             "assessment_id",
+            "lesson_id"
         ]
         extra_kwargs = {
             "is_true": {"write_only": True},
@@ -88,20 +94,27 @@ class QuestionSerializer(serializers.ModelSerializer):
         return obj.object_id
 
     def create(self, validated_data):
-        content_type_model = validated_data.pop("assessment_type")
-        object_id = validated_data.pop("assesssment_id")
+        # content_type_model = validated_data.pop("assessment_type")
+        # object_id = validated_data.pop("assesssment_id")
+        details = self.initial_data.get('details')
+        assessment_type = validated_data.pop('assessment_type_input')
+        lesson_id = validated_data.pop('lesson_id')
+
+        lesson = Lesson.objects.get(id=lesson_id)
+
 
         try:
-            ct = ContentType.objects.get(model=content_type_model.lower())
+            ct = ContentType.objects.get_for_model(LessonAssessment)
         except ContentType.DoesNotExist:
             raise serializers.ValidationError(
-                {"error": f'Invalid assessment type "{content_type_model}"'}
+                {"error": f'Invalid assessment type "{assessment_type}"'}
             )
 
         with transaction.atomic():
             question = Question.objects.create(
                 content_type=ct, 
-                object_id=object_id,
+                object_id=lesson.lessonassessment.id,
+                category=lesson.module.course.category,
                 **validated_data
                 )
 

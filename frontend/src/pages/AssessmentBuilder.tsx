@@ -61,6 +61,7 @@ export default function AssessmentBuilder() {
     console.log(questions);
     const response = await api.post(`/api/lessons/${selectedLessonId}/questions/update/`, {
       lesson_id: selectedLessonId,
+      assessment_type_input: assessmentType,
       questions
     });
     const data = response.data;
@@ -68,20 +69,41 @@ export default function AssessmentBuilder() {
   }
 
 
+  const getDefaultDetails = (type: string) => {
+    switch (type) {
+      case "MCQ":
+        return {
+          options: [
+            { text: "", is_correct: false },
+            { text: "", is_correct: false },
+            { text: "", is_correct: false },
+            { text: "", is_correct: true }
+          ]
+        };
+
+      case "TF":
+        return {
+          is_true: false
+        };
+
+      case "FIB":
+        return {
+          correct_answer: ""
+        };
+
+      default:
+        return {};
+    }
+  };
+
   const addQuestion = () =>
     setQuestions([
       ...questions,
       { 
         type: "MCQ", 
-        text: "", 
-        details: {
-          options: [
-            {text: "", is_correct: false},
-            {text: "", is_correct: false},
-            {text: "", is_correct: false},
-            {text: "", is_correct: true}
-          ]
-        }, 
+        text: "",
+        category: 1, // Fix Later 
+        details: getDefaultDetails("MCQ"),
         answer: ""
       },
     ]);
@@ -89,14 +111,18 @@ export default function AssessmentBuilder() {
   const updateQuestion = (index: number, updated: Question) => {
     console.log(updated);
     const newQ = [...questions];
-    
-    // Handle MCQ
-    if(updated.type == "MCQ"){
-      
-    }
-
     newQ[index] = updated;
     setQuestions(newQ);
+  };
+
+  const handleTypeChange = (index, newType) => {
+    setQuestions((prev) =>
+      prev.map((q, i) =>
+        i === index
+          ? { ...q, type: newType, details: getDefaultDetails(newType) }
+          : q
+      )
+    );
   };
 
   return (
@@ -169,9 +195,7 @@ export default function AssessmentBuilder() {
           <select
             className="border rounded-lg p-2 mb-2 w-full"
             value={q.type}
-            onChange={(e) =>
-              updateQuestion(i, { ...q, type: e.target.value as any })
-            }
+            onChange={(e) => handleTypeChange(i, e.target.value)}
           >
             <option value="MCQ">Multiple Choice</option>
             <option value="TF">True/False</option>
@@ -205,9 +229,9 @@ export default function AssessmentBuilder() {
                 type="text"
                 placeholder="Correct Answer (type option exactly)"
                 className="w-full border rounded-lg p-2 bg-green-400"
-                defaultValue={q.details.options.find((opt) => opt.is_correct).text}
+                defaultValue={q.details.options.find((opt) => opt.is_correct)?.text || ""}
                 onChange={(e) => {
-                  let opts = [...(q.details.options || [])];
+                  let opts = [...(q.details.options || ["", "", "", ""])];
                   opts = opts.map((opt) => ({...opt, is_correct: opt.text === e.target.value}))
                   // const newCorrectOptIdx = opts.findIndex((opt) => opt.text === e.target.value)
                   // console.log("New correct OPT idx", newCorrectOptIdx)

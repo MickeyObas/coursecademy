@@ -101,29 +101,32 @@ class LessonAssessmentUpdateView(APIView):
         
         lesson = Lesson.objects.get(id=lesson_id)
         questions = request.data.get('questions')
-        print(questions)
+        print(len(questions))
+
+        results = []
 
         # Handle the actual saving/updating of each question
         for q_item in questions:
             question_id = q_item.get("id")
             if question_id:
+                print(q_item)
                 try:
                     question = Question.objects.get(id=question_id)
-                    serializer = QuestionSerializer(question, data=q_item, partial=True)
+                    serializer = QuestionSerializer(question, data=q_item, partial=True, context={'request': request})
                 except Question.DoesNotExist:
                     return Response({'error': f"Question with ID {question_id} does not exist"})
             else:
-                q_item['content_type'] = q_item.get('assessment_type')
-                q_item['object_id'] = q_item.get('assessment_id')
-
-                serializer = QuestionSerializer(data=q_item)
+                q_item["assessment_type_input"] = request.data.get("assessment_type_input")
+                q_item["lesson_id"] = request.data.get("lesson_id")
+                serializer = QuestionSerializer(data=q_item, context={'request': request})
         
             if serializer.is_valid(raise_exception=True):
-                serializer.save()
-
-
-
-        return Response({'test': 'test'})
+                instance = serializer.save()
+                results.append(QuestionSerializer(instance).data)
+            else:
+                return Response(serializer.errors, status=400)
+            
+        return Response(results)
 
 
 class LessonCreateView(APIView):
