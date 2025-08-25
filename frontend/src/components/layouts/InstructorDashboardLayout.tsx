@@ -19,34 +19,28 @@ export default function InstructorDashboardLayout() {
         <div className="p-4 font-bold text-lg border-b">📚 CBT Platform</div>
         <nav className="flex-1 p-2 space-y-2">
           <a
-            href="/dashboard/courses"
+            href="/idashboard/courses"
             className="block p-2 rounded hover:bg-gray-200"
           >
-            Courses
+            Manage Courses
           </a>
-          <a
+          {/* <a
             href="/idashboard/create-course"
             className="block p-2 rounded hover:bg-gray-200"
           >
             Create Course
-          </a>
+          </a> */}
           <a
             href="/idashboard/module-lesson-builder"
             className="block p-2 rounded hover:bg-gray-200"
           >
-            Add Module/Lessons
+            Manage Module/Lessons
           </a>
           <a
             href="/idashboard/assessment-builder"
             className="block p-2 rounded hover:bg-gray-200"
           >
-            Add Assessment
-          </a>
-          <a
-            href="/dashboard/students"
-            className="block p-2 rounded hover:bg-gray-200"
-          >
-            Students
+            Manage Assessments
           </a>
         </nav>
         <button

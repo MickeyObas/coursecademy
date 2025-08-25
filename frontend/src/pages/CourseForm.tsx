@@ -1,7 +1,7 @@
 import { useState } from "react";
 import api from "../utils/axios";
 
-export default function CourseForm() {
+export default function CourseForm({ onCourseSave }) {
   const [course, setCourse] = useState({
     title: "",
     category: "",
@@ -76,7 +76,11 @@ export default function CourseForm() {
         price: 0,
         skillsInput: [""],
         learningPointsInput: [""],
-      })
+      });
+
+      // Handle after save
+      onCourseSave();
+
     }catch(err: any){
       const { data } = err.response;
       console.error(data);

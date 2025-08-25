@@ -22,6 +22,7 @@ import CourseForm from "../pages/CourseForm";
 import ModuleLessonBuilder from "../pages/ModuleLessonBuilder";
 import AssessmentBuilder from "../pages/AssessmentBuilder";
 import InstructorDashboardLayout from "../components/layouts/InstructorDashboardLayout";
+import InstructorCourses from "../pages/InstructorCourses";
 
 
 const AppRoutes = () => {
@@ -50,6 +51,7 @@ const AppRoutes = () => {
         </Route>
 
         <Route path="/idashboard" element={<InstructorDashboardLayout />}>
+          <Route path="courses" element={<InstructorCourses />} />
           <Route path="create-course" element={<CourseForm />} />
           <Route path="module-lesson-builder" element={<ModuleLessonBuilder />} />
           <Route path="assessment-builder" element={<AssessmentBuilder />}/>

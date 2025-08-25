@@ -31,6 +31,10 @@ export default function AssessmentBuilder() {
   }, []);
 
   useEffect(() => {
+    setSelectedLessonId(null);
+  }, [assessmentType])
+
+  useEffect(() => {
     if(!selectedCourseId) return;
     const fetchLessons = async () => {
       const response = await api.get(`/api/courses/${selectedCourseId}/lessons/`);
@@ -42,30 +46,69 @@ export default function AssessmentBuilder() {
   }, [selectedCourseId, assessmentType])
 
   useEffect(() => {
+    if(!selectedCourseId && !selectedLessonId) return;
+
     const fetchQuestions = async () => {
-      const response = await api.get(`/api/lessons/${selectedLessonId}/questions/`);
-      const data = response.data;
-      setQuestions(data);
-      console.log(data);
+      if(assessmentType === "lesson"){
+        const response = await api.get(`/api/lessons/${selectedLessonId}/questions/`);
+        const data = response.data;
+        setQuestions(data);
+        console.log(data);
+      }else if(assessmentType === "course"){
+        const response = await api.get(`/api/courses/${selectedCourseId}/questions/`);
+        const data = response.data;
+        setQuestions(data);
+        console.log(data);
+      }
     };
     fetchQuestions();
-  }, [selectedLessonId])
+  }, [selectedLessonId, selectedCourseId, assessmentType])
 
   const handleCourseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedCourseId(Number(e.target.value));
+    setQuestions([]);
     // setSelectedModule(null);
     // setEditingLesson(null);
   };
 
   const handleSaveAssessment = async () => {
     console.log(questions);
-    const response = await api.post(`/api/lessons/${selectedLessonId}/questions/update/`, {
-      lesson_id: selectedLessonId,
-      assessment_type_input: assessmentType,
-      questions
-    });
+    // Check assessment_type
+    if(assessmentType === "lesson"){
+      const response = await api.post(`/api/lessons/${selectedLessonId}/questions/update/`, {
+        // lesson_id: selectedLessonId,
+        assessment_type_input: assessmentType,
+        questions
+      });
     const data = response.data;
     console.log(data);
+    }else if(assessmentType === "course"){
+      const response = await api.post(`/api/courses/${selectedCourseId}/questions/update/`, {
+        // course_id: selectedCourseId,
+        assessment_type_input: assessmentType,
+        questions
+      });
+    const data = response.data;
+    console.log(data);
+    }
+  }
+
+  const handleLessonAssessment = async (lessonId, hasAssessment) => {
+    // If has assessment change lessonId immediately
+    if(hasAssessment){
+      setSelectedLessonId(lessonId);
+    }else{
+      // Create assessment in backend first
+      try{
+        const response = await api.post(`/api/lessons/${lessonId}/assessment/create/`);
+        const data = response.data;
+        console.log(data);
+        setSelectedLessonId(lessonId);
+      }catch (err: any){
+        console.error(err);
+      }
+
+    }
   }
 
 
@@ -169,7 +212,7 @@ export default function AssessmentBuilder() {
               <span>{lesson.title}</span>
               <button
                 className="px-3 py-1 bg-blue-600 text-white rounded"
-                onClick={() => setSelectedLessonId(lesson.id)}
+                onClick={() => handleLessonAssessment(lesson.id, lesson.has_assessment)}
               >
                 {lesson.has_assessment ? "Edit Assessment" : "Add Assessment"}
               </button>
@@ -178,7 +221,7 @@ export default function AssessmentBuilder() {
         </div>
       )}
 
-      {assessmentType && (
+      {((assessmentType === "lesson" && selectedLessonId) || (assessmentType === "course" && selectedCourseId)) && (
         <button
           onClick={addQuestion}
           className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -188,11 +231,12 @@ export default function AssessmentBuilder() {
       )}
       
 
-      {(selectedLessonId && assessmentType) && questions.map((q, i) => (
+      {((selectedLessonId || selectedCourseId) && assessmentType) && questions.map((q, i) => (
         <div key={i} className="border rounded-lg p-4 bg-gray-50 shadow">
           <h3 className="font-semibold mb-2">Question {i + 1}</h3>
 
           <select
+            disabled={q.id}
             className="border rounded-lg p-2 mb-2 w-full"
             value={q.type}
             onChange={(e) => handleTypeChange(i, e.target.value)}
@@ -271,10 +315,13 @@ export default function AssessmentBuilder() {
         </div>
       ))}
 
-      <button
-        onClick={handleSaveAssessment}
-        className="ms-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-      >Save Assessment</button>
+      {assessmentType && questions.length > 0 && (
+        <button
+          onClick={handleSaveAssessment}
+          className="ms-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+        >Save Assessment</button>
+      )}  
+      
 
     </div>
   );

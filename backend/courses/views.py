@@ -13,7 +13,7 @@ from .serializers import (CourseSerializer, CourseUserSerializer,
                           LessonListSerializer, LessonSerializer,
                           ThinCourseSerializer, LessonUpdateSerializer, ModuleCreateSerializer, LessonCreateSerializer)
 from .services import enroll_user_in_course
-from assessments.models import Question, LessonAssessment
+from assessments.models import Question, LessonAssessment, CourseAssessment
 from assessments.serializers import QuestionSerializer, QuestionDisplaySerializer
 
 
@@ -81,10 +81,29 @@ class LessonAssessmentQuestionsView(APIView):
             return Response({'error': 'lesson_id is required.'}, status=400)
         
         lesson = Lesson.objects.get(id=lesson_id)
-        if lesson.lessonassessment:
+        if hasattr(lesson, "lessonassessment"):
             questions = Question.objects.filter(
                 content_type=ContentType.objects.get_for_model(LessonAssessment),
                 object_id=lesson.lessonassessment.id
+            )
+            serializer = QuestionSerializer(questions, many=True)
+            return Response(serializer.data)
+        else:
+            # No assessment and thus no questions
+            return Response([])
+        
+
+class CourseAssessmentQuestionsView(APIView):
+    def get(self, request, *args, **kwargs):
+        course_id = kwargs.get('course_id')
+        if not course_id:
+            return Response({'error': 'course_id is required.'}, status=400)
+        
+        course = Course.objects.get(id=course_id)
+        if hasattr(course, "courseassessment"):
+            questions = Question.objects.filter(
+                content_type=ContentType.objects.get_for_model(CourseAssessment),
+                object_id=course.courseassessment.id
             )
             serializer = QuestionSerializer(questions, many=True)
             return Response(serializer.data)
@@ -117,7 +136,43 @@ class LessonAssessmentUpdateView(APIView):
                     return Response({'error': f"Question with ID {question_id} does not exist"})
             else:
                 q_item["assessment_type_input"] = request.data.get("assessment_type_input")
-                q_item["lesson_id"] = request.data.get("lesson_id")
+                q_item["lesson_id"] = lesson_id
+                serializer = QuestionSerializer(data=q_item, context={'request': request})
+        
+            if serializer.is_valid(raise_exception=True):
+                instance = serializer.save()
+                results.append(QuestionSerializer(instance).data)
+            else:
+                return Response(serializer.errors, status=400)
+            
+        return Response(results)
+
+
+class CourseAssessmentUpdateView(APIView):
+    def post(self, request, *args, **kwargs):
+        course_id = kwargs.get('course_id')
+        if not course_id:
+            return Response({'error': 'Course ID is required'}, status=400)
+        
+        course = Course.objects.get(id=course_id)
+        questions = request.data.get('questions')
+        print(len(questions))
+
+        results = []
+
+        # Handle the actual saving/updating of each question
+        for q_item in questions:
+            question_id = q_item.get("id")
+            if question_id:
+                print(q_item)
+                try:
+                    question = Question.objects.get(id=question_id)
+                    serializer = QuestionSerializer(question, data=q_item, partial=True, context={'request': request})
+                except Question.DoesNotExist:
+                    return Response({'error': f"Question with ID {question_id} does not exist"})
+            else:
+                q_item["assessment_type_input"] = request.data.get("assessment_type_input")
+                q_item["lesson_id"] = course_id
                 serializer = QuestionSerializer(data=q_item, context={'request': request})
         
             if serializer.is_valid(raise_exception=True):
@@ -139,6 +194,14 @@ class LessonCreateView(APIView):
                 status=201
             )
         return Response(serializer.errors, status=400)
+    
+
+class LessonAssessmentCreateView(APIView):
+    def post(self, request, *args, **kwargs):
+        lesson_id = kwargs.get('lesson_id')
+        lesson = Lesson.objects.get(id=lesson_id)
+        lesson_assessment, created = LessonAssessment.objects.get_or_create(lesson=lesson)
+        return Response({'message': f'Lesson Assessment {"created" if created else "fetched"}'})
 
 
 class LessonUpdateView(APIView):

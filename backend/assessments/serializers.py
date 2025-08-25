@@ -6,8 +6,8 @@ from categories.serializers import CategorySerializer
 
 from .models import (AssessmentAnswer, AssessmentQuestion, AssessmentSession,
                      Option, Question, TestAssessment, TestSession,
-                     TestSessionQuestion, LessonAssessment)
-from courses.models import Lesson
+                     TestSessionQuestion, LessonAssessment, CourseAssessment)
+from courses.models import Lesson, Course
 from categories.models import Category
 
 
@@ -17,6 +17,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     assessment_type = serializers.SerializerMethodField()
     assessment_type_input = serializers.CharField(write_only=True)
     lesson_id = serializers.CharField(write_only=True, required=False)
+    course_id = serializers.CharField(write_only=True, required=False)
     assessment_id = serializers.SerializerMethodField()
     details = serializers.SerializerMethodField()
 
@@ -39,7 +40,8 @@ class QuestionSerializer(serializers.ModelSerializer):
             "assessment_type",
             "assessment_type_input",
             "assessment_id",
-            "lesson_id"
+            "lesson_id", 
+            "course_id"
         ]
         extra_kwargs = {
             "is_true": {"write_only": True},
@@ -98,25 +100,39 @@ class QuestionSerializer(serializers.ModelSerializer):
         # object_id = validated_data.pop("assesssment_id")
         details = self.initial_data.get('details')
         assessment_type = validated_data.pop('assessment_type_input')
-        lesson_id = validated_data.pop('lesson_id')
+        
+        if "lesson_id" in validated_data:
+            lesson_id = validated_data.pop('lesson_id')
+            lesson = Lesson.objects.get(id=lesson_id)
+        if "course_id" in validated_data:
+            course_id = validated_data.pop('course_id')
+            course = Course.objects.get(id=course_id)
+        
 
-        lesson = Lesson.objects.get(id=lesson_id)
-
-
-        try:
+        if assessment_type == "lesson":
             ct = ContentType.objects.get_for_model(LessonAssessment)
-        except ContentType.DoesNotExist:
+        elif assessment_type == "course":
+            ct = ContentType.objects.get_for_model(CourseAssessment)
+        else:
             raise serializers.ValidationError(
                 {"error": f'Invalid assessment type "{assessment_type}"'}
             )
 
         with transaction.atomic():
-            question = Question.objects.create(
-                content_type=ct, 
-                object_id=lesson.lessonassessment.id,
-                category=lesson.module.course.category,
-                **validated_data
-                )
+            if assessment_type == "lesson":
+                question = Question.objects.create(
+                    content_type=ct, 
+                    object_id=lesson.lessonassessment.id,
+                    category=lesson.module.course.category,
+                    **validated_data
+                    )
+            else:
+                question = Question.objects.create(
+                    content_type=ct, 
+                    object_id=course.courseassessment.id,
+                    category=course.category,
+                    **validated_data
+                    )
 
             if question.type == "MCQ":
                 options_data = details.get('options', [])

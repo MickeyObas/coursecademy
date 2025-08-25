@@ -18,7 +18,7 @@ class ModuleAssessment(TimeStampedModel):
 
 
 class CourseAssessment(TimeStampedModel):
-    course = models.ForeignKey("courses.Course", on_delete=models.CASCADE)
+    course = models.OneToOneField("courses.Course", on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
 
     def __str__(self):
