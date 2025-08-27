@@ -3,11 +3,10 @@ from rest_framework import serializers
 
 from assessments.models import LessonAssessment
 from categories.serializers import CategorySerializer
+from categories.models import Category
 from users.serializers import UserSerializer
-
 from .models import (Course, CourseLearningPoint, CourseSkill, Lesson,
                      LessonProgress, Module, ModuleProgress)
-from categories.models import Category
 
 
 class LessonListSerializer(serializers.ModelSerializer):
@@ -48,8 +47,6 @@ class LessonListSerializer(serializers.ModelSerializer):
         return True
     
     def to_representation(self, instance):
-        # Add actual lesson content for owner viewers
-        # TODO: Make owner fields present but None if unapplicable (Consistent Fields)
         rep = super().to_representation(instance)
         request = self.context.get('request')
         if request and request.user == instance.module.course.instructor:
@@ -132,9 +129,25 @@ class LessonUpdateSerializer(serializers.ModelSerializer):
             "video_file"
         ]
 
+    def validate(self, attrs):
+        lesson_type = attrs.get("lesson_type")
+
+        if lesson_type == "ARTICLE" and not attrs.get("content"):
+            raise serializers.ValidationError("Lesson articles must have content")
+        
+        if lesson_type == "VIDEO" and not attrs.get("video_file"):
+            raise serializers.ValidationError("Lesson videos must have URLs")
+        
+        return attrs
+
     def validate_title(self, value):
         if len(value) < 5:
             raise serializers.ValidationError("Title must be at least 5 characters")
+        return value
+    
+    def validate_type(self, value):
+        if value not in ["ARTICLE", "VIDEO"]:
+            raise serializers.ValidationError("Invalid lesson type")
         return value
 
 class ModuleSerializer(serializers.ModelSerializer):
@@ -151,7 +164,7 @@ class ModuleSerializer(serializers.ModelSerializer):
     
 
 class ModuleCreateSerializer(serializers.ModelSerializer):
-    course_id = serializers.CharField(required=True)
+    course_id = serializers.CharField()
 
     class Meta:
         model = Module
@@ -161,12 +174,20 @@ class ModuleCreateSerializer(serializers.ModelSerializer):
             "description",
         ]
 
+    def validate_course_id(self, value):
+        if not Course.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Invalid course_id")
+        return value
+
+    def validate_title(self, value):
+        if len(value) < 5:
+            raise serializers.ValidationError("Module title must be at least 6 characters")
+        return value
+
     def create(self, validated_data):
         course_id = validated_data.pop('course_id')
         course = Course.objects.get(id=course_id)
         last_module = course.modules.order_by('order').last()
-
-        # Get the order of the latest module
 
         new_module = Module.objects.create(
             course=course,
@@ -177,8 +198,8 @@ class ModuleCreateSerializer(serializers.ModelSerializer):
     
 
 class LessonCreateSerializer(serializers.ModelSerializer):
-    module_id = serializers.CharField(required=True)
-    course_id = serializers.CharField(required=True)
+    module_id = serializers.CharField()
+    course_id = serializers.CharField()
 
     class Meta:
         model = Lesson
@@ -191,6 +212,27 @@ class LessonCreateSerializer(serializers.ModelSerializer):
             "course_id",
             "video_file"
         ]
+
+    def validate(self, attrs):
+        lesson_type = attrs.get("lesson_type")
+
+        if lesson_type == "ARTICLE" and not attrs.get("content"):
+            raise serializers.ValidationError("Lesson articles must have content")
+        
+        if lesson_type == "VIDEO" and not attrs.get("video_file"):
+            raise serializers.ValidationError("Lesson videos must have URLs")
+        
+        return attrs
+
+    def validate_module_id(self, value):
+        if not Module.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Invalid module_id")
+        return value
+
+    def validate_course_id(self, value):
+        if not Course.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Invalid course_id")
+        return value
 
     def create(self, validated_data):
         module_id = validated_data.pop("module_id")
@@ -271,11 +313,9 @@ class CourseSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             course = Course.objects.create(**validated_data, instructor=user)
 
-            # Create learning points
             for lp in learning_points_data:
                 CourseLearningPoint.objects.create(course=course, text=lp)
 
-            # Create skills
             for skill in skills_data:
                 CourseSkill.objects.create(course=course, name=skill)
 
@@ -301,9 +341,6 @@ class CourseSerializer(serializers.ModelSerializer):
         first_lesson = Lesson.objects.filter(module__course=obj).order_by("module__order", "order").first()
 
         return first_lesson.id if first_lesson else None
-
-
-        pass
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)

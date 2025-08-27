@@ -10,6 +10,7 @@ class LessonAssessment(TimeStampedModel):
         return f"Lesson Assessment: {self.lesson.module.course.title} - {self.lesson.order}"
 
 
+# NOTE: Module assessments work, but they are not currently used in the system (yet)
 class ModuleAssessment(TimeStampedModel):
     module = models.OneToOneField("courses.Module", on_delete=models.CASCADE)
 

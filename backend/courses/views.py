@@ -14,7 +14,7 @@ from .serializers import (CourseSerializer, CourseUserSerializer,
                           ThinCourseSerializer, LessonUpdateSerializer, ModuleCreateSerializer, LessonCreateSerializer)
 from .services import enroll_user_in_course
 from assessments.models import Question, LessonAssessment, CourseAssessment
-from assessments.serializers import QuestionSerializer, QuestionDisplaySerializer
+from assessments.serializers import QuestionSerializer
 
 
 class CourseCreateView(APIView):

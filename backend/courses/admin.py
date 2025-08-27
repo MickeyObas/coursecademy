@@ -11,7 +11,7 @@ class ModuleModelAdmin(admin.ModelAdmin):
 
 
 class LessonModelAdmin(admin.ModelAdmin):
-    list_display = ["id", "title", "order"]
+    list_display = ["id", "module__course__title", "__str__", "order"]
 
 class LessonProgressModelAdmin(admin.ModelAdmin):
     list_display = ['id', 'lesson__title', 'last_accessed_at']

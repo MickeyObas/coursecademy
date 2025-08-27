@@ -7,18 +7,6 @@ from api.models import TimeStampedModel
 
 
 class Question(TimeStampedModel):
-    """
-    A Question can belong to one of the following:
-
-    1. A ModuleAssessment (via `module_assessment`)
-    2. A CourseAssessment (via `course_assessment`)
-    3. Neither - in which case it must have a `difficulty` set (i.e., it's a generic question)
-
-    Rules:
-    - A question can belong only to ONE of module_assessment or course_assessment (not both)
-    - If it belongs to an assessment, it MUST have an `order`
-    - If it does not belong to any assessment, it MUST have a `difficulty`
-    """
 
     class QuestionTypes(models.TextChoices):
         MCQ = "MCQ", "Multiple Choice"
@@ -82,8 +70,8 @@ class Option(TimeStampedModel):
     """
     An Option can only belong to Questions that are of the `MCQ` type
 
-    - `TF` questions will be controlled with the 'is_true' field
-    - `FIB` questions will be controlled with the `correct_answer` field
+    - `TF` questions will be controlled with the 'is_true' field on Question objects
+    - `FIB` questions will be controlled with the `correct_answer` field on Question objects
     """
 
     question = models.ForeignKey(

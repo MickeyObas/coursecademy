@@ -18,15 +18,7 @@ class Lesson(models.Model):
 
     class Meta:
         unique_together = ["order", "module"]
-        ordering = ["order"]
+        ordering = ["module__order", "order"]
 
     def __str__(self):
         return f"{self.module.order}.{self.order} - {self.title}"
-
-
-class LessonArticle(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
-
-
-class LessonVideo(models.Model):
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)

@@ -9,8 +9,7 @@ from rest_framework.views import APIView
 from ..models import (Question, TestSession, TestSessionAnswer,
                       TestSessionQuestion, LessonAssessment, AssessmentSession, CourseAssessment)
 from ..serializers import (SaveAssessmentAnswerSerializer,
-                           SaveTestAssessmentAnswerSerializer,
-                           TestSessionSerializer)
+                           SaveTestAssessmentAnswerSerializer,)
 from ..services import (mark_assessment_session, mark_test_session,
                         save_assessment_answer, save_test_answer)
 from assessments.serializers import QuestionDisplaySerializer

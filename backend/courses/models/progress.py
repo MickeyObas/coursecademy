@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from courses.models import Course, Lesson, Module
+from courses.models import Lesson, Module
 
 User = get_user_model()
 
@@ -33,7 +33,7 @@ class ModuleProgress(models.Model):
 
 
 class CourseProgress(models.Model):
-    enrollment = models.OneToOneField('enrollments.Enrollment', on_delete=models.CASCADE)
+    enrollment = models.OneToOneField('enrollments.Enrollment', on_delete=models.CASCADE, unique=True)
     completed_at = models.DateTimeField(blank=True, null=True)
     last_accessed_at = models.DateTimeField(blank=True, null=True)
     last_accessed_lesson = models.ForeignKey('courses.Lesson', on_delete=models.SET_NULL, null=True, blank=True)

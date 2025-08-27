@@ -1,7 +1,6 @@
 import logging
 import random
 from decimal import Decimal
-from pprint import pprint
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
