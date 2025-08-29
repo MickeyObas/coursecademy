@@ -4,18 +4,20 @@ from rest_framework.views import APIView
 
 from ..models import Option, Question
 from ..serializers import OptionSerializer, QuestionSerializer
+from core.permissions import IsAdminInstructorOrReadOnly
 
 
+# Check which situations I'm fetching questions anyway
 class QuestionListCreateView(generics.ListCreateAPIView):
     serializer_class = QuestionSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminInstructorOrReadOnly]
     queryset = Question.objects.all()
 
 
 class OptionCreateView(APIView):
     serializer_class = OptionSerializer
     queryset = Option.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminInstructorOrReadOnly]
 
     def post(self, request, *args, **kwargs):
         serializer = OptionSerializer(data=request.data)

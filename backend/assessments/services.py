@@ -14,7 +14,10 @@ from assessments.models import (AssessmentAnswer, AssessmentQuestion,
                                 Question, TestAssessment, TestBlueprint,
                                 TestSession, TestSessionAnswer,
                                 TestSessionQuestion)
-from courses.models import Lesson, LessonProgress, CourseProgress
+from courses.models import Lesson, LessonProgress, CourseProgress, Course
+from .exceptions import NoLessonAssessmentError, NoCourseAssessmentError, NoTestAssessmentError, NoTestBlueprintError, TestSessionExpiredError, NoQuestionError, NoAssessmentSessionError, NoTestSessionError, TestSessionMarkingError, NoCorrectOptionError
+from courses.exceptions import NoCourseError, NoLessonError
+from .serializers import QuestionSerializer
 
 logger = logging.getLogger(__name__)
 TOTAL_QUESTIONS_PER_SESSION = 10
@@ -22,10 +25,17 @@ TOTAL_QUESTIONS_PER_SESSION = 10
 
 def start_test_session(user, category, difficulty):
     with transaction.atomic():
-        test_assessment = TestAssessment.objects.get(category=category)
-        test_blueprint = TestBlueprint.objects.get(
-            test_assessment=test_assessment, difficulty=difficulty
-        )
+        try:
+            test_assessment = TestAssessment.objects.get(category=category)
+        except TestAssessment.DoesNotExist:
+            raise NoTestAssessmentError
+        
+        try:
+            test_blueprint = TestBlueprint.objects.get(
+                test_assessment=test_assessment, difficulty=difficulty
+            )
+        except TestBlueprint.DoesNotExist:
+            raise NoTestBlueprintError
 
         test_session = TestSession.objects.create(
             user=user,
@@ -70,10 +80,13 @@ def start_test_session(user, category, difficulty):
 
 
 def mark_test_session(user, session_id):
-    test_session = get_object_or_404(TestSession, user=user, id=session_id)
+    try:
+        test_session = TestSession.objects.get(user=user, id=session_id)
+    except TestSession.DoesNotExist:
+        raise NoTestSessionError()
 
     if test_session.submitted_at:
-        return {"error": "Test already submitted"}
+        raise TestSessionExpiredError()
 
     test_session.submitted_at = now()
     test_session.status = TestSession.Status.SUBMITTED
@@ -82,50 +95,57 @@ def mark_test_session(user, session_id):
         test_session_answers = TestSessionAnswer.objects.filter(
             session_question__test_session=test_session
         )
-        for test_answer in test_session_answers:
-            _mark_test_answer(test_answer)
+        with transaction.atomic():
+            for test_answer in test_session_answers:
+                _mark_test_answer(test_answer)
 
-        # Save the scores
-        question_count = test_session.questions.count()
-        correct_answer_count = test_session_answers.filter(is_correct=True).count()
-        test_session.score = Decimal((correct_answer_count / question_count) * 100)
-        test_session.marked_at = now()
+            question_count = test_session.questions.count()
+            correct_answer_count = test_session_answers.filter(is_correct=True).count()
+            score = Decimal(0)
+            if question_count > 0:
+                score = Decimal((correct_answer_count / question_count) * 100)
+            test_session.score = score
+            test_session.marked_at = now()
 
     except Exception as e:
-        logger.error("Error ----> %s" % str(e))
         test_session.status = TestSession.Status.ERROR
+        raise TestSessionMarkingError()
 
     test_session.save()
-    return {"success": True, "message": "Test submitted successfully"}
+
+    return test_session
 
 
 def mark_assessment_session(user, session_id, assessment_id, assessment_type):
     session = None
     content_type_model = ""
 
-    if assessment_type == "lesson":
-        content_type_model = "lessonassessment"
-        session = AssessmentSession.objects.get(
-            user=user,
-            content_type=ContentType.objects.get_for_model(LessonAssessment),
-            object_id=assessment_id,  # NOTE: Need assessment id
-        )
+    try:
+        if assessment_type == "lesson":
+            content_type_model = "lessonassessment"
+            session = AssessmentSession.objects.get(
+                user=user,
+                content_type=ContentType.objects.get_for_model(LessonAssessment),
+                object_id=assessment_id,  # NOTE: Need assessment id
+            )
 
-    elif assessment_type == "module":
-        content_type_model = "moduleassessment"
-        session = AssessmentSession.objects.get(
-            user=user,
-            content_type=ContentType.objects.get_for_model(ModuleAssessment),
-            object_id=assessment_id,
-        )
+        elif assessment_type == "module":
+            content_type_model = "moduleassessment"
+            session = AssessmentSession.objects.get(
+                user=user,
+                content_type=ContentType.objects.get_for_model(ModuleAssessment),
+                object_id=assessment_id,
+            )
 
-    elif assessment_type == "course":
-        content_type_model = "courseassessment"
-        session = AssessmentSession.objects.get(
-            user=user,
-            content_type=ContentType.objects.get_for_model(CourseAssessment),
-            object_id=assessment_id,
-        )
+        elif assessment_type == "course":
+            content_type_model = "courseassessment"
+            session = AssessmentSession.objects.get(
+                user=user,
+                content_type=ContentType.objects.get_for_model(CourseAssessment),
+                object_id=assessment_id,
+            )
+    except AssessmentSession.DoesNotExist:
+        raise NoAssessmentSessionError()
     
     try:
         session_answers = AssessmentAnswer.objects.filter(session=session)
@@ -137,7 +157,10 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
             object_id=assessment_id,
         ).count()
         correct_answer_count = session_answers.filter(is_correct=True).count()
-        session.score = Decimal((correct_answer_count / question_count) * 100)
+        score = Decimal(0)
+        if question_count > 0:
+            score = Decimal((correct_answer_count / question_count) * 100)
+        session.score = score
         session.completed_at = now()
         session.save()
 
@@ -163,7 +186,6 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
                 current_id = user_lesson_progress.lesson.id
                 try:
                     current_index = lesson_ids.index(current_id)
-                    print("THE CURRENT INDEX ____> ", current_index, sep=" ")
                 except ValueError:
                     current_index = None
 
@@ -186,6 +208,41 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
     except Exception as e:
         print(e)
         return({"error": str(e)})
+    
+
+def start_lesson_assessment(user, lesson_id):
+    try:
+        lesson_assessment = LessonAssessment.objects.get(
+            lesson_id=lesson_id
+        )
+    except LessonAssessment.DoesNotExist:
+        raise NoLessonAssessmentError()
+    
+    content_type = ContentType.objects.get_for_model(LessonAssessment)
+
+    user_lesson_assessment_session, created = AssessmentSession.objects.get_or_create(
+        user=user,
+        content_type=content_type,
+        object_id=lesson_assessment.id,
+    )
+    return user_lesson_assessment_session
+
+
+def start_course_assessment(user, course_slug):
+    try:
+        course_assessment = CourseAssessment.objects.get(
+            course__slug=course_slug
+        )
+    except CourseAssessment.DoesNotExist:
+        raise NoCourseAssessmentError()
+    
+    content_type = ContentType.objects.get_for_model(CourseAssessment)
+    user_course_assessment_session, created = AssessmentSession.objects.get_or_create(
+        user=user,
+        content_type=content_type,
+        object_id=course_assessment.id
+    )
+    return user_course_assessment_session, course_assessment.course.id
 
 
 def save_test_answer(user, question_id, session_id, answer):
@@ -194,7 +251,7 @@ def save_test_answer(user, question_id, session_id, answer):
 
     if test_session.is_expired:
         mark_test_session(user, session_id)
-        return {"error": "Session expired. Test auto-submitted."}
+        raise TestSessionExpiredError()
 
     session_question = TestSessionQuestion.objects.get(
         test_session=test_session, question=question
@@ -210,18 +267,23 @@ def save_test_answer(user, question_id, session_id, answer):
 
 
 def save_assessment_answer(user, question_id, answer):
-    question = Question.objects.get(id=question_id)
-    session = AssessmentSession.objects.get(
-        user=user,
-        content_type=question.content_type,
-        object_id=question.assessment_object.id,
-    )
-    session_ans, _ = AssessmentAnswer.objects.get_or_create(
-        session=session, question=question
-    )
-    session_ans.input = answer if question.type != "MCQ" else None
-    session_ans.option_id = answer if question.type == "MCQ" else None
-    session_ans.save()
+    try:
+        question = Question.objects.get(id=question_id)
+        session = AssessmentSession.objects.get(
+            user=user,
+            content_type=question.content_type,
+            object_id=question.assessment_object.id,
+        )
+        session_ans, _ = AssessmentAnswer.objects.get_or_create(
+            session=session, question=question
+        )
+        session_ans.input = answer if question.type != "MCQ" else None
+        session_ans.option_id = answer if question.type == "MCQ" else None
+        session_ans.save()
+    except Question.DoesNotExist:
+        raise NoQuestionError("Question with this ID does not exist")
+    except AssessmentSession.DoesNotExist:
+        raise NoAssessmentSessionError()
 
     return {"success": True, "message": "Answer saved successfully."}
 
@@ -266,11 +328,14 @@ def _mark_assessment_answer(assessment_answer: AssessmentAnswer):
     question = assessment_answer.question
 
     if question.type == "MCQ":
-        correct_option = Option.objects.get(question=question, is_correct=True)
-        if assessment_answer.option_id == correct_option.id:
-            assessment_answer.is_correct = True
-        else:
-            assessment_answer.is_correct = False
+        try:
+            correct_option = Option.objects.get(question=question, is_correct=True)
+            if assessment_answer.option_id == correct_option.id:
+                assessment_answer.is_correct = True
+            else:
+                assessment_answer.is_correct = False
+        except Option.DoesNotExist:
+            raise NoCorrectOptionError()            
 
         assessment_answer.save()
 
@@ -296,3 +361,54 @@ def _mark_assessment_answer(assessment_answer: AssessmentAnswer):
 
     else:
         logger.error("Invalid question type found: %s" % question.type)
+
+
+@transaction.atomic
+def update_lesson_assessment(lesson, questions, request):
+
+    results = []
+
+    for q_item in questions:
+        question_id = q_item.get("id")
+
+        if question_id:
+            try:
+                question = Question.objects.get(id=question_id)
+                serializer = QuestionSerializer(question, data=q_item, partial=True, context={'request': request})
+            except Question.DoesNotExist:
+                raise NoQuestionError(f"Question with ID {question_id} does not exist")
+        else:
+            q_item["assessment_type_input"] = request.data.get("assessment_type_input")
+            q_item["lesson_id"] = lesson.id
+            serializer = QuestionSerializer(data=q_item, context={'request': request})
+    
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        results.append(QuestionSerializer(instance).data)
+
+    return results
+
+
+@transaction.atomic
+def update_course_assessment(course, questions, request):
+    results = []
+
+    for q_item in questions:
+        question_id = q_item.get("id")
+        if question_id:
+            try:
+                question = Question.objects.get(id=question_id)
+                serializer = QuestionSerializer(question, data=q_item, partial=True, context={'request': request})
+            except Question.DoesNotExist:
+                return Response({'error': f"Question with ID {question_id} does not exist"})
+        else:
+            q_item["assessment_type_input"] = request.data.get("assessment_type_input")
+            q_item["course_id"] = course.id
+            serializer = QuestionSerializer(data=q_item, context={'request': request})
+    
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        results.append(QuestionSerializer(instance).data)
+    
+    return results
+    

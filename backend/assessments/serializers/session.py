@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from categories.models import Category
-from assessments.models import TestSessionQuestion
+from ..models import TestSessionQuestion, TestSession
+from ..serializers import TestAssessmentSerializer
 from .question import QuestionDisplaySerializer
 
 
@@ -32,3 +33,17 @@ class TestSessionQuestionSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep.update(QuestionDisplaySerializer(instance.question).data)
         return rep
+    
+
+class TestSessionSerializer(serializers.ModelSerializer):
+    test_assessment = TestAssessmentSerializer()
+
+    class Meta:
+        model = TestSession
+        fields = [
+            "test_assessment",
+            "status",
+            "score",
+            "submitted_at",
+            "is_expired",
+        ]

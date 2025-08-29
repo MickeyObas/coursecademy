@@ -36,7 +36,7 @@ export default function CoursePlayer() {
     if(currentLesson.has_assessment){
       const response = await api.post(`/api/assessments/lessons/${currentLesson?.id}/start/`);
       const data = response.data;
-      const assessmentSessionId = data.assessmentSessionId;
+      const assessmentSessionId = data.assessment_session_id;
       navigate(`/take-assessment/lesson/${currentLesson?.id}/sessions/${assessmentSessionId}/`);
       return;
     }

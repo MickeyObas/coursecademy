@@ -51,7 +51,7 @@ class TestSessionAnswerModelAdmin(admin.ModelAdmin):
 
 
 class AssessmentSessionModelAdmin(admin.ModelAdmin):
-    list_display = ["user", "assessment_object", "score", "completed_at"]
+    list_display = ["id", "user", "assessment_object", "score", "completed_at"]
 
 
 class AssessmentAnswerModelAdmin(admin.ModelAdmin):

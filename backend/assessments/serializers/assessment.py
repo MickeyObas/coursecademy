@@ -4,7 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from .question import QuestionDisplaySerializer
 from categories.serializers import CategorySerializer
-from assessments.models import TestAssessment, Question, TestSession, LessonAssessment, AssessmentSession
+from ..models import TestAssessment, Question, TestSession, LessonAssessment, AssessmentSession
 
 
 class TestAssessmentSerializer(serializers.ModelSerializer):
@@ -57,7 +57,13 @@ class SaveAssessmentAnswerSerializer(serializers.Serializer):
         if self.initial_data.get('assessment_type', '') == "lesson":
             if not AssessmentSession.objects.filter(
                 content_type=ContentType.objects.get_for_model(LessonAssessment),
-                object_id=value
+                id=value
             ).exists():
                 raise serializers.ValidationError("Invalid session ID")
         return value
+    
+
+class SubmitAssessmentSessionSerializer(serializers.Serializer):
+    session_id = serializers.CharField()
+    assessment_id = serializers.CharField()
+    assessment_type = serializers.CharField()

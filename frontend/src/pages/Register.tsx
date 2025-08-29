@@ -6,6 +6,7 @@ const Register: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { email } = location.state || {};
+  const [accountType, setAccountType] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,7 @@ const Register: React.FC = () => {
       setLoading(true);
       
       const response = await api.post(`/api/auth/register/`, {
+        account_type: accountType,
         full_name: fullName,
         email: email,
         password: password,
@@ -85,6 +87,15 @@ const Register: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+
+          <select
+            onChange={(e) => setAccountType(e.target.value)}
+            className='w-full border rounded px-3 py-2'
+          >
+            <option value="">Select an account type</option>
+            <option value="S">Student</option>
+            <option value="I">Instructor</option>
+          </select>
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>

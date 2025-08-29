@@ -1,0 +1,2 @@
+class AlreadyEnrolledError(Exception):
+    pass

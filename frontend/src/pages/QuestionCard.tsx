@@ -83,14 +83,14 @@ export default function QuestionCard({
       // Check what the question belongs to
       let response;
       if(assessmentType){
-        response = await api.post(`/api/assessments/lesson/${sessionId}/save-answer/`, {
+        response = await api.post(`/api/sessions/lesson/${sessionId}/save-answer/`, {
           question_id: current?.id,
           session_id: sessionId,
           answer: answers[current?.id],
           assessment_type: assessmentType
         })
       }else{
-        response = await api.post(`/api/assessments/${testSessionId}/save-answer/`, {
+        response = await api.post(`/api/sessions/${testSessionId}/save-answer/`, {
           question_id: current?.id,
           test_session_id: testSessionId,
           answer: answers[current?.id]

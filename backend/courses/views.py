@@ -15,13 +15,16 @@ from .serializers import (CourseSerializer, CourseUserSerializer,
 from .services import enroll_user_in_course
 from assessments.models import Question, LessonAssessment, CourseAssessment
 from assessments.serializers import QuestionSerializer
+from assessments.services import update_lesson_assessment, update_course_assessment
+from core.permissions import IsAdminOrInstructor, IsInstructor, IsCourseOwner, IsStudent
+from courses.exceptions import NoLessonError, NoCourseError
+from courses.services import update_lesson_access, update_lesson_completion
 
 
 class CourseCreateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrInstructor]
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
         serializer = CourseSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             course = serializer.save()
@@ -30,13 +33,11 @@ class CourseCreateView(APIView):
 
 
 class CourseListView(generics.ListAPIView):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Course.objects.all()
     serializer_class = ThinCourseSerializer
 
 
 class CourseDetailView(generics.RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
     lookup_field = "slug"
@@ -44,6 +45,8 @@ class CourseDetailView(generics.RetrieveAPIView):
 
 
 class ModuleCreateView(APIView):
+    permission_classes = [IsAdminOrInstructor]
+
     def post(self, request, *args, **kwargs):
         serializer = ModuleCreateSerializer(data=request.data)
         if serializer.is_valid():
@@ -51,13 +54,14 @@ class ModuleCreateView(APIView):
             return Response({'message': 'Module has been created!'})
         return Response(serializer.errors, status=400)
 
+
 class InstructorCourseListView(APIView):
+    permission_classes = [IsInstructor]
     def get(self, request, *args, **kwargs):
         courses = Course.objects.filter(instructor=request.user)
         serializer = ThinCourseSerializer(courses, many=True)
         return Response(serializer.data)
     
-
 
 class CourseLessonListView(APIView):
     def get(self, request, *args, **kwargs):
@@ -80,7 +84,11 @@ class LessonAssessmentQuestionsView(APIView):
         if not lesson_id:
             return Response({'error': 'lesson_id is required.'}, status=400)
         
-        lesson = Lesson.objects.get(id=lesson_id)
+        try:
+            lesson = Lesson.objects.get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            raise NoLessonError()
+        
         if hasattr(lesson, "lessonassessment"):
             questions = Question.objects.filter(
                 content_type=ContentType.objects.get_for_model(LessonAssessment),
@@ -98,8 +106,11 @@ class CourseAssessmentQuestionsView(APIView):
         course_id = kwargs.get('course_id')
         if not course_id:
             return Response({'error': 'course_id is required.'}, status=400)
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            raise NoCourseError()
         
-        course = Course.objects.get(id=course_id)
         if hasattr(course, "courseassessment"):
             questions = Question.objects.filter(
                 content_type=ContentType.objects.get_for_model(CourseAssessment),
@@ -113,116 +124,115 @@ class CourseAssessmentQuestionsView(APIView):
 
 
 class LessonAssessmentUpdateView(APIView):
+    permission_classes = [IsAdminOrInstructor, IsCourseOwner]
+    
     def post(self, request, *args, **kwargs):
         lesson_id = kwargs.get('lesson_id')
         if not lesson_id:
             return Response({'error': 'Lesson ID is required'}, status=400)
         
-        lesson = Lesson.objects.get(id=lesson_id)
         questions = request.data.get('questions')
-        print(len(questions))
-
-        results = []
-
-        # Handle the actual saving/updating of each question
-        for q_item in questions:
-            question_id = q_item.get("id")
-            if question_id:
-                print(q_item)
-                try:
-                    question = Question.objects.get(id=question_id)
-                    serializer = QuestionSerializer(question, data=q_item, partial=True, context={'request': request})
-                except Question.DoesNotExist:
-                    return Response({'error': f"Question with ID {question_id} does not exist"})
-            else:
-                q_item["assessment_type_input"] = request.data.get("assessment_type_input")
-                q_item["lesson_id"] = lesson_id
-                serializer = QuestionSerializer(data=q_item, context={'request': request})
+        if not isinstance(questions, list):
+            return Response({"error": "Questions must be a list"}, status=400)
         
-            if serializer.is_valid(raise_exception=True):
-                instance = serializer.save()
-                results.append(QuestionSerializer(instance).data)
-            else:
-                return Response(serializer.errors, status=400)
+        try:
+            lesson = Lesson.objects.get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            raise NoLessonError()
+        
+        self.check_object_permissions(request, lesson)
+        results = update_lesson_assessment(lesson, questions, request)
             
         return Response(results)
 
 
 class CourseAssessmentUpdateView(APIView):
+    permission_classes = [IsAdminOrInstructor, IsCourseOwner]
+
     def post(self, request, *args, **kwargs):
         course_id = kwargs.get('course_id')
         if not course_id:
             return Response({'error': 'Course ID is required'}, status=400)
         
-        course = Course.objects.get(id=course_id)
-        questions = request.data.get('questions')
-        print(len(questions))
-
-        results = []
-
-        # Handle the actual saving/updating of each question
-        for q_item in questions:
-            question_id = q_item.get("id")
-            if question_id:
-                print(q_item)
-                try:
-                    question = Question.objects.get(id=question_id)
-                    serializer = QuestionSerializer(question, data=q_item, partial=True, context={'request': request})
-                except Question.DoesNotExist:
-                    return Response({'error': f"Question with ID {question_id} does not exist"})
-            else:
-                q_item["assessment_type_input"] = request.data.get("assessment_type_input")
-                q_item["lesson_id"] = course_id
-                serializer = QuestionSerializer(data=q_item, context={'request': request})
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            raise NoCourseError()
+        self.check_object_permissions(request, course)
         
-            if serializer.is_valid(raise_exception=True):
-                instance = serializer.save()
-                results.append(QuestionSerializer(instance).data)
-            else:
-                return Response(serializer.errors, status=400)
+        questions = request.data.get('questions')
+        if not isinstance(questions, list):
+            return Response({"error": "Questions must be a list"}, status=400)
             
+        results = update_course_assessment(course, questions, request)
+
         return Response(results)
 
 
 class LessonCreateView(APIView):
+    permission_classes = [IsAdminOrInstructor]
+
     def post(self, request, *args, **kwargs):
+        course_id = request.data.get('course_id')
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            raise NoCourseError()
+        
+        if course.instructor != request.user:
+            return Response({'error': "You do not own this course"}, status=403)
+
         serializer = LessonCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            lesson = serializer.save()
-            return Response(
-                LessonSerializer(lesson, context={"request": request}).data,
-                status=201
-            )
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        lesson = serializer.save()
+
+        return Response(
+            LessonSerializer(lesson, context={"request": request}).data,
+            status=201
+        )
     
 
 class LessonAssessmentCreateView(APIView):
+    permission_classes = [IsAdminOrInstructor]
     def post(self, request, *args, **kwargs):
         lesson_id = kwargs.get('lesson_id')
-        lesson = Lesson.objects.get(id=lesson_id)
+        if not lesson_id:
+            return Response({'error': "Lesson ID is required"}, status=400)
+
+        try:
+            lesson = Lesson.objects.get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            raise NoLessonError()
+        
+        if lesson.module.course.instructor != request.user:
+            return Response({"error": "You do not own this course"}, status=403)
+
         lesson_assessment, created = LessonAssessment.objects.get_or_create(lesson=lesson)
+
         return Response({'message': f'Lesson Assessment {"created" if created else "fetched"}'})
 
 
 class LessonUpdateView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAdminOrInstructor, IsCourseOwner]
 
     def patch(self, request, *args, **kwargs):
         lesson_id = kwargs.get("lesson_id")
         if not lesson_id:
             return Response({'error': "Lesson ID is required"}, status=400)
-        del kwargs['lesson_id']
-        print(kwargs)
         
-        lesson = Lesson.objects.get(id=lesson_id)
+        try:
+            lesson = Lesson.objects.get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            raise NoLessonError()
+        
+        self.check_object_permissions(request, lesson)
 
         serializer = LessonUpdateSerializer(lesson, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()    
-            return Response({'message': 'Lesson updated'}, status=200)
-    
-        return Response(serializer.errors, status=400)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()    
 
+        return Response({'message': 'Lesson updated'}, status=200)
+    
 
 class OtherCoursesView(APIView):
     def get(self, request):
@@ -238,16 +248,18 @@ class OtherCoursesView(APIView):
 
 
 class CourseEnrollView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def post(self, request, pk):
-        course = Course.objects.get(pk=pk)
-        user = request.user
-
-        if Enrollment.objects.filter(course=course, user=user).exists():
-            return Response({"message": "Already enrolled."})
-
-        enroll_user_in_course(user, course)
+        if not pk:
+            return Response({'error': "Course pk is required"}, status=400)
+        
+        try:
+            course = Course.objects.get(pk=pk)
+        except Course.DoesNotExist:
+            raise NoCourseError()
+        
+        enroll_user_in_course(request.user, course)
 
         return Response(
             {"message": "Enrolled successfully."}, status=status.HTTP_201_CREATED
@@ -255,7 +267,7 @@ class CourseEnrollView(APIView):
 
 
 class MyEnrolledProgresssSummary(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def get(self, request):
         user = request.user
@@ -293,7 +305,7 @@ class MyEnrolledProgresssSummary(APIView):
 
 
 class LastAccessedCourseView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def get(self, request):
         user = request.user
@@ -308,34 +320,21 @@ class LastAccessedCourseView(APIView):
 
 
 class LessonAccessedView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def post(self, request, lesson_id):
         user = request.user
 
+        if not lesson_id:
+            return Response({'error': 'Lesson ID is required'}, status=400)
+
         try:
             lesson = Lesson.objects.select_related("module__course").get(id=lesson_id)
         except Lesson.DoesNotExist:
-            return Response({"error": "Lesson not found"}, status=400)
+            raise NoLessonError()
 
-        lesson_progress = LessonProgress.objects.get(enrollment__user=user, lesson=lesson)
-        lesson_progress.last_accessed_at = now()
-        lesson_progress.save()
 
-        module = lesson.module
-        module_progress, _ = ModuleProgress.objects.get_or_create(
-            enrollment__user=user, module=module
-        )
-        module_progress.last_accessed_at = now()
-        module_progress.save()
-
-        course = module.course
-        course_progress, _ = CourseProgress.objects.get_or_create(
-            enrollment__user=user, enrollment__course=course
-        )
-        course_progress.last_accessed_at = now()
-        course_progress.last_accessed_lesson = lesson
-        course_progress.save()
+        update_lesson_access(request.user, lesson)
 
         return Response({"message": "Access time updated"})
 
@@ -362,66 +361,82 @@ class LessonDetailView(APIView):
     
 
 class LessonCompleteView(APIView):
+    permission_classes = [IsStudent]
+
     def patch(self, request, *args, **kwargs):
-        user = request.user
         lesson_id = kwargs.get('lesson_id')
-        lesson = Lesson.objects.get(id=lesson_id)
 
-        with transaction.atomic():
-            user_lesson_progress= LessonProgress.objects.get(
-                enrollment__user=user,
-                lesson=lesson
-            )
-            user_lesson_progress.completed_at = now()
-            user_lesson_progress.save()
+        if not lesson_id:
+            return Response({"error": "Lesson ID required"}, status=400)
+        
+        try:
+            lesson = Lesson.objects.get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            raise NoLessonError()
 
-            module = lesson.module
-            all_completed = all(
-                LessonProgress.objects.filter(enrollment__user=user, lesson=l, completed_at__isnull=False).exists()
-                for l in module.lessons.all())
-            if all_completed:
-                module_progress = ModuleProgress.objects.get(enrollment__user=user, module=module)
-                module_progress.completed_at = now()
-                module_progress.save()
+        update_lesson_completion(request.user, lesson)
         
         return Response({'message': 'Lesson complete status updated'})
     
 
 class LastAccessedLessonView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def get(self, request, *args, **kwargs):
-        course = Course.objects.get(slug=kwargs.get('course_slug'))
+        if not kwargs.get("course_slug"):
+            return Response({"error": "Course slug is requried"}, status=400)
+        
+        try:
+            course = Course.objects.get(slug=kwargs.get('course_slug'))
+        except Course.DoesNotExist:
+            raise NoCourseError()
+        
         course_progress = CourseProgress.objects.get(enrollment__course=course)
         if course_progress.last_accessed_lesson:
             return Response({'lessonId': course_progress.last_accessed_lesson.id})
         else:
-            return Response({'error': 'No last accessed course'})
+            return Response({'error': 'No last accessed lesson'})
 
 
 class LessonVideoProgress(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStudent]
 
     def get(self, request, *args, **kwargs):
-        lesson = Lesson.objects.get(id=kwargs.get('lesson_id'))
+        if not kwargs.get("lesson_id"):
+            return Response({"error": "Lesson ID is required"}, status=400)
+        
+        try:
+            lesson = Lesson.objects.get(id=kwargs.get('lesson_id'), type="VIDEO")
+        except Lesson.DoesNotExist:
+            raise NoLessonError()
+        
         lesson_progress = LessonProgress.objects.get(
             enrollment__user=request.user,
             lesson=lesson
         )
+
         return Response({'progress': lesson_progress.progress})
 
 
 class SaveLessonVideoProgress(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsStudent]
 
-    def post(self, request, *args, **kwargs):  
-        print("DATA", request.data)
-        current_time = request.data.get('current_time')
-        lesson = Lesson.objects.get(id=kwargs.get('lesson_id'))
-        lesson_progress = LessonProgress.objects.get(
-            enrollment__user=request.user,
-            lesson=lesson
-        ) 
-        lesson_progress.progress = current_time
-        lesson_progress.save()
-        return Response({'message': 'Watch time updated'})
+    def post(self, request, *args, **kwargs):
+        try:
+            current_time = request.data.get('current_time')
+
+            if not current_time:
+                return Response({"error": "Current time is required"}, status=400)
+
+            lesson = Lesson.objects.get(id=kwargs.get('lesson_id'))
+            lesson_progress = LessonProgress.objects.get(
+                enrollment__user=request.user,
+                lesson=lesson
+            ) 
+            lesson_progress.progress = current_time
+            lesson_progress.save()
+            return Response({'message': 'Watch time updated'})
+        except Lesson.DoesNotExist:
+            raise NoLessonError()
+        except LessonProgress.DoesNotExist:
+            return Response({"error": "Lesson video progress does not exist"}, status=404)

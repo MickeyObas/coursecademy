@@ -63,7 +63,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "is_active",
             "order",
             "details",
-            "content_type",
+            # "content_type",
             "object_id",
             "assessment_type",
             "assessment_type_input",
@@ -105,9 +105,6 @@ class QuestionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         details = validated_data.pop('details', {})
         assessment_type = validated_data.pop('assessment_type_input', None)
-
-        if not assessment_type:
-            raise serializers.ValidationError({"assessment_type": "This field is required"})
         
         if assessment_type == "lesson":
             lesson_id = validated_data.pop('lesson_id', None)
