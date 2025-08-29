@@ -2,7 +2,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from rest_framework import generics, parsers, permissions, status
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -43,6 +43,7 @@ def update_profile(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def send_confirmation_code_to_email(request):
     email = request.data.get("email")
 
@@ -67,6 +68,8 @@ def send_confirmation_code_to_email(request):
                 "user_verify_email": email,
             }
         )
+    
+
     except ValueError as e:
         return Response({"error": str(e)}, status=400)
     except Exception as e:
@@ -74,6 +77,7 @@ def send_confirmation_code_to_email(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def resend_confirmation_code_to_email(request):
     email = request.data.get("email")
 
@@ -101,6 +105,7 @@ def resend_confirmation_code_to_email(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def verify_email(request):
     user_code = request.data.get("code")
     token = request.data.get("token")
@@ -126,6 +131,7 @@ def verify_email(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def register(request):
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
@@ -137,6 +143,7 @@ def register(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def login(request):
     email = request.data.get("email")
     password = request.data.get("password")
@@ -177,6 +184,8 @@ def login(request):
 
 
 class CookieTokenRefreshView(TokenRefreshView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request: Request, *args, **kwargs) -> Response:
         print(request.COOKIES)
         refresh_token = request.COOKIES.get("refresh")
