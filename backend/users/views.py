@@ -2,11 +2,12 @@ from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from rest_framework import generics, parsers, permissions, status
-from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.decorators import api_view, parser_classes, permission_classes, throttle_classes
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -142,45 +143,47 @@ def register(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(["POST"])
-@permission_classes([permissions.AllowAny])
-def login(request):
-    email = request.data.get("email")
-    password = request.data.get("password")
+class LoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_scope = 'login'
 
-    if not email:
-        return Response({"error": "Please enter your email"}, status=400)
+    def post(self, request, *args, **kwargs):
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-    if not password:
-        return Response({"error": "Please enter your password"}, status=400)
+        if not email:
+            return Response({"error": "Please enter your email"}, status=400)
 
-    email = email.strip().lower()
-    user = authenticate(email=email, password=password)
+        if not password:
+            return Response({"error": "Please enter your password"}, status=400)
 
-    if user is not None:
-        refresh = RefreshToken.for_user(user)
-        response = Response(
-            {
-                # "refresh": str(refresh),
-                "access": str(refresh.access_token),
-                "user": UserSerializer(user, context={"request": request}).data,
-            },
-            status=status.HTTP_200_OK,
-        )
-        response.set_cookie(
-            key="refresh",
-            value=str(refresh),
-            httponly=True,
-            samesite="None",
-            secure=True,
-            path="/",
-            max_age=1 * 24 * 60 * 60,
-        )
-        return response
-    else:
-        return Response(
-            {"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST
-        )
+        email = email.strip().lower()
+        user = authenticate(email=email, password=password)
+
+        if user is not None:
+            refresh = RefreshToken.for_user(user)
+            response = Response(
+                {
+                    # "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                    "user": UserSerializer(user, context={"request": request}).data,
+                },
+                status=status.HTTP_200_OK,
+            )
+            response.set_cookie(
+                key="refresh",
+                value=str(refresh),
+                httponly=True,
+                samesite="None",
+                secure=True,
+                path="/",
+                max_age=1 * 24 * 60 * 60,
+            )
+            return response
+        else:
+            return Response(
+                {"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class CookieTokenRefreshView(TokenRefreshView):

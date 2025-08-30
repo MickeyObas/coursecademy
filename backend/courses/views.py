@@ -19,6 +19,7 @@ from assessments.services import update_lesson_assessment, update_course_assessm
 from core.permissions import IsAdminOrInstructor, IsInstructor, IsCourseOwner, IsStudent
 from courses.exceptions import NoLessonError, NoCourseError
 from courses.services import update_lesson_access, update_lesson_completion
+from enrollments.permissions import IsEnrolled
 
 
 class CourseCreateView(APIView):
@@ -309,7 +310,7 @@ class LastAccessedCourseView(APIView):
 
     def get(self, request):
         user = request.user
-        course_progress = CourseProgress.objects.filter(enrollment__user=user)
+        course_progress = CourseProgress.objects.filter(enrollment__user=user, last_accessed_at__isnull=False)
         if course_progress.exists():
             last_accessed_course = course_progress.latest('last_accessed_at').enrollment.course
             serializer = CourseUserSerializer(
@@ -333,15 +334,19 @@ class LessonAccessedView(APIView):
         except Lesson.DoesNotExist:
             raise NoLessonError()
 
-
         update_lesson_access(request.user, lesson)
 
         return Response({"message": "Access time updated"})
 
 
 class LessonDetailView(APIView):
+    permission_classes = [IsAdminOrInstructor | IsEnrolled]
+
     def get(self, request, *args, **kwargs):
-        lesson = generics.get_object_or_404(Lesson, id=kwargs.get("pk"))
+        if not kwargs.get("lesson_id"):
+            return Response({"error": "Lesson ID is required"}, status=400)
+        
+        lesson = generics.get_object_or_404(Lesson, id=kwargs.get("lesson_id"))
 
         prev_modules = Module.objects.filter(
             course=lesson.module.course, order__lt=lesson.module.order
@@ -361,7 +366,7 @@ class LessonDetailView(APIView):
     
 
 class LessonCompleteView(APIView):
-    permission_classes = [IsStudent]
+    permission_classes = [IsStudent, IsEnrolled]
 
     def patch(self, request, *args, **kwargs):
         lesson_id = kwargs.get('lesson_id')
@@ -380,7 +385,7 @@ class LessonCompleteView(APIView):
     
 
 class LastAccessedLessonView(APIView):
-    permission_classes = [IsStudent]
+    permission_classes = [IsStudent, IsEnrolled]
 
     def get(self, request, *args, **kwargs):
         if not kwargs.get("course_slug"):
@@ -399,7 +404,7 @@ class LastAccessedLessonView(APIView):
 
 
 class LessonVideoProgress(APIView):
-    permission_classes = [IsStudent]
+    permission_classes = [IsStudent, IsEnrolled]
 
     def get(self, request, *args, **kwargs):
         if not kwargs.get("lesson_id"):
@@ -419,7 +424,7 @@ class LessonVideoProgress(APIView):
 
 
 class SaveLessonVideoProgress(APIView):
-    permission_classes = [IsStudent]
+    permission_classes = [IsStudent, IsEnrolled]
 
     def post(self, request, *args, **kwargs):
         try:

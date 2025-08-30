@@ -157,6 +157,13 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+    }
+}
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -165,7 +172,19 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
     ),
-    "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler"
+    "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
+    'DEFAULT_THROTTLE_CLASSES': [
+        "rest_framework.throttling.ScopedRateThrottle",
+        'rest_framework.throttling.AnonRateThrottle',
+        'core.throttling.BurstRateThrottle',
+        'core.throttling.SustainedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '20/day',
+        'burst': '45/min',
+        'sustained': '1000/day',
+        'login': '5/minute'
+    }
 }
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(minutes=1)}
