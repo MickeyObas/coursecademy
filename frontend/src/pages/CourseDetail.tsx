@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
 
 const CourseDetail = () => {
+  const navigate = useNavigate();
   const { courseSlug } = useParams();
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,9 +49,27 @@ const CourseDetail = () => {
             <span>💵 Price: ₦{course.price}</span>
           </div>
           <div>
-            <button className="mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
-              {course.price === "0.00" ? "Start Course" : "Enroll Now"}
-            </button>
+            {
+              course.is_enrolled 
+                ? (
+                   <button
+                    onClick={() => navigate(`/courses/${courseSlug}/lessons/${course.resume_lesson_id}/`)} 
+                    className="cursor-pointer mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+                    Resume Course
+                   </button>
+                )
+                : course.price === "0.00"
+                  ? (
+                      <button className="cursor-pointer mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+                        Start Course
+                      </button>
+                  )
+                  : (
+                    <button className="cursor-pointer mt-4 px-5 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+                      Enroll Now
+                    </button>
+                  )
+              }
           </div>
         </div>
       </div>

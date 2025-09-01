@@ -28,17 +28,17 @@ const Login: React.FC = () => {
       setLoading(true);
       const response = await api.post(`/api/auth/token/`, {
         email: email,
-        password: password
+        password: password,
+        remember_me: rememberMe
       });
       const data = await response.data;
-      console.log(data);
       login(data);
       setEmail('');
       setPassword('');
       navigate('/');
     }catch(error: any){
       if(error.response){
-        console.error(error.response.data);
+        console.log(error.response.data);
         setError(error.response.data?.error);
       }else{
         console.error(error);

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    "rest_framework_simplejwt.token_blacklist"
 ]
 
 MIDDLEWARE = [
@@ -180,14 +181,71 @@ REST_FRAMEWORK = {
         'core.throttling.SustainedRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '20/day',
-        'burst': '45/min',
-        'sustained': '1000/day',
+        'anon': '45/day',
+        'burst': '120/min',
+        'sustained': '1200/day',
         'login': '5/minute'
     }
 }
 
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(minutes=1)}
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "colored": {
+            "()": "colorlog.ColoredFormatter",
+            "format": (
+                "%(log_color)s%(levelname)-8s%(reset)s "
+                "%(cyan)s%(asctime)s%(reset)s "
+                "%(blue)s%(name)s:%(lineno)d%(reset)s "
+                "%(message_log_color)s%(message)s"
+            ),
+            "log_colors": {
+                "DEBUG": "white",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "bold_red,bg_white",
+            },
+            "secondary_log_colors": {
+                "message": {
+                    "ERROR": "red",
+                    "CRITICAL": "bold_red",
+                }
+            },
+            "style": "%",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "colored",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+    "loggers": {
+        "django": {
+            "level": "WARNING",
+            "handlers": ["console"],
+            "propagate": False
+        },
+        "users": {
+            "level": "DEBUG",
+            "handlers": ["console"],
+            "propagate": False
+        }
+    }
+}
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ROTATE_REFRESH_TOKENS": False,
+    "BLACKLIST_AFTER_ROTATION": False
+}
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"

@@ -7,9 +7,9 @@ const DashboardLayout = () => {
   return (
     <div>
       <Header />
-      <div className="grid grid-cols-[270px_1fr]">
+      <div className="grid grid-cols-[270px_1fr] h-screen overflow-hidden">
         <Sidebar />
-        <main>
+        <main className="mt-18 h-[calc(100vh-74px)] overflow-y-scroll bg-slate-100">
           <Outlet />
         </main>
       </div>

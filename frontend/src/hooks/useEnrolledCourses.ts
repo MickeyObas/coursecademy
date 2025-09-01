@@ -6,10 +6,9 @@ export const useEnrolledCourses = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchEnrolledCourses = async () => {
+  const fetchEnrolledCourses = async (filter: "active" | "completed") => {
     try {
-      const response = await api.get(`/api/enrollments/my/`);
+      const response = await api.get(`/api/enrollments/my/?filter=${filter}`);
       const data = response.data;
       setEnrolledCourses(data);
     }catch (error: any){
@@ -23,9 +22,11 @@ export const useEnrolledCourses = () => {
       setLoading(false);
     }
   };
-    fetchEnrolledCourses();
+
+  useEffect(() => {
+    fetchEnrolledCourses("active");
   }, [])
 
-  return { enrolledCourses, loading, error }
+  return { enrolledCourses, loading, error, fetchEnrolledCourses }
 
 }

@@ -6,7 +6,8 @@ from categories.serializers import CategorySerializer
 from categories.models import Category
 from users.serializers import UserSerializer
 from .models import (Course, CourseLearningPoint, CourseSkill, Lesson,
-                     LessonProgress, Module, ModuleProgress)
+                     LessonProgress, Module, ModuleProgress, CourseProgress)
+from enrollments.models import Enrollment
 
 
 class LessonListSerializer(serializers.ModelSerializer):
@@ -280,6 +281,7 @@ class CourseSerializer(serializers.ModelSerializer):
         write_only=True
     )
     resume_lesson_id = serializers.SerializerMethodField()
+    is_enrolled = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -302,7 +304,10 @@ class CourseSerializer(serializers.ModelSerializer):
             "learning_points_input",
             "skills",
             "skills_input",
-            "resume_lesson_id"
+            "resume_lesson_id",
+            "lesson_count",
+            "module_count",
+            "is_enrolled"
         ]
 
     def create(self, validated_data):
@@ -320,6 +325,13 @@ class CourseSerializer(serializers.ModelSerializer):
                 CourseSkill.objects.create(course=course, name=skill)
 
             return course
+
+    def get_is_enrolled(self, obj):
+        user = self.context['request'].user
+        return Enrollment.objects.filter(
+            user=user,
+            course=obj
+        ).exists()
 
     def get_learning_points(self, obj):
         return [lp.text for lp in obj.learning_points.all()]
@@ -341,6 +353,14 @@ class CourseSerializer(serializers.ModelSerializer):
         first_lesson = Lesson.objects.filter(module__course=obj).order_by("module__order", "order").first()
 
         return first_lesson.id if first_lesson else None
+    
+
+    # def get_lesson_count(self, obj):
+    #     return Lesson.objects.filter(module__course=obj).count()
+    
+    # def get_module_count(self, obj):
+    #     return obj.modules.count()
+
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -361,6 +381,15 @@ class CourseUserSerializer(serializers.Serializer):
     course = serializers.SerializerMethodField()
     progress = serializers.SerializerMethodField()
     resume_lesson_id = serializers.SerializerMethodField()
+    last_accessed_at = serializers.SerializerMethodField()
+
+    def get_last_accessed_at(self, obj):
+        request = self.context["request"]
+        course_progress = CourseProgress.objects.get(
+            enrollment__user=request.user,
+            enrollment__course=obj
+        )
+        return course_progress.last_accessed_at
 
     def get_course(self, obj):
         request = self.context["request"]
@@ -370,6 +399,8 @@ class CourseUserSerializer(serializers.Serializer):
             "category": obj.category.title,
             "thumbnail": request.build_absolute_uri(obj.thumbnail.url),
             "slug": obj.slug,
+            "lesson_count": obj.lesson_count,
+            "module_count": obj.module_count
         }
 
     def get_progress(self, obj):

@@ -40,6 +40,15 @@ class Course(TimeStampedModel):
     def update_rating(self):
         pass
 
+    @property
+    def lesson_count(self):
+        from ..models import Lesson
+        return Lesson.objects.filter(module__course=self).count()
+    
+    @property
+    def module_count(self):
+        return self.modules.count()
+
 
 class CourseSkill(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="skills")

@@ -21,6 +21,10 @@ from users.serializers import (PasswordResetConfirmSerializer,
                                UserSerializer)
 
 from .services import VerificationService
+import logging
+from datetime import timedelta
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
@@ -69,7 +73,6 @@ def send_confirmation_code_to_email(request):
                 "user_verify_email": email,
             }
         )
-    
 
     except ValueError as e:
         return Response({"error": str(e)}, status=400)
@@ -150,6 +153,8 @@ class LoginView(APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
         password = request.data.get("password")
+        remember_me = request.data.get("remember_me", False)
+        logger.debug(f"Remember me --- > {remember_me}")
 
         if not email:
             return Response({"error": "Please enter your email"}, status=400)
@@ -160,39 +165,72 @@ class LoginView(APIView):
         email = email.strip().lower()
         user = authenticate(email=email, password=password)
 
-        if user is not None:
-            refresh = RefreshToken.for_user(user)
-            response = Response(
-                {
-                    # "refresh": str(refresh),
-                    "access": str(refresh.access_token),
-                    "user": UserSerializer(user, context={"request": request}).data,
-                },
-                status=status.HTTP_200_OK,
-            )
-            response.set_cookie(
-                key="refresh",
-                value=str(refresh),
-                httponly=True,
-                samesite="None",
-                secure=True,
-                path="/",
-                max_age=1 * 24 * 60 * 60,
-            )
-            return response
-        else:
+        if user is None:
             return Response(
                 {"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST
             )
+        
+        refresh = RefreshToken.for_user(user)
+        if remember_me:
+            refresh.set_exp(lifetime=timedelta(days=30))
+            max_age = 60 * 60 * 24 * 30
+        else:
+            refresh.set_exp(lifetime=timedelta(days=1))
+            max_age = None
+
+        response = Response(
+            {
+                # "refresh": str(refresh),
+                "access": str(refresh.access_token),
+                "user": UserSerializer(user, context={"request": request}).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+        response.set_cookie(
+            key="refresh",
+            value=str(refresh),
+            httponly=True,
+            samesite="None",
+            secure=True,
+            path="/",
+            max_age=max_age,
+        )
+        return response
+    
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        try:
+            refresh_token = request.COOKIES.get('refresh')
+            if refresh_token:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+        except Exception:
+            pass
+
+        response = Response({'message': 'Logged out'})
+
+        # Deleting the refresh cookie
+        response.set_cookie(
+            key="refresh",
+            value="",
+            httponly=True,
+            samesite="None",
+            secure=True,
+            path="/",
+            expires="Thu, 01 Jan 1970 00:00:00 GMT"
+        )
+        return response
 
 
 class CookieTokenRefreshView(TokenRefreshView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request: Request, *args, **kwargs) -> Response:
-        print(request.COOKIES)
         refresh_token = request.COOKIES.get("refresh")
-        print("REFRESH TOKEN: ", refresh_token)
 
         if refresh_token is None:
             return Response({"error": "No refresh token"}, status=401)
@@ -204,4 +242,6 @@ class CookieTokenRefreshView(TokenRefreshView):
         except TokenError as e:
             raise InvalidToken(e.args[0])
 
-        return Response(serializer.validated_data)
+        data = serializer.validated_data
+
+        return Response(data)

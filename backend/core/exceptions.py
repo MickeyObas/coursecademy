@@ -1,6 +1,7 @@
 from rest_framework.views import exception_handler
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import Throttled
 
 from assessments.exceptions import NoCourseAssessmentError, NoLessonAssessmentError, NoTestAssessmentError, NoTestBlueprintError, NoQuestionError, TestSessionExpiredError, NoAssessmentSessionError, NoTestSessionError
 from enrollments.exceptions import AlreadyEnrolledError
@@ -59,6 +60,12 @@ def custom_exception_handler(exc, context):
         return Response(
             {"error": "User already enrolled in this course"},
             status=400
+        )
+    
+    if isinstance(exc, Throttled):
+        return Response(
+            {'error': 'You have made too many requests. Please try again later.'},
+            status=429
         )
     
     return exception_handler(exc, context)
