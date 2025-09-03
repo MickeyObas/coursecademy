@@ -32,23 +32,24 @@ const TestDetails = () => {
       const response = await api.post(`/api/assessments/${categoryId}/test/start/`, {
         difficulty: difficulty
       });
-      const data = await response.data;
-      navigate(`/dashboard/take-test/${data.sessionId}`, {
-        state: {
-          questions: data.questions,
-          startedAt: data.started_at,
-          durationMinutes: data.duration_minutes
-        }
-      })
+      console.log(response);
+      if(response.status === 200){
+        const data = await response.data;
+        navigate(`/dashboard/take-test/${data.sessionId}`, {
+          // Move state to database
+          state: {
+            questions: data.questions,
+            startedAt: data.started_at,
+            durationMinutes: data.duration_minutes
+          }
+        })
+      }
     }catch(err: any){
-      if(err.response){
-        console.error(err.response.data);
-      }else{
-        console.error(err);
+      if(err.response.status === 404){
+        alert("There is no test that matches this difficulty.");
       }
     }
-    
-    };
+  };
 
   return (
     <div className="px-6 py-10 max-w-3xl">
@@ -84,7 +85,7 @@ const TestDetails = () => {
 
       <button
         onClick={handleStartTest}
-        className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
+        className="cursor-pointer bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
       >
         Start Test
       </button>

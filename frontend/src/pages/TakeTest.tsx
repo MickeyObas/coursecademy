@@ -7,7 +7,6 @@ const TakeTest = () => {
   const navigate = useNavigate();
   const { testSessionId } = useParams();
   const location = useLocation();
-  console.log("LOCATION", location.state);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState(
     JSON.parse(localStorage.getItem("answers") || "{}")
@@ -20,8 +19,27 @@ const TakeTest = () => {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [timerReady, setTimeReady] = useState(false);
 
-  useEffect(() => {
 
+  useEffect(() => {
+    const fetchTestSession = async () => {
+      try{
+        const response = await api.get(`/api/sessions/tests/${testSessionId}/`);
+        if(response.status === 200){
+          const data = response.data;
+          console.log(data);
+          localStorage.setItem("questions", JSON.stringify(data.questions));
+          localStorage.setItem("startedAt", data.started_at);
+          localStorage.setItem("durationMinutes", data.duration_minutes.toString());
+        }
+      }catch(err){
+        console.log(err);
+      }
+    };
+    fetchTestSession();
+  }, [testSessionId])
+
+
+  useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault();
       e.returnValue = ''; // Chrome shows default message
@@ -31,13 +49,13 @@ const TakeTest = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  useEffect(() => {
-    if (location.state) {
-      localStorage.setItem("questions", JSON.stringify(location.state?.questions));
-      localStorage.setItem("startedAt", location.state.startedAt);
-      localStorage.setItem("durationMinutes", location.state.durationMinutes.toString());
-    }
-  }, [location.state]);
+  // useEffect(() => {
+  //   if (location.state) {
+  //     localStorage.setItem("questions", JSON.stringify(location.state?.questions));
+  //     localStorage.setItem("startedAt", location.state.startedAt);
+  //     localStorage.setItem("durationMinutes", location.state.durationMinutes.toString());
+  //   }
+  // }, [location.state]);
 
   useEffect(() => {
     const start = new Date(startedAt);
@@ -62,6 +80,7 @@ const TakeTest = () => {
     if (timeLeft === 0) {
       submitTest();
     }
+    console.log(Math.floor(timeLeft / 1000));
   }, [timeLeft, timerReady]);
 
   const formatTime = (ms: number) => {
@@ -106,7 +125,7 @@ const TakeTest = () => {
       localStorage.removeItem('questions');
       localStorage.removeItem('startedAt');
       localStorage.removeItem('durationMinutes');
-      navigate('/');
+      navigate('/dashboard/tests/');
     }catch(error: any){
       if(error.response?.data){
         console.error(error.response.data);
@@ -117,24 +136,27 @@ const TakeTest = () => {
   }
 
   return (
-    <>
-      <div className="text-right font-bold text-red-600 text-xl">
+    <div className="p-5 h-full">
+      <div className={`text-right font-bold ${Math.floor(timeLeft / 1000) > 60 ? 'text-blue-600' : 'text-red-600 animate-pulse'} text-xl mb-5`}>
         Time left: {formatTime(timeLeft)}
       </div>
 
-      <QuestionCard 
-        current={current}
-        currentIndex={currentQuestionIndex}
-        totalQuestions={questions.length}
-        answers={answers}
-        handleMCQInput={handleMCQInput}
-        handleFIBInput={handleFIBInput}
-        handleTFInput={handleTFInput}
-        handleNext={handleNext}
-        handlePrev={handlePrev}
-        onSubmit={submitTest}
-      />
-    </>
+      <div className="flex h-[80%] items-center">
+        <QuestionCard 
+          current={current}
+          currentIndex={currentQuestionIndex}
+          totalQuestions={questions.length}
+          answers={answers}
+          handleMCQInput={handleMCQInput}
+          handleFIBInput={handleFIBInput}
+          handleTFInput={handleTFInput}
+          handleNext={handleNext}
+          handlePrev={handlePrev}
+          onSubmit={submitTest}
+        />
+      </div>
+      
+    </div>
   );
 }
 

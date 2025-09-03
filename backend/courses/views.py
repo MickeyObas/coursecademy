@@ -262,8 +262,17 @@ class CourseEnrollView(APIView):
         
         enroll_user_in_course(request.user, course)
 
+        first_lesson = Lesson.objects.filter(module__course=course).order_by('module__order', 'order')
+        if first_lesson.exists():
+            first_lesson_id = first_lesson.first().id
+        else:
+            first_lesson_id = None
+
         return Response(
-            {"message": "Enrolled successfully."}, status=status.HTTP_201_CREATED
+            {
+                "message": "Enrolled successfully.",
+                "first_lesson_id": first_lesson_id
+                }, status=status.HTTP_201_CREATED
         )
 
 

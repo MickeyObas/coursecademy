@@ -13,6 +13,7 @@ export default function CoursePlayer() {
   const { courseSlug, lessonId } = useParams();
   const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
+  const lessonBody = useRef(null);
 
 
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
@@ -67,6 +68,13 @@ export default function CoursePlayer() {
     console.log(data);
     navigate(`/courses/${courseSlug}/assessment/`);
   }
+
+  useEffect(() => {
+    // Scroll to top
+    if(lessonBody.current){
+      lessonBody.current.scrollTo({top: 0, left: 0, behavior: 'instant'})
+    }
+  }, [currentLessonIndex])
 
   useEffect(() => {
     const fetchLessonContent = async () => {
@@ -147,7 +155,7 @@ export default function CoursePlayer() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div ref={lessonBody} className="flex-1 p-6 overflow-y-auto">
         <h1 className="text-xl font-bold mb-4">{currentLesson?.title}</h1>
 
         {currentLesson?.type === "VIDEO" ? (

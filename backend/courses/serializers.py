@@ -281,6 +281,7 @@ class CourseSerializer(serializers.ModelSerializer):
         write_only=True
     )
     resume_lesson_id = serializers.SerializerMethodField()
+    first_lesson_id = serializers.SerializerMethodField()
     is_enrolled = serializers.SerializerMethodField()
 
     class Meta:
@@ -353,6 +354,15 @@ class CourseSerializer(serializers.ModelSerializer):
         first_lesson = Lesson.objects.filter(module__course=obj).order_by("module__order", "order").first()
 
         return first_lesson.id if first_lesson else None
+    
+    def first_lesson_id(self, obj):
+        qs = Lesson.objects.filter(
+            module__course=obj
+        ).order_by('module__order', 'order')
+        if qs.exists():
+            first_lesson = qs.first()
+            return first_lesson.id
+        return None
     
 
     # def get_lesson_count(self, obj):

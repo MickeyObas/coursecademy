@@ -41,6 +41,7 @@ class TestSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestSession
         fields = [
+            "id",
             "test_assessment",
             "status",
             "score",

@@ -107,43 +107,47 @@ export default function QuestionCard({
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md select-none">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">
-          Question {currentIndex+1} of {totalQuestions}
-        </h2>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md select-none flex flex-col justify-between">
+      <div>
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">
+            Question {currentIndex+1} of {totalQuestions}
+          </h2>
+        </div>
 
-        {current?.type === 'FIB' && (
-          <FIBQuestion 
-            current={current}
-            handleFIBInput={handleFIBInput}
-            answers={answers}
-          />
-        )}
+        <div>
+          {current?.type === 'FIB' && (
+            <FIBQuestion 
+              current={current}
+              handleFIBInput={handleFIBInput}
+              answers={answers}
+            />
+          )}
+
+          {current?.type === 'MCQ' && (
+            <MCQQuestion 
+              current={current}
+              handleMCQInput={handleMCQInput}
+              answers={answers}
+            />
+          )}
+
+          {current?.type === 'TF' && (
+            <TFQuestion 
+              current={current}
+              handleTFInput={handleTFInput}
+              answers={answers}
+            />
+          )}
+        </div>
       </div>
 
-      {current?.type === 'MCQ' && (
-        <MCQQuestion 
-          current={current}
-          handleMCQInput={handleMCQInput}
-          answers={answers}
-        />
-      )}
-
-      {current?.type === 'TF' && (
-        <TFQuestion 
-          current={current}
-          handleTFInput={handleTFInput}
-          answers={answers}
-        />
-      )}
-
       {/* Navigation Buttons */}
-      <div className="flex justify-between items-center mt-6">
+      <div className="flex gap-x-4 justify-between items-center mt-8">
         <button
           onClick={handlePrev}
           disabled={currentIndex === 0}
-          className={`px-4 py-2 rounded-lg text-white ${
+          className={`cursor-pointer px-4 py-2 rounded-lg text-white ${
             currentIndex === 0
               ? 'bg-gray-300 cursor-not-allowed'
               : 'bg-gray-600 hover:bg-gray-700'
@@ -154,21 +158,21 @@ export default function QuestionCard({
         <div className="flex gap-x-3">
           <button
             onClick={handleAnswerSave}
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-blue-700"
+            className="cursor-pointer px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
           >
             Save Answer
           </button>
           {currentIndex === totalQuestions - 1 ? (
             <button
             onClick={onSubmit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Finish
           </button>
           ) : (
             <button
             onClick={handleNext}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Next
           </button>
@@ -212,6 +216,7 @@ const TFQuestion = ({current, answers, handleTFInput}: TFQuestionProps) => {
       <div className="space-y-3 flex flex-col mt-4">
         <label className="gap-3 p-3 cursor-pointer">
           <input 
+            className="cursor-pointer mr-1.5"
             type="radio" 
             checked={value === "true"}
             onChange={() => handleTFInput(current?.id, "true")}
@@ -220,6 +225,7 @@ const TFQuestion = ({current, answers, handleTFInput}: TFQuestionProps) => {
         </label>
         <label className="gap-3 p-3 cursor-pointer">
           <input 
+            className="cursor-pointer mr-1.5"
             type="radio" 
             checked={value === "false"}
             onChange={() => handleTFInput(current?.id, "false")}

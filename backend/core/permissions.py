@@ -39,6 +39,16 @@ class IsAdminOrInstructor(BasePermission):
         return request.user.is_staff or request.user.account_type == 'I'
 
 
+class IsAdminOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return bool(
+            request.method in SAFE_METHODS or
+            request.user and (
+                request.user.is_staff or
+                request.user.account_type == "A"
+            )
+        )
+    
 class IsAdminInstructorOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         return bool(

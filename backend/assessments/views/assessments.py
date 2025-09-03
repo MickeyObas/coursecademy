@@ -15,16 +15,21 @@ from assessments.serializers import (
                                      TestAssessmentSerializer,
                                      TestSessionQuestionSerializer)
 from assessments.services import start_test_session, start_lesson_assessment, start_course_assessment
-from core.permissions import IsAdminOrOwner, IsStudent
+from core.permissions import IsAdminOrOwner, IsStudent, IsAdminOrReadOnly
 from enrollments.permissions import IsEnrolled
 
 logger = logging.getLogger(__name__)
 
 
+class TestAssesmentList(generics.ListAPIView):
+    serializer_class = TestAssessmentSerializer
+    queryset = TestAssessment.objects.all()
+
+
 class TestAssessmentDetail(generics.RetrieveAPIView):
     serializer_class = TestAssessmentSerializer
     queryset = TestAssessment.objects.all()
-    permission_classes = [IsAdminOrOwner]
+    permission_classes = [IsAdminOrReadOnly]
     lookup_field = "category_id"
 
 

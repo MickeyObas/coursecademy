@@ -30,15 +30,6 @@ const Courses = () => {
     fetchOtherCourses();
   }, [])
 
-  const handleCourseEnroll = async (courseId) => {
-    try {
-      const response = await api.post(`/api/courses/${courseId}/enroll/`);
-      const data = response.data;
-    } catch(err){
-      console.error(err);
-    }
-  }
-
   return (
     <main className="bg-slate-100 px-6 py-10 flex flex-col">
       <section>
@@ -49,7 +40,7 @@ const Courses = () => {
               <div 
                 onClick={() => navigate(`/dashboard/courses/${course?.course.slug}/`)}
                 key={idx} className="flex flex-col bg-white p-1 rounded-lg hover:shadow cursor-pointer">
-                <div className="bg-blue-100 w-full h-18 rounded-lg">
+                <div className="bg-blue-100 w-full h-25 rounded-lg">
                   <img 
                     className='object-contain w-full h-full'
                     src={course?.course.thumbnail}

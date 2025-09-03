@@ -12,6 +12,8 @@ def enroll_user_in_course(user, course):
     if Enrollment.objects.filter(course=course, user=user).exists():
         raise AlreadyEnrolledError()
     
+    # Check if the user has paid for the course - if it's not free, that is
+    
     enrollment = Enrollment.objects.create(course=course, user=user)
     lessons = Lesson.objects.filter(module__course=course)
     LessonProgress.objects.bulk_create([

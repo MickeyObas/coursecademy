@@ -12,9 +12,45 @@ from ..serializers import (SaveAssessmentAnswerSerializer,
                            SaveTestAssessmentAnswerSerializer, TestSessionSerializer)
 from ..services import (mark_assessment_session, mark_test_session,
                         save_assessment_answer, save_test_answer)
-from assessments.serializers import QuestionDisplaySerializer, SubmitAssessmentSessionSerializer
+from assessments.serializers import QuestionDisplaySerializer, SubmitAssessmentSessionSerializer, TestSessionQuestionSerializer
 from core.permissions import IsStudent
 from courses.helpers import get_course_from_object
+
+
+class TestSessionDetail(APIView):
+    def get(self, request, **kwargs):
+        test_session_id = kwargs.get('test_session_id')
+        if not test_session_id:
+            return Response({"error": "Test session ID is required"}, status=400)
+        
+        try:
+            test_session = TestSession.objects.get(id=test_session_id)
+        except TestSession.DoesNotExist:
+            return Response({"error": "Invalid test session ID"}, status=400)
+
+        if test_session.user != request.user:
+            return Response({"error": "You are not authorized to perform this action"}, status=403)
+        
+        test_session_questions = TestSessionQuestion.objects.filter(
+            test_session=test_session
+        )
+        test_question_data = TestSessionQuestionSerializer(test_session_questions, many=True).data
+
+        data = {
+            "started_at": test_session.started_at,
+            "duration_minutes": test_session.test_assessment.duration_minutes,
+            "questions": test_question_data
+        }
+
+        return Response(data)
+        # Response(
+        # {
+        #     "sessionId": test_session.id,
+        #     "message": "Session started",
+        #     "started_at": test_session.started_at,
+        #     "duration_minutes": test_session.test_assessment.duration_minutes,
+        #     "questions": data,
+        # }
 
 
 class UserTestSessionList(APIView):

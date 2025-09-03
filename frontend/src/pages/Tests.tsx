@@ -7,6 +7,7 @@ const Tests = () => {
 
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
+  const [tests, setTests] = useState([]);
   const [testSessions, setTestSessions] = useState([]);
 
   const formatStatus = (statusChar: string) => {
@@ -34,7 +35,9 @@ const Tests = () => {
     });
   }
 
+
   const handleTestResume = (sessionId: number) => {
+    console.log(sessionId);
     // Check if test session still valid
     navigate(`/dashboard/take-test/${sessionId}/`)
   }
@@ -57,9 +60,26 @@ const Tests = () => {
   }, [])
 
   useEffect(() => {
+    const fetchTestAssessments = async () => {
+      try {
+        const response = await api.get(`/api/assessments/tests/`);
+        const data = await response.data;
+        setTests(data);
+      }catch(error: any){
+        if(error.response){
+          console.log(error.response.data);
+        }else{
+          console.error(error);
+        }
+      }
+    };
+    fetchTestAssessments();
+  }, [])
+
+  useEffect(() => {
     const fetchTestSessions = async () => {
       try { 
-        const response = await api.get(`/api/sessions/user/${1}/`);
+        const response = await api.get(`/api/sessions/tests/my/`);
         const data = response.data;
         setTestSessions(data);
         console.log(data);
@@ -79,11 +99,11 @@ const Tests = () => {
       <div className="flex flex-col bg-white p-4 rounded-lg">
         <h2 className="text-xl font-bold">Available Tests</h2>
         <div className="flex flex-wrap mt-4 gap-3">
-          {categories.map((category, idx) => (
+          {tests.map((test, idx) => (
             <span 
               key={idx}
-              onClick={() => navigate(`/dashboard/tests/${category.id}/`)}
-              className="bg-blue-200 rounded-full p-2 cursor-pointer hover:bg-blue-300">{category.title}</span>
+              onClick={() => navigate(`/dashboard/tests/${test.category.id}/`)}
+              className="bg-blue-200 rounded-full p-2 cursor-pointer hover:bg-blue-300">{test.category.title}</span>
           ))}
         </div>
       </div>
@@ -93,19 +113,33 @@ const Tests = () => {
           <div className="grid grid-cols-1 gap-4 mt-4">
             {testSessions.map((testSession, idx) => (
               <div className="bg-slate-100 p-2.5 rounded-lg flex justify-between items-center">
-                <div className="flex gap-x-7">
-                  <p className="font-bold text-lg">{testSession?.test_assessment?.category?.title}</p>
-                  <p>Status: {formatStatus(testSession.status)}</p>
-                  <p>Score: {testSession.score}%</p>
-                  {testSession.submitted_at && (
-                    <p>Date: {formatDate(testSession.submitted_at)}</p>
-                  )}
+                <div className="flex w-full gap-x-7">
+                  <div className="w-[25%]">
+                    <p className="font-bold text-lg">{testSession?.test_assessment?.category?.title}</p>
+                  </div>
+                  <div className="w-[15%]">
+                    <p>Status: {formatStatus(testSession.status)}</p>
+                  </div>
+                  <div className="w-[15%]">
+                    <p>Score: {testSession.score}%</p>
+                  </div>
+                  <div className='w-[40%]'>
+                    {testSession.submitted_at ? (
+                      <p>Date: {formatDate(testSession.submitted_at)}</p>
+                    ) : (
+                      <div className="flex w-full justify-between items-center h-full">
+                        <p>N/A</p>
+                        {!testSession.is_expired && (
+                          <div className="">
+                            <button 
+                            onClick={() => handleTestResume(testSession.id)}
+                            className="bg-blue-400 px-2 py-1.5 rounded-lg text-white cursor-pointer">Resume Test</button>
+                          </div>
+                          )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {(!testSession.is_expired && !(testSession.status === 'S')) && (
-                  <button 
-                    onClick={() => handleTestResume(testSession.id)}
-                    className="bg-blue-400 px-2 py-1.5 rounded-lg text-white cursor-pointer">Resume Test</button>
-                )}
               </div>
             ))}
           </div>
