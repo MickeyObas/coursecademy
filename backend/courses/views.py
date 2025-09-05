@@ -1,5 +1,6 @@
 from django.utils.timezone import now
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -18,7 +19,7 @@ from assessments.serializers import QuestionSerializer
 from assessments.services import update_lesson_assessment, update_course_assessment
 from core.permissions import IsAdminOrInstructor, IsInstructor, IsCourseOwner, IsStudent
 from courses.exceptions import NoLessonError, NoCourseError
-from courses.services import update_lesson_access, update_lesson_completion
+from courses.services import update_lesson_access, update_lesson_completion, get_next_step
 from enrollments.permissions import IsEnrolled
 
 
@@ -454,3 +455,21 @@ class SaveLessonVideoProgress(APIView):
             raise NoLessonError()
         except LessonProgress.DoesNotExist:
             return Response({"error": "Lesson video progress does not exist"}, status=404)
+        
+
+class NextStepView(APIView):
+    permission_classes = [IsStudent]
+
+    def get(self, request, course_slug):
+        if not course_slug:
+            return Response({"error": "Course slug is required"}, status=400)
+        
+        course = get_object_or_404(Course, slug=course_slug)
+        current_lesson_id = request.query_params.get("current_lesson")
+        current_assessment_id = request.query_params.get("current_assessment")
+
+        data = get_next_step(request.user, course, current_lesson_id, current_assessment_id)
+
+        return Response(data)
+        
+

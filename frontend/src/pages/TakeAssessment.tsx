@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuestionCard from "./QuestionCard";
 import api from "../utils/axios";
 
+
 const TakeAssessment = () => {
   const navigate = useNavigate();
   const { assessmentType, modelId, sessionId } = useParams();
@@ -12,7 +13,6 @@ const TakeAssessment = () => {
     JSON.parse(localStorage.getItem("answers") || "{}")
   );
   const [assessment, setAssessment] = useState(null);
-  // const questions = location.state?.questions || assessment?.questions;
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState(null);
 
@@ -45,19 +45,6 @@ const TakeAssessment = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  // useEffect(() => {
-  //   if (location.state) {
-  //     setAssessment(location.state);
-  //   } else{
-  //     const saved = sessionStorage.getItem('assessment');
-  //     if(saved){
-  //       setAssessment(JSON.parse(saved));
-  //     }else{
-  //       console.log("Whoops, bad state management :(");
-  //     }
-  //   }
-  // }, [location.state, lessonId]);
-
   const handleNext = () => {
     currentQuestionIndex < questions?.length - 1 && setCurrentQuestionIndex((curr) => curr + 1);
   }
@@ -88,28 +75,21 @@ const TakeAssessment = () => {
       const response = await api.post(`/api/assessments/${assessmentType}/${assessment.id}/submit/${sessionId}/`, {
         test_session_id: assessment?.sessionId
       })
-      const data = response.data;
-      console.log("AFTER SUBMISSION --> ", data);
-      const score = data.score;
-      if(score >= 50){
-        if(data.isCourseAssessment){
-          navigate(`/`);
-        }else{    
-          navigate(`/courses/${assessment?.courseSlug}/lessons/${data.lessonId}/`); // To the next lesson setCurrentLessonIndex
-        }
-      }else{
-        alert("Whoops. You didn't get a pass mark. Try taking the assessment again");
-        navigate(`/courses/${assessment?.courseSlug}/lessons/${data.lessonId}/`, { state: {assessmentResult: 'fail', lessonId: data.lessonId}});
+      const next = response.data;
+      if(next.type === "retry_lesson"){
+        alert("Whoops. You didn't quite hit the pass mark. Let's review the lesson and try again.");
+        navigate(next.url);
+      }else if(next.type === "lesson"){
+        navigate(next.url);
+      }else if(next.type === "end"){
+        alert("Wohooo, you have completed this course!");
+        navigate("/");
       }
+    } catch (err){
+      console.error(err);
+    } finally {
       localStorage.removeItem('answers');
       localStorage.removeItem('questions');
-      // sessionStorage.removeItem('assessment');
-    }catch(error: any){
-      if(error.response.data){
-        console.error(error.response.data);
-      }else{
-        console.error(error);
-      }
     }
   }
 

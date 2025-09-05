@@ -19,7 +19,6 @@ export default function CoursePlayer() {
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
   const [currentLessonIndex, setCurrentLessonIndex] = useState<null | number>(null);
   const currentLesson = allLessons.find((l) => l.id == lessonId);
-  console.log(currentLesson);
   const [lessonContent, setLessonContent] = useState(null);
   const lastLessonSpawned = useRef(false);
 
@@ -33,6 +32,25 @@ export default function CoursePlayer() {
   };
 
   const goToNext = async () => {
+    try {
+      const response = await api.get(`/api/courses/${courseSlug}/next-step/`, {
+        params: { current_lesson: lessonId}
+      });
+      const next = response.data;
+      if(next.type === "lesson"){
+        navigate(next.url);
+      }else if(next.type === "assessment"){
+        navigate(next.url);
+      }
+      console.log(next);
+    }catch (err){
+      console.error(err);
+    }
+  }
+
+  /* const goToNext = async () => {
+
+    // Refactor time 
 
     if(currentLesson.has_assessment){
       const response = await api.post(`/api/assessments/lessons/${currentLesson?.id}/start/`);
@@ -53,6 +71,7 @@ export default function CoursePlayer() {
       setCurrentLessonIndex(prev => prev + 1);
     }
   }
+  */
 
   const goToPrevious = () => {
     if(currentLessonIndex > 0){
@@ -65,7 +84,6 @@ export default function CoursePlayer() {
   const handleFinishCourse = async () => {
     const response = await api.patch(`/api/lessons/${currentLesson?.id}/complete/`);
     const { data } = response.data;
-    console.log(data);
     navigate(`/courses/${courseSlug}/assessment/`);
   }
 
@@ -82,7 +100,6 @@ export default function CoursePlayer() {
       try{
         const response = await api.get(`/api/lessons/${lessonId}/`);
         const data = response.data;
-        console.log("Lesson Content", data);
         setLessonContent(data);
       }catch(err){
         console.error(err);
@@ -216,7 +233,6 @@ const VideoPlayer = ({lessonId, videoUrl}) => {
     const fetchLessonVideoProgress = async () => {
       const response = await api.get(`/api/lessons/${lessonId}/progress/`);
       const { data } = response;
-      console.log(data);
       setSavedProgress(data.progress);
     };
     fetchLessonVideoProgress(); 

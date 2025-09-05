@@ -127,6 +127,8 @@ class SubmitAssessmentSession(APIView):
             validated["assessment_type"]
         )
 
+        return Response(result)
+
         if result.get("error"):
             return Response({"error": result["error"]}, status=400)
 

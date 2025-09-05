@@ -117,6 +117,8 @@ def mark_test_session(user, session_id):
 
 
 def mark_assessment_session(user, session_id, assessment_id, assessment_type):
+    from courses.services import update_lesson_completion, get_next_step
+
     session = None
     content_type_model = ""
 
@@ -164,6 +166,7 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
         session.completed_at = now()
         session.save()
 
+        # Checking to see what should happen after an assessment, can be improved
         ao = session.assessment_object
         if isinstance(ao, LessonAssessment):
             resume_lesson_id = ao.lesson_id
@@ -174,24 +177,19 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
         # Mark lesson as completed if scored about half
         if session.score >= 50:
             if isinstance(ao, LessonAssessment):
-                user_lesson_progress = LessonProgress.objects.get(
-                    enrollment__user=user,
-                    lesson=ao.lesson
-                )
-                user_lesson_progress.completed_at = now()
-                user_lesson_progress.save()
+                update_lesson_completion(user, ao.lesson)
 
-                # Get next lesson
-                lesson_ids = list(Lesson.objects.filter(module__course=user_lesson_progress.enrollment.course).order_by('module__order', 'order').values_list('id', flat=True))
-                current_id = user_lesson_progress.lesson.id
-                try:
-                    current_index = lesson_ids.index(current_id)
-                except ValueError:
-                    current_index = None
+                # Get next lesson OR use get_next_step hehe
+                # lesson_ids = list(Lesson.objects.filter(module__course=user_lesson_progress.enrollment.course).order_by('module__order', 'order').values_list('id', flat=True))
+                # current_id = user_lesson_progress.lesson.id
+                # try:
+                #     current_index = lesson_ids.index(current_id)
+                # except ValueError:
+                #     current_index = None
 
-                if current_index is not None:
-                    if current_index < len(lesson_ids) - 1:
-                        resume_lesson_id = lesson_ids[current_index + 1]
+                # if current_index is not None:
+                #     if current_index < len(lesson_ids) - 1:
+                #         resume_lesson_id = lesson_ids[current_index + 1]
             elif isinstance(ao, CourseAssessment):
                 course_progress = CourseProgress.objects.get(
                     enrollment__course=ao.course,
@@ -200,7 +198,17 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
                 course_progress.completed_at = now()
                 course_progress.save()
 
-        is_course_assessment = isinstance(ao, CourseAssessment)
+        next_step = get_next_step(user, ao.lesson.module.course, current_assessment_id=ao.id)
+        # is_course_assessment = isinstance(ao, CourseAssessment)
+
+        # Return next_step
+        if session.score >= 50:
+            return next_step
+        
+        next_step["title"] = ao.lesson.module.course.title
+        next_step["type"] = "retry_lesson"
+        next_step["url"] = f"/courses/{ao.lesson.module.course.slug}/lessons/{ao.lesson.id}/"
+        return next_step
 
         return {"success": True, "message": "Test submitted successfully", "score": session.score, "lessonId": resume_lesson_id, "isCourseAssessment": is_course_assessment}
 
