@@ -46,7 +46,7 @@ const Sidebar = () => {
         </NavLink>
       </div>
       <div className="flex flex-col pt-10 pb-12 px-5 gap-y-5 mt-auto border-t border-t-slate-200">
-        <NavLink to='/settings' className={linkClasses}>
+        <NavLink to='/dashboard/settings' className={linkClasses}>
           <Settings />
           <span>Settings</span>
         </NavLink>

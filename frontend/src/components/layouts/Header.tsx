@@ -1,7 +1,9 @@
 import { BellIcon, ChevronDown, MessageCircleIcon, Search, User } from "lucide-react";
-
+import { useAuth } from "../../contexts/AuthContext";
 
 const Header = () => {
+  const { user } = useAuth();
+
   return (
       <header className="fixed flex w-full bg-white p-4 border-b border-b-slate-300">
         <div className="container mx-auto flex w-full items-center justify-between">
@@ -21,7 +23,7 @@ const Header = () => {
               <div className="bg-slate-100 h-8 w-8 rounded-full flex items-center justify-center">
                 <User />
               </div>
-              <span>MickeyCodess</span>
+              <span>{user?.full_name.split(" ")[0]}</span>
               <ChevronDown size={16}/>
             </div>
           </div>

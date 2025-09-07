@@ -1,4 +1,6 @@
 import { BadgeCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import api from "../utils/axios";
 
 const certifications = [
   {
@@ -17,6 +19,21 @@ const certifications = [
 ];
 
 const Certifications = () => {
+  const [certifications, setCertifications] = useState([]);
+
+  useEffect(() => {
+    const fetchCertifications = async () => {
+      const response = await api.get(`/api/certifications/`);
+      if(response.status === 200){
+        console.log(response.data);
+        setCertifications(response.data);
+      }
+    };
+
+    fetchCertifications();
+
+  }, [])
+
   return (
     <div className="bg-slate-100 h-full px-6 py-10">
       <h1 className="text-2xl font-bold mb-6">Your Certifications</h1>
@@ -38,11 +55,11 @@ const Certifications = () => {
                 <h2 className="text-lg font-semibold">{cert.course}</h2>
               </div>
               <div className="text-sm text-gray-600 space-y-1">
-                <p><span className="font-medium">Issued:</span> {cert.dateIssued}</p>
-                <p><span className="font-medium">Certificate ID:</span> {cert.id}</p>
+                <p><span className="font-medium">Issued:</span> {new Date(cert.issued_at).toISOString().split("T")[0]}</p>
+                <p><span className="font-medium">Certificate ID:</span> CERT-00{cert.id}</p>
               </div>
               <a
-                href={cert.downloadUrl}
+                href={cert.certificate_file}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 inline-block text-center text-sm font-medium bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    /* Force A4 landscape orientation */
+    @page {
+      size: A4 landscape;
+      margin: 20mm;
+    }
+
+    body {
+      font-family: "Georgia", serif;
+      margin: 0;
+      padding: 0;
+      background: #fdfdfd;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .certificate {
+      width: 1000px;   /* classic certificate width */
+      height: 700px;   /* classic certificate height */
+      padding: 50px;
+      border: 12px solid #2c3e50;
+      position: relative;
+      background: #fff;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    /* Decorative inner border */
+    .certificate::after {
+      content: "";
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      border: 4px solid #2c3e50;
+      pointer-events: none;
+    }
+
+    /* Watermark */
+    .certificate::before {
+      content: "Coursecademy";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-size: 120px;
+      color: rgba(0, 0, 0, 0.04);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin: 20px 0;
+      color: #2c3e50;
+      text-transform: uppercase;
+    }
+
+    p {
+      font-size: 18px;
+      margin: 8px 0;
+      color: #333;
+    }
+
+    .recipient {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 25px 0;
+      color: #000;
+    }
+
+    .course {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 25px 0;
+      color: #2c3e50;
+    }
+
+    .date {
+      font-size: 16px;
+      margin-top: 40px;
+      color: #555;
+    }
+
+    .signature {
+      margin-top: 80px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 80px;
+    }
+
+    .sig-block {
+      width: 250px;
+      text-align: center;
+    }
+
+    .sig-line {
+      border-top: 1px solid #000;
+      margin-bottom: 5px;
+    }
+
+    .sig-name {
+      font-size: 16px;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .sig-title {
+      font-size: 14px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate">
+    <div class="logo">🏫 Coursecademy</div>
+
+    <h1>Certificate of Completion</h1>
+
+    <p>This is to certify that</p>
+    <div class="recipient">{{ user.full_name }}</div>
+
+    <p>has successfully completed the course</p>
+    <div class="course">“{{ course.title }}”</div>
+
+    <p class="date">Issued on {{ issued_at|date:"F j, Y" }}</p>
+
+    <div class="signature">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-name">{{ instructor.full_name }}</div>
+        <div class="sig-title">Instructor</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div class="sig-name">Coursecademy</div>
+        <div class="sig-title">Platform</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

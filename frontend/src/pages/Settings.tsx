@@ -2,8 +2,8 @@ import { useState } from "react";
 
 const Settings = () => {
   const [formData, setFormData] = useState({
-    name: "Mickey Goke",
-    email: "mickey@example.com",
+    name: "",
+    email: "",
     notifications: true,
     password: "",
     confirmPassword: "",
@@ -59,7 +59,7 @@ const Settings = () => {
           </div>
 
           {/* Password Change */}
-          <div>
+          {/* <div>
             <h2 className="text-lg font-semibold mb-4">Change Password</h2>
             <div className="space-y-4">
               <div>
@@ -84,7 +84,7 @@ const Settings = () => {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Notifications */}
           <div>

@@ -8,6 +8,7 @@ from enrollments.exceptions import AlreadyEnrolledError
 from courses.models import LessonProgress, ModuleProgress, CourseProgress
 from assessments.models import LessonAssessment
 from assessments.services import start_lesson_assessment
+from certifications.services import issue_certificate
 
 import logging
 logger = logging.getLogger(__name__)
@@ -86,6 +87,7 @@ def update_lesson_completion(user, lesson):
         course_progress = CourseProgress.objects.get(enrollment__user=user, enrollment__course=course)
         course_progress.completed_at = now()
         course_progress.save()
+        issue_certificate(user, course)
 
 
 def get_next_step(user, course, current_lesson_id=None, current_assessment_id=None):

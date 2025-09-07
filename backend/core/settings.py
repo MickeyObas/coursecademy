@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "api.apps.ApiConfig",
     "assessments.apps.AssessmentsConfig",
     "categories.apps.CategoriesConfig",
+    "certifications.apps.CertificationsConfig",
     "courses.apps.CoursesConfig",
     "enrollments.apps.EnrollmentsConfig",
     "users.apps.UsersConfig",

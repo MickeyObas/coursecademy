@@ -67,9 +67,9 @@ const Dashboard = () => {
             <div className="w-25 bg-slate-50 p-1.5 rounded-xl">
               <img className="w-full h-full object-cover" src={lastAccessedCourse?.course.thumbnail} alt="" />
             </div>
-            <div className="flex flex-col gap-y-3">
+            <div className="flex flex-col w-full gap-y-3">
               <span className="line-clamp-1">{lastAccessedCourse?.course.title}</span>
-              <div className="flex bg-blue-100 w-60 h-1.5 rounded-lg">
+              <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
                 <div
                   className="h-full bg-blue-700"
                   style={{ width: `${lastAccessedCourse?.progress.percentage}%` }}
