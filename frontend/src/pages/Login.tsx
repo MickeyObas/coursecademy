@@ -32,10 +32,20 @@ const Login: React.FC = () => {
         remember_me: rememberMe
       });
       const data = await response.data;
+      console.log(data);
       login(data);
       setEmail('');
       setPassword('');
-      navigate('/');
+
+      if(data.user.account_type === "S"){
+        navigate('/')
+      }else if(data.user.account_type === "I"){
+        navigate('/idashboard/');
+      }else{
+        alert("Invalid account type");
+        return;
+      }
+      
     }catch(error: any){
       if(error.response){
         console.log(error.response.data);

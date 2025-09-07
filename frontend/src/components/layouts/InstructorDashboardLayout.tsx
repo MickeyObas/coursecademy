@@ -1,12 +1,24 @@
+import { Book, ClipboardList, Layers, LogOut } from "lucide-react";
 import { ReactNode, useState } from "react";
-import { Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import api from "../../utils/axios";
 
 interface Props {
   children: ReactNode;
 }
 
 export default function InstructorDashboardLayout() {
+  const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const handleLogout = async () => {
+    const response = await api.post(`/api/auth/logout/`);
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+    const { data } = response;
+    console.log(data);
+    navigate('/login/'); 
+  }
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -16,33 +28,66 @@ export default function InstructorDashboardLayout() {
           isSidebarOpen ? "w-64" : "w-16"
         } bg-white shadow-md transition-all duration-300 flex flex-col`}
       >
-        <div className="p-4 font-bold text-lg border-b">📚 CBT Platform</div>
+        <div className="px-4 py-3.5 font-bold text-lg border-b whitespace-nowrap overflow-hidden">
+          📚 
+          <span
+            className={`ml-2 inline-block transition-all duration-300 ${
+              isSidebarOpen ? "opacity-100 w-auto" : "opacity-0 w-0"
+            }`}
+          >
+            CBT Platform
+          </span>
+        </div>
+
         <nav className="flex-1 p-2 space-y-2">
-          <a
-            href="/idashboard/courses"
-            className="block p-2 rounded hover:bg-gray-200"
-          >
-            Manage Courses
-          </a>
-          {/* <a
-            href="/idashboard/create-course"
-            className="block p-2 rounded hover:bg-gray-200"
-          >
-            Create Course
-          </a> */}
-          <a
-            href="/idashboard/module-lesson-builder"
-            className="block p-2 rounded hover:bg-gray-200"
-          >
-            Manage Module/Lessons
-          </a>
-          <a
-            href="/idashboard/assessment-builder"
-            className="block p-2 rounded hover:bg-gray-200"
-          >
-            Manage Assessments
-          </a>
+          <NavLink 
+            className="flex items-center gap-2 p-2 rounded hover:bg-gray-200" to='/idashboard/courses'>
+              <Book className="shrink-0" />
+              <span
+                className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${
+                  isSidebarOpen ? "opacity-100 w-auto" : "opacity-0 w-0"
+                }`}
+              >
+                Manage Courses
+              </span>
+            </NavLink>
+          <NavLink 
+            className="flex items-center gap-2 p-2 rounded hover:bg-gray-200" to='/idashboard/module-lesson-builder'>
+              <Layers className="shrink-0" />
+              <span
+                className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${
+                  isSidebarOpen ? "opacity-100 w-auto" : "opacity-0 w-0"
+                }`}
+              >
+                Manage Modules/Lessons
+              </span>
+            </NavLink>
+          <NavLink 
+            className="flex items-center gap-2 p-2 rounded hover:bg-gray-200" to='/idashboard/assessment-builder'>
+              <ClipboardList className="shrink-0" />
+              <span
+                className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${
+                  isSidebarOpen ? "opacity-100 w-auto" : "opacity-0 w-0"
+                }`}
+              >
+                Manage Assessments
+              </span>
+            </NavLink>
+          <div
+            onClick={handleLogout} 
+            className="cursor-pointer flex items-center gap-2 p-2 rounded hover:bg-gray-200">
+              <LogOut className="shrink-0" color="red" transform="rotate(180)" />
+              <span
+                className={`text-red-500 transition-all duration-300 whitespace-nowrap overflow-hidden ${
+                  isSidebarOpen ? "opacity-100 w-auto" : "opacity-0 w-0"
+                }`}
+              >
+                Logout
+              </span>
+            </div>
+          
         </nav>
+
         <button
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           className="p-2 bg-gray-200 hover:bg-gray-300"
@@ -50,6 +95,7 @@ export default function InstructorDashboardLayout() {
           {isSidebarOpen ? "⏪" : "⏩"}
         </button>
       </div>
+
 
       {/* Main */}
       <div className="flex-1 flex flex-col">

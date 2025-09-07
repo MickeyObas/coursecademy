@@ -2,6 +2,7 @@ from django.db import transaction
 from django.utils.timezone import now
 
 from .models import Lesson, LessonProgress, Module, ModuleProgress, CourseProgress
+from courses.exceptions import LessonLockedError
 from enrollments.models import Enrollment
 from enrollments.exceptions import AlreadyEnrolledError
 from courses.models import LessonProgress, ModuleProgress, CourseProgress
@@ -36,6 +37,9 @@ def enroll_user_in_course(user, course):
 
 @transaction.atomic
 def update_lesson_access(user, lesson):
+    if not is_lesson_unlocked(user, lesson):
+        raise LessonLockedError()
+
     lesson_progress, created = LessonProgress.objects.get_or_create(enrollment__user=user, lesson=lesson)
     lesson_progress.last_accessed_at = now()
     lesson_progress.save()
@@ -104,10 +108,12 @@ def get_next_step(user, course, current_lesson_id=None, current_assessment_id=No
     # logger.info(f"{type(sequence[0][1].id)} and {type(current_lesson_id)}")
 
     current_index = None
+    current_obj = None
     for i, (type_, obj) in enumerate(sequence):
         if (type_ == "lesson" and int(current_lesson_id or 0) == obj.id) or \
         (type_ == "assessment" and int(current_assessment_id or 0) == obj.id):
             current_index = i
+            current_obj = obj
             break
     
     if current_index is None:
@@ -116,6 +122,10 @@ def get_next_step(user, course, current_lesson_id=None, current_assessment_id=No
     if current_index + 1 < len(sequence):
         next_type, next_obj = sequence[current_index + 1]
         if next_type == "lesson":
+            # Update lesson_completion if not completed already 
+            lesson_progress = LessonProgress.objects.get(enrollment__user=user, lesson_id=int(current_obj.id if isinstance(current_obj, Lesson) else current_obj.lesson.id))
+            if not lesson_progress.completed_at:
+                update_lesson_completion(user, lesson_progress.lesson)
             return {
                 "type": next_type,
                 "id": next_obj.id,
@@ -140,7 +150,7 @@ def get_next_step(user, course, current_lesson_id=None, current_assessment_id=No
 def is_lesson_unlocked(user, lesson):
     if not user.is_authenticated:
         return False
-    
+
     prev_lessons = Lesson.objects.filter(
         module=lesson.module,
         order__lt=lesson.order,

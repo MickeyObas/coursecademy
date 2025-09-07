@@ -5,6 +5,7 @@ from rest_framework.exceptions import Throttled
 
 from assessments.exceptions import NoCourseAssessmentError, NoLessonAssessmentError, NoTestAssessmentError, NoTestBlueprintError, NoQuestionError, TestSessionExpiredError, NoAssessmentSessionError, NoTestSessionError
 from enrollments.exceptions import AlreadyEnrolledError
+from courses.exceptions import LessonLockedError
 
 
 def custom_exception_handler(exc, context):
@@ -66,6 +67,12 @@ def custom_exception_handler(exc, context):
         return Response(
             {'error': 'You have made too many requests. Please try again later.'},
             status=429
+        )
+    
+    if isinstance(exc, LessonLockedError):
+        return Response(
+            {'error': 'You cannot perform this action.'},
+            status=403
         )
     
     return exception_handler(exc, context)

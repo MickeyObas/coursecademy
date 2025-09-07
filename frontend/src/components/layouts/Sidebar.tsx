@@ -14,6 +14,7 @@ const Sidebar = () => {
   const handleLogout = async () => {
     const response = await api.post(`/api/auth/logout/`);
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
     const { data } = response;
     console.log(data);
     navigate('/login/'); 

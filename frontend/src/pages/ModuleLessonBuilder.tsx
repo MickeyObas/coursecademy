@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
 import RichTextEditor from "../components/ui/RichTextEditor";
+import { debounce } from 'lodash';
+
 
 type Lesson = {
   id?: number;
@@ -70,16 +72,39 @@ export default function ModuleLessonBuilder() {
   };
 
   const handleEditLesson = (lesson: Lesson) => {
-    // setEditingLesson({...lesson});
+    // Fetch Lesson anew
+    console.log(lesson);
+    const lessonDraftKey = `lesson_draft_${lesson.id}`;
+    const draft = localStorage.getItem(lessonDraftKey);
+    let contentToUse = lesson.content || lesson.draft_content;
 
-    setEditingLesson({
+    if(draft){
+      console.log("DRAFT", draft);
+      const parsedDraft = JSON.parse(draft);
+      console.log("Updated at", lesson.updated_at);
+      const backendTime = new Date(lesson.updated_at).getTime();
+      const localTime = parsedDraft.lastEdited;
+
+      console.log(localTime, backendTime);
+
+      if (localTime > backendTime){
+        const useLocal = window.confirm("You have unsaved local changes. Do you want to continue with your local draft instead of the server version?");
+        if(useLocal){
+          contentToUse = parsedDraft.body;
+        }
+      }
+    }
+    
+    setEditingLesson((prev) => ({
+      ...prev,
       "isNewLesson": false,
       "id": lesson.id,
       "title": lesson.title,
       "type": lesson.type,
-      "content": lesson.content,
-      "videoUrl": lesson.videoUrl
-    });
+      "draft_content": contentToUse,
+      "videoUrl": lesson.videoUrl,
+      "updated_at": lesson.updated_at
+    }));
   };
 
   const handleLessonChange = (field: keyof Lesson, value: string) => {
@@ -90,76 +115,38 @@ export default function ModuleLessonBuilder() {
   const handleSaveLesson = async () => {
     if (!selectedModule || !editingLesson) return;
 
-    if(editingLesson.isNewLesson){
-      // Create new lesson
-      console.log("Creating new lesson at the backend");
+    // Update existing Lesson
 
-      // Optimistic Update 
+
+    try {
+      const response = await api.patch(`/api/lessons/${editingLesson.id}/update/`, {
+        ...editingLesson
+      });
+      const data = response.data;
+      console.log("Updated Lesson ---> ", data);
+
       const updatedModules = modules.map((m) =>
-        m.id === selectedModule.id
-          ? {
-              ...m,
-              lessons: editingLesson.id
-                ? m.lessons.map((l) =>
-                    l.id === editingLesson.id ? editingLesson : l
-                  )
-                : [...m.lessons, { ...editingLesson, id: Date.now() }],
-            }
-          : m
-      );
+      m.id === selectedModule.id
+        ? {
+            ...m,
+            lessons: editingLesson.id
+              ? m.lessons.map((l) =>
+                  l.id === editingLesson.id ? data : l
+                )
+              : [...m.lessons, { ...data, id: Date.now() }],
+          }
+        : m
+    );
 
-      try {
-        const response = await api.post(`/api/lessons/create/`, {
-          title: editingLesson.title,
-          type: editingLesson.type,
-          content: editingLesson.content,
-          module_id: selectedModule.id,
-          course_id: selectedCourseId
-        });
-        const data = response.data;
-        console.log(data);
-        // TODO: Sync local state with respose or just refetch.
-        // FIX: Can't edit immediately after creation due to 👆
+      setModules(updatedModules);
 
-        setModules(updatedModules);
-        const newSelectedModule = updatedModules.find((module) => module.id == selectedModule.id);
-        setSelectedModule(newSelectedModule || selectedModule);
-        setEditingLesson(null);
-      } catch (err){
-        console.error(err);
-      }
-    } else{
-      // Update existing Lesson
-      const updatedModules = modules.map((m) =>
-        m.id === selectedModule.id
-          ? {
-              ...m,
-              lessons: editingLesson.id
-                ? m.lessons.map((l) =>
-                    l.id === editingLesson.id ? editingLesson : l
-                  )
-                : [...m.lessons, { ...editingLesson, id: Date.now() }],
-            }
-          : m
-      );
-
-      try {
-        const response = await api.patch(`/api/lessons/${editingLesson.id}/update/`, {
-          ...editingLesson
-        });
-        const data = response.data;
-        console.log(data);
-        setModules(updatedModules);
-
-        const newSelectedModule = updatedModules.find((module) => module.id == selectedModule.id);
-        setSelectedModule(newSelectedModule || selectedModule);
-
-        setEditingLesson(null);
-      } catch (err){
-        console.error(err);
-      }
+      const newSelectedModule = updatedModules.find((module) => module.id == selectedModule.id);
+      setSelectedModule(newSelectedModule || selectedModule);
+      setEditingLesson(null);
+    } catch (err){
+      console.error(err);
     }
-  };
+  }
 
   const handleSaveModule = async () => {
     if (!newModuleTitle.trim()) return;
@@ -186,14 +173,62 @@ export default function ModuleLessonBuilder() {
     }
   };
 
+  const handleAddLesson = async () => {
+    try {
+      const newLesson = await addBlankLesson();
+      // localStorage.setItem(`lesson_draft_${newLessonId}`, '');
+      setEditingLesson({ 
+        id: newLesson.id, 
+        isNewLesson: false, 
+        title: newLesson.title, 
+        type: "ARTICLE" 
+      })
+    } catch (err) {
+      console.log("Something went wrong: ", err);
+    }
+  }
+
+  const addBlankLesson = async () => {
+    if(!selectedModule) return;
+
+    // Create a draft at the backend then return the ID
+    try {
+      const response = await api.post(`/api/lessons/create/`, {
+        title: "New Draft Title",
+        type: "ARTICLE",
+        module_id: selectedModule.id,
+        course_id: selectedCourseId,
+        status: "DRAFT"
+      });
+    const data = response.data;
+    console.log(data);
+    return data;
+    } catch (err){
+      console.error(err);
+      throw err;
+    }
+  }
+
+  const storeLessonDraft = debounce((content: string) => {
+    if(!editingLesson) return;
+
+    const lessonDraftKey = `lesson_draft_${editingLesson.id}`;
+    localStorage.setItem(lessonDraftKey, JSON.stringify({
+      lastEdited: Date.now(),
+      title: editingLesson.title,
+      body: content
+    }))
+    
+  }, 1000)
+
   return (
-    <div className="max-w-4xl mx-auto mt-6 space-y-6">
+    <div className="max-w-3xl mx-auto mt-6 space-y-6">
       {/* Course Selector */}
       <div>
         <p className="mb-1">Select Course</p>
         <select
           onChange={handleCourseChange}
-          className="border p-2 rounded"
+          className="cursor-pointer border p-2 rounded"
           value={selectedCourseId ?? ""}
         >
           <option value="">-- Select a course --</option>
@@ -219,14 +254,15 @@ export default function ModuleLessonBuilder() {
               <p className="text-sm text-gray-600">{m.lessons.length} lessons</p>
             </div>
           ))}
-          <button
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            onClick={() => setAddingModule(true)}
-          >
-            + Add Module
-          </button>
         </div>
       )}
+
+      <button
+        className="cursor-pointer mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+        onClick={() => setAddingModule(true)}
+      >
+        + Add Module
+      </button>
 
       {/* Add Module Form */}
       {addingModule && (
@@ -239,20 +275,20 @@ export default function ModuleLessonBuilder() {
             value={newModuleTitle}
             onChange={(e) => setNewModuleTitle(e.target.value)}
           />
-          <textarea 
-            className="border"
+          <textarea
+            className="border resize-none w-full outline-0 p-2"
             value={newModuleDescription}
             onChange={(e) => setNewModuleDescription(e.target.value)}
           ></textarea>
           <div className="flex gap-2">
             <button
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               onClick={handleSaveModule}
             >
               Save
             </button>
             <button
-              className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+              className="cursor-pointer px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
               onClick={() => {
                 setAddingModule(false);
                 setNewModuleTitle("");
@@ -285,15 +321,13 @@ export default function ModuleLessonBuilder() {
             ))}
           </ul>
           <button
-            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            onClick={() =>
-              setEditingLesson({ isNewLesson: true, title: "", type: "ARTICLE", content: "" })
-            }
+            className="cursor-pointer mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            onClick={handleAddLesson}
           >
             + Add Lesson
           </button>
           <button
-            className="ml-2 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+            className="cursor-pointer ml-2 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
             onClick={() => setSelectedModule(null)}
           >
             Back to Modules
@@ -344,8 +378,11 @@ export default function ModuleLessonBuilder() {
                 onChange={(e) => handleLessonChange("content", e.target.value)}
               /> */}
               <RichTextEditor 
-                value={editingLesson.content} 
-                onChange={(content) => handleLessonChange("content", content)}
+                value={editingLesson.draft_content} 
+                onChange={(content) => {
+                  handleLessonChange("draft_content", content)
+                  storeLessonDraft(content)
+                }}
               />
             </>
           ) : (
@@ -360,19 +397,19 @@ export default function ModuleLessonBuilder() {
 
           <div className="flex gap-2">
             <button
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               onClick={handleSaveLesson}
             >
               Save
             </button>
             <button
-              className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
+              className="cursor-pointer px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500"
               onClick={() => setEditingLesson(null)}
             >
               Cancel
             </button>
             <button
-              className="px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-gray-500"
+              className="cursor-pointer px-4 py-2 bg-blue-400 text-white rounded-lg hover:bg-gray-500"
               onClick={() => setEditingLesson(null)}
             >
               See Preview

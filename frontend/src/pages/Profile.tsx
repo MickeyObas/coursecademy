@@ -105,8 +105,7 @@ const Profile = () => {
 
             <div className="mt-4 space-y-2 text-sm text-gray-700">
               <p><span className="font-medium">Email:</span> {profile?.user?.email}</p>
-              <p><span className="font-medium">Role:</span> Role</p>
-              <p><span className="font-medium">Joined:</span> {Date.now().toLocaleString()}</p>
+              <p><span className="font-medium">Role:</span> {profile?.user?.account_type === 'S' ? "Student" : "Instructor"}</p>
             </div>
           </div>
         </div>

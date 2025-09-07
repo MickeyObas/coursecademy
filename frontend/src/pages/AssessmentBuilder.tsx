@@ -211,7 +211,7 @@ export default function AssessmentBuilder() {
             <div key={lesson.id} className="flex items-center justify-between border p-2 rounded">
               <span>{lesson.title}</span>
               <button
-                className="px-3 py-1 bg-blue-600 text-white rounded"
+                className="cursor-pointer px-3 py-1 bg-blue-600 text-white rounded"
                 onClick={() => handleLessonAssessment(lesson.id, lesson.has_assessment)}
               >
                 {lesson.has_assessment ? "Edit Assessment" : "Add Assessment"}
@@ -224,7 +224,7 @@ export default function AssessmentBuilder() {
       {((assessmentType === "lesson" && selectedLessonId) || (assessmentType === "course" && selectedCourseId)) && (
         <button
           onClick={addQuestion}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >
           + Add Question
         </button>
@@ -318,7 +318,7 @@ export default function AssessmentBuilder() {
       {assessmentType && questions.length > 0 && (
         <button
           onClick={handleSaveAssessment}
-          className="ms-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          className="cursor-pointer ms-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         >Save Assessment</button>
       )}  
       

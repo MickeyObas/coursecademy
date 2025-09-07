@@ -6,19 +6,24 @@ const InstructorCourses = () => {
   const [courses, setCourses] = useState<any[]>([]);
   const [addingCourse, setAddingCourse] = useState(false);
 
-    // Load user’s courses
-    useEffect(() => {
-      const fetchCourses = async () => {
-        try {
-          const res = await api.get(`/api/courses/instructed/`);
-          console.log(res.data);
-          setCourses(res.data);
-        } catch (err) {
-          console.error(err);
-        }
-      };
-      fetchCourses();
-    }, []);
+  // Load user’s courses
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const res = await api.get(`/api/courses/instructed/`);
+        console.log(res.data);
+        setCourses(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCourses();
+  }, []);
+
+  const handleCourseSave = (data) => {
+    setAddingCourse(false);
+    setCourses((prev) => ([...prev, data])); 
+  }
 
   return (
     <div>
@@ -26,7 +31,7 @@ const InstructorCourses = () => {
       {/* Courses List */}
       <div className="space-y-4">
         {!addingCourse && courses.length > 0 && courses.map((course, idx) => (
-          <div className="space-y-4">
+          <div key={idx} className="space-y-4">
             <div
               key={course.id}
               className="p-4 border rounded-lg shadow cursor-pointer hover:bg-gray-50"
@@ -38,10 +43,10 @@ const InstructorCourses = () => {
         ))}
       </div>
 
-      {addingCourse && <CourseForm onCourseSave={() => setAddingCourse(false)} />}
+      {addingCourse && <CourseForm onCourseSave={handleCourseSave} />}
 
       {!addingCourse && <button
-        className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+        className="cursor-pointer mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
         onClick={() => setAddingCourse(true)}
       >
         + Add Course

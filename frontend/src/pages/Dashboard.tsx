@@ -51,6 +51,14 @@ const Dashboard = () => {
     fetchEnrolledCourses(enolledCoursesFilter);
   }, [enolledCoursesFilter])
 
+  const handleCourseClick = (course) => {
+    if(course.resume_lesson_id){
+      navigate(`/courses/${course?.course.slug}/lessons/${course?.resume_lesson_id}`)
+    }else{
+      alert("There are no lessons or modules for this course yet. Please try again later :)");
+    }
+  }
+
   return (
     <main className=" p-4 flex flex-col gap-y-4 select-none">
       {lastAccessedCourse && (
@@ -197,7 +205,7 @@ const Dashboard = () => {
           <tbody>
             {enrolledCourses.length > 0 ? enrolledCourses.map((course, idx) => (
               <tr
-                onClick={() => navigate(`/courses/${course?.course.slug}/lessons/${course?.resume_lesson_id}`)} 
+                onClick={() => handleCourseClick(course)} 
                 key={idx} 
                 className="rounded-lg hover:bg-slate-50 cursor-pointer">
                 <td className="py-3 px-2 flex justify-center">

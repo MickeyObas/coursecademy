@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../utils/axios";
 
 export default function CourseForm({ onCourseSave }) {
@@ -10,7 +10,20 @@ export default function CourseForm({ onCourseSave }) {
     price: 0,
     skillsInput: [""],
     learningPointsInput: [""],
+    tags: ""
   });
+  const [categories, setCategories] = useState([]);
+  console.log(course);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const response = await api.get('/api/categories/');
+      if(response.status === 200){
+        setCategories(response.data);
+      }
+    };
+    fetchCategories();
+  }, [])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -50,6 +63,7 @@ export default function CourseForm({ onCourseSave }) {
       formData.append("category_id", String(course.category));
       formData.append("description", course.description);
       formData.append("price", String(course.price));
+      formData.append("tags", course.tags.trim())
 
       if (course.thumbnail) {
         formData.append("thumbnail", course.thumbnail);
@@ -76,10 +90,11 @@ export default function CourseForm({ onCourseSave }) {
         price: 0,
         skillsInput: [""],
         learningPointsInput: [""],
+        tags: ""
       });
 
       // Handle after save
-      onCourseSave();
+      onCourseSave(data);
 
     }catch(err: any){
       const { data } = err.response;
@@ -89,50 +104,76 @@ export default function CourseForm({ onCourseSave }) {
 
   return (
     <div className="max-w-2xl mx-auto mt-6 bg-white shadow-md rounded-xl p-6">
-      <h2 className="text-xl font-semibold mb-4">Create a New Course</h2>
+      <h2 className="text-center underline text-2xl font-semibold mb-4">Create a New Course</h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* General Info */}
         <div className="space-y-4">
-          <input
-            type="text"
-            name="title"
-            placeholder="Course Title"
-            value={course.title}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-2"
-          />
-          <input
-            type="text"
-            name="category"
-            placeholder="Category"
-            value={course.category}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-2"
-          />
-          <textarea
-            name="description"
-            placeholder="Course Description"
-            value={course.description}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-2"
-          />
-          <input 
-            type="file" 
-            accept="image/*"
-            className="w-full border rounded-lg p-2"
-            onChange={handleFileChange}
-          />
-          <input
-            type="number"
-            name="price"
-            placeholder="Price"
-            value={course.price}
-            onChange={handleChange}
-            className="w-full border rounded-lg p-2"
-          />
+          <div className="">
+            <h3 className="font-semibold mb-2">Course Title</h3>
+            <input
+              type="text"
+              name="title"
+              placeholder="New Course Title"
+              value={course.title}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-2"
+            />
+          </div>
+          
+          <div>
+            <h3 className="mb-2 font-semibold">Category</h3>
+            <select 
+              name="category" 
+              className="w-full border rounded-lg p-2"
+              onChange={handleChange}>
+              <option value="">Select a category</option>
+              {categories.length > 1 && categories.map((category) => (
+              <option value={category.id}>{category.title}</option>
+            ))}
+            </select>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Description</h3>
+            <textarea
+              name="description"
+              placeholder="This course is fully-equipped with..."
+              value={course.description}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-2"
+            />
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Thumbnail</h3>
+            <input 
+              type="file" 
+              accept="image/*"
+              className="w-full border rounded-lg p-2"
+              onChange={handleFileChange}
+            />
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Price</h3>
+            <input
+              type="number"
+              name="price"
+              placeholder="Price"
+              value={course.price}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-2"
+            />
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Tags</h3>
+            <input
+              type="text"
+              name="tags"
+              placeholder="e.g API,Python,Django,Public Speaking,Databases"
+              value={course.tags}
+              onChange={handleChange}
+              className="w-full border rounded-lg p-2"
+            />
+          </div>
         </div>
-
-        {/* Skills */}
         <div>
           <h3 className="font-semibold mb-2">Course Skills</h3>
           {course.skillsInput.map((skill, i) => (
@@ -148,7 +189,7 @@ export default function CourseForm({ onCourseSave }) {
           <button
             type="button"
             onClick={() => addArrayItem("skillsInput")}
-            className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="cursor-pointer px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             + Add Skill
           </button>
@@ -170,7 +211,7 @@ export default function CourseForm({ onCourseSave }) {
           <button
             type="button"
             onClick={() => addArrayItem("learningPointsInput")}
-            className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="cursor-pointer px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
           >
             + Add Learning Point
           </button>
@@ -179,7 +220,7 @@ export default function CourseForm({ onCourseSave }) {
         {/* Submit */}
         <button
           type="submit"
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          className="cursor-pointer px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
         >
           Save Course
         </button>

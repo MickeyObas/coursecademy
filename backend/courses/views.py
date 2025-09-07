@@ -12,14 +12,14 @@ from .models import (Course, CourseProgress, Lesson, LessonProgress, Module,
                      ModuleProgress)
 from .serializers import (CourseSerializer, CourseUserSerializer,
                           LessonListSerializer, LessonSerializer,
-                          ThinCourseSerializer, LessonUpdateSerializer, ModuleCreateSerializer, LessonCreateSerializer)
+                          ThinCourseSerializer, LessonUpdateSerializer, ModuleCreateSerializer, LessonCreateSerializer, LessonInstructorSerializer)
 from .services import enroll_user_in_course
 from assessments.models import Question, LessonAssessment, CourseAssessment
 from assessments.serializers import QuestionSerializer
 from assessments.services import update_lesson_assessment, update_course_assessment
 from core.permissions import IsAdminOrInstructor, IsInstructor, IsCourseOwner, IsStudent
 from courses.exceptions import NoLessonError, NoCourseError
-from courses.services import update_lesson_access, update_lesson_completion, get_next_step
+from courses.services import update_lesson_access, update_lesson_completion, get_next_step, is_lesson_unlocked
 from enrollments.permissions import IsEnrolled
 
 
@@ -172,7 +172,7 @@ class CourseAssessmentUpdateView(APIView):
 
 
 class LessonCreateView(APIView):
-    permission_classes = [IsAdminOrInstructor]
+    permission_classes = [IsInstructor]
 
     def post(self, request, *args, **kwargs):
         course_id = request.data.get('course_id')
@@ -231,9 +231,9 @@ class LessonUpdateView(APIView):
 
         serializer = LessonUpdateSerializer(lesson, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        serializer.save()    
+        updated_lesson = serializer.save()    
 
-        return Response({'message': 'Lesson updated'}, status=200)
+        return Response(LessonListSerializer(updated_lesson, context={"request": request}).data, status=200)
     
 
 class OtherCoursesView(APIView):
@@ -358,21 +358,15 @@ class LessonDetailView(APIView):
         
         lesson = generics.get_object_or_404(Lesson, id=kwargs.get("lesson_id"))
 
-        prev_modules = Module.objects.filter(
-            course=lesson.module.course, order__lt=lesson.module.order
-        )
-        if prev_modules.exists():
-            if LessonProgress.objects.filter(
-                enrollment__user=request.user,
-                lesson__module__in=prev_modules,
-                completed_at__isnull=True,
-            ).exists():
-                return Response(
-                    {"error": "You are not allowed to access this lesson yet"},
-                    status=403,
-                )
+        if not is_lesson_unlocked(request.user, lesson):
+            return Response(
+                {"error": "You are not allowed to access this lesson yet"},
+                status=403,
+            )
 
-        return Response(LessonSerializer(lesson, context={"request": request}).data)
+        serializer_class = (LessonSerializer if request.user.account_type == "S" else LessonInstructorSerializer)
+
+        return Response(serializer_class(lesson, context={"request": request}).data)
     
 
 class LessonCompleteView(APIView):

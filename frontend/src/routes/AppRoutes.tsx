@@ -23,6 +23,7 @@ import ModuleLessonBuilder from "../pages/ModuleLessonBuilder";
 import AssessmentBuilder from "../pages/AssessmentBuilder";
 import InstructorDashboardLayout from "../components/layouts/InstructorDashboardLayout";
 import InstructorCourses from "../pages/InstructorCourses";
+import InstructorHome from "../pages/InstructorHome";
 
 
 const AppRoutes = () => {
@@ -36,38 +37,37 @@ const AppRoutes = () => {
       <Route path="/enter-code" element={<EnterCode />} />
       
       {/* Private Routes */}
-      <Route element={<PrivateRoutes />}>
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="courses" element={<Courses />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="tests" element={<Tests />} />
-          <Route path="tests/:categoryId" element={<TestDetails />} />
-          <Route path="take-test/:testSessionId" element={<TakeTest />} />
-          <Route path="certifications" element={<Certifications />} />
-          <Route path="courses/:courseSlug/" element={<CourseDetail />} />
+        <Route element={<PrivateRoutes allowedRoles={["S"]} />}>
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="courses" element={<Courses />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="tests" element={<Tests />} />
+            <Route path="tests/:categoryId" element={<TestDetails />} />
+            <Route path="take-test/:testSessionId" element={<TakeTest />} />
+            <Route path="certifications" element={<Certifications />} />
+            <Route path="courses/:courseSlug/" element={<CourseDetail />} />
+          </Route>
+
+          <Route path="/courses/:courseSlug/lessons/:lessonId" element={<CoursePlayerLayout />}>
+            <Route index element={<CoursePlayer />} />
+          </Route>
+          <Route path="take-assessment/:assessmentType/:modelId/sessions/:sessionId/" element={<TakeAssessment />}></Route>
+          <Route path="courses/:courseSlug/assessment/" element={<CourseAsessmentDetail />}/>
         </Route>
-
-        <Route path="/idashboard" element={<InstructorDashboardLayout />}>
-          <Route path="courses" element={<InstructorCourses />} />
-          <Route path="create-course" element={<CourseForm />} />
-          <Route path="module-lesson-builder" element={<ModuleLessonBuilder />} />
-          <Route path="assessment-builder" element={<AssessmentBuilder />}/>
+        
+        <Route element={<PrivateRoutes allowedRoles={["I"]} />}>
+          <Route path="/idashboard" element={<InstructorDashboardLayout />}>
+            <Route index element={< InstructorHome />} />
+            <Route path="courses" element={<InstructorCourses />} />
+            <Route path="create-course" element={<CourseForm />} />
+            <Route path="module-lesson-builder" element={<ModuleLessonBuilder />} />
+            <Route path="assessment-builder" element={<AssessmentBuilder />}/>
+          </Route>
         </Route>
-
-        <Route path="/courses/:courseSlug/lessons/:lessonId" element={<CoursePlayerLayout />}>
-          <Route index element={<CoursePlayer />} />
-        </Route>
-
-
-        <Route path="take-assessment/:assessmentType/:modelId/sessions/:sessionId/" element={<TakeAssessment />}></Route>
-        <Route path="courses/:courseSlug/assessment/" element={<CourseAsessmentDetail />}/>
-
-      </Route>
-
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
     </Routes>
   )

@@ -3,3 +3,6 @@ class NoLessonError(Exception):
 
 class NoCourseError(Exception):
     pass
+
+class LessonLockedError(Exception):
+    pass

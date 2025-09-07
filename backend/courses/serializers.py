@@ -9,6 +9,8 @@ from .models import (Course, CourseLearningPoint, CourseSkill, Lesson,
                      LessonProgress, Module, ModuleProgress, CourseProgress)
 from enrollments.models import Enrollment
 
+import logging
+logger = logging.getLogger(__name__)
 
 class LessonListSerializer(serializers.ModelSerializer):
     is_unlocked = serializers.SerializerMethodField()
@@ -16,7 +18,7 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ["id", "title", "order", "is_unlocked", "has_assessment","type"]
+        fields = ["id", "title", "order", "is_unlocked", "has_assessment","type", "status"]
 
     def get_has_assessment(self, obj):
         return LessonAssessment.objects.filter(lesson=obj).exists()
@@ -50,11 +52,16 @@ class LessonListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         request = self.context.get('request')
+        # logging.info(f"{request.user} --- {instance.module.course.instructor}")
+
         if request and request.user == instance.module.course.instructor:
             if instance.video_file:
                 rep["video_file"] = instance.video_file.url
-            elif instance.content:
+            elif instance.type == "ARTICLE":
                 rep["content"] = instance.content
+                rep["draft_content"] = instance.draft_content
+                rep["updated_at"] = instance.updated_at
+            
         return rep
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -75,7 +82,8 @@ class LessonSerializer(serializers.ModelSerializer):
             "is_completed",
             "is_unlocked",
             "has_assessment",
-            "video_file"
+            "video_file",
+            "status"
         ]
 
     def get_video_file(self, obj):
@@ -117,7 +125,11 @@ class LessonSerializer(serializers.ModelSerializer):
             data.pop('content')
 
         return data
+    
 
+class LessonInstructorSerializer(LessonSerializer):
+    class Meta(LessonSerializer.Meta):
+        fields = LessonSerializer.Meta.fields + ["draft_content"]
 
 class LessonUpdateSerializer(serializers.ModelSerializer):
     class Meta:
@@ -125,7 +137,7 @@ class LessonUpdateSerializer(serializers.ModelSerializer):
         fields = [
             "title",
             "type",
-            "content",
+            "draft_content",
             "description",
             "video_file"
         ]
@@ -133,7 +145,7 @@ class LessonUpdateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         lesson_type = attrs.get("lesson_type")
 
-        if lesson_type == "ARTICLE" and not attrs.get("content"):
+        if lesson_type == "ARTICLE" and not attrs.get("draft_content"):
             raise serializers.ValidationError("Lesson articles must have content")
         
         if lesson_type == "VIDEO" and not attrs.get("video_file"):
@@ -192,7 +204,7 @@ class ModuleCreateSerializer(serializers.ModelSerializer):
 
         new_module = Module.objects.create(
             course=course,
-            order=last_module.order + 1,
+            order=last_module.order + 1 if last_module else 1,
             **validated_data
         )
         return new_module
@@ -344,8 +356,8 @@ class CourseSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         current_lesson_progress = (
             LessonProgress.objects
-            .filter(enrollment__user=user, enrollment__course=obj)
-            .order_by('last_accessed_at')
+            .filter(enrollment__user=user, enrollment__course=obj, last_accessed_at__isnull=False)
+            .order_by('-last_accessed_at')
             .first()
         )
         if current_lesson_progress:

@@ -17,6 +17,7 @@ interface LoginResponseData {
   user: {
     username: string,
     email: string,
+    account_type: string
   }
 }
 

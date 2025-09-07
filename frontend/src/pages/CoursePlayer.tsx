@@ -1,26 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { data, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useCourse } from "../hooks/useCourse";
 import api from "../utils/axios";
 
 
 export default function CoursePlayer() {
-  // Lowkey don't think this is a good way to use location.state
-  // NOTE: Rewrite state mgmt logic later
 
-  const location = useLocation();
-  const { assessmentResult } = location.state || {};
   const { courseSlug, lessonId } = useParams();
   const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
+  const prevLessonId = useRef<string | null>(null);
   const lessonBody = useRef(null);
-
 
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
   const [currentLessonIndex, setCurrentLessonIndex] = useState<null | number>(null);
   const currentLesson = allLessons.find((l) => l.id == lessonId);
   const [lessonContent, setLessonContent] = useState(null);
-  const lastLessonSpawned = useRef(false);
 
   const handleLessonSelect = (lessonId) => {
     const selectedLessonIndex = allLessons.findIndex((lesson) => lesson.id == lessonId);
@@ -45,33 +40,10 @@ export default function CoursePlayer() {
       console.log(next);
     }catch (err){
       console.error(err);
-    }
-  }
-
-  /* const goToNext = async () => {
-
-    // Refactor time 
-
-    if(currentLesson.has_assessment){
-      const response = await api.post(`/api/assessments/lessons/${currentLesson?.id}/start/`);
-      const data = response.data;
-      const assessmentSessionId = data.assessment_session_id;
-      navigate(`/take-assessment/lesson/${currentLesson?.id}/sessions/${assessmentSessionId}/`);
-      return;
-    }
-
-    if(currentLessonIndex < allLessons.length - 1 || allLessons[currentLessonIndex+1]?.is_unlocked){
-      const response = await api.patch(`/api/lessons/${currentLesson?.id}/complete/`);
+    }finally {
       refetchCourse();
-      const data = response.data;
-      // await refetchCourse();
-      console.log("Current lesson IDX --->", currentLessonIndex);
-      const nextLesson = allLessons[currentLessonIndex+1];
-      navigate(`/courses/${courseSlug}/lessons/${nextLesson.id}`)
-      setCurrentLessonIndex(prev => prev + 1);
     }
   }
-  */
 
   const goToPrevious = () => {
     if(currentLessonIndex > 0){
@@ -87,12 +59,12 @@ export default function CoursePlayer() {
     navigate(`/courses/${courseSlug}/assessment/`);
   }
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Scroll to top
     if(lessonBody.current){
       lessonBody.current.scrollTo({top: 0, left: 0, behavior: 'instant'})
     }
-  }, [currentLessonIndex])
+  }, [lessonContent])
 
   useEffect(() => {
     const fetchLessonContent = async () => {
@@ -101,8 +73,17 @@ export default function CoursePlayer() {
         const response = await api.get(`/api/lessons/${lessonId}/`);
         const data = response.data;
         setLessonContent(data);
+        prevLessonId.current = lessonId;
       }catch(err){
         console.error(err);
+        if(err.response.status === 403){
+          alert("You do not have access to lesson.");
+          if(prevLessonId.current){
+            navigate(`/courses/${courseSlug}/lessons/${prevLessonId.current}/`);
+          }else{
+            navigate(`/dashboard/courses/${courseSlug}/`);
+          }
+        }
       }
     };
     fetchLessonContent();
@@ -139,7 +120,7 @@ export default function CoursePlayer() {
       <div className="w-72 border-r bg-slate-50 overflow-y-auto p-4">
         <button
           onClick={() => navigate("/dashboard/")}
-          className="mb-4 text-blue-600 text-sm hover:underline"
+          className="cursor-pointer mb-4 text-blue-600 text-sm hover:underline"
         >
           ← Back to Dashboard
         </button>
@@ -191,14 +172,14 @@ export default function CoursePlayer() {
           <button
             onClick={goToPrevious}
             disabled={currentLessonIndex == 0}
-            className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+            className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
           {currentLesson?.has_assessment ? (
             <button
               onClick={goToNext}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+              className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
             >
               Proceed to Test
             </button>
@@ -214,7 +195,7 @@ export default function CoursePlayer() {
               <button
                 onClick={goToNext}
                 disabled={currentLessonIndex == allLessons.length-1 }
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
               </button>
