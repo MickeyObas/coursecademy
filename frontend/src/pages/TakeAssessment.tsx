@@ -1,20 +1,25 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import QuestionCard from "./QuestionCard";
 import api from "../utils/axios";
+import type { Answers, Current, Question, QuestionType } from "../types/Question";
 
+type Assessment = {
+  id: number,
+  courseSlug: string,
+  sessionId?: number
+}
 
 const TakeAssessment = () => {
   const navigate = useNavigate();
-  const { assessmentType, modelId, sessionId } = useParams();
-  const location = useLocation();
+  const { assessmentType, sessionId } = useParams();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState(
+  const [answers, setAnswers] = useState<Answers>(
     JSON.parse(localStorage.getItem("answers") || "{}")
   );
-  const [assessment, setAssessment] = useState(null);
+  const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [questions, setQuestions] = useState([]);
-  const [current, setCurrent] = useState(null);
+  const [current, setCurrent] = useState<Current | null>(null);
 
   useEffect(() => {
     const fetchAssessmentSessionData = async () => {
@@ -24,7 +29,7 @@ const TakeAssessment = () => {
       setQuestions(data.questions);
       setAssessment({
         id: data.assessmentId,
-        courseSlug: data.courseSlug
+        courseSlug: data.courseSlug,
       })
     } 
     fetchAssessmentSessionData();
@@ -36,7 +41,7 @@ const TakeAssessment = () => {
   }, [questions, currentQuestionIndex])
 
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = ''; // Chrome shows default message
     };
@@ -68,6 +73,8 @@ const TakeAssessment = () => {
   }
 
   const submitAsssessment = async () => {
+    if(!assessment) return;
+
     const unsavedAnswers = questions.length - Object.keys(answers).length;
     console.log(`You have ${unsavedAnswers} unanswered or unsaved questions left.`);
 

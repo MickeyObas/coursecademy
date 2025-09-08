@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
+import type { Course } from "../types/Course";
 
 export const useCourse = (courseSlug: string) => {
-  const [course, setCourse] = useState(null);
+  const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 

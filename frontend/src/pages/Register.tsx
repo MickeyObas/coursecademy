@@ -17,6 +17,7 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     password2: '',
+    full_name: ''
   });
 
   useEffect(() => {
@@ -43,7 +44,8 @@ const Register: React.FC = () => {
       general: '',
       email: '',
       password: '',
-      password2: ''
+      password2: '',
+      full_name: ''
     });
     
     try{
@@ -65,7 +67,8 @@ const Register: React.FC = () => {
           email: error.response.data.email || '',
           password: error.response.data.password || '',
           password2: error.response.data.password2 || '',
-          general: ''
+          general: '',
+          full_name: error.response.data.full_name || ""
         });
       }else{
         console.error(error);

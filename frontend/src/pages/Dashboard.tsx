@@ -5,13 +5,30 @@ import api from "../utils/axios";
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { useNavigate } from "react-router-dom";
+import type { EnrolledCourse } from "../types/Course";
+
+
+type CourseProgressSummary = {
+  lessons: {
+    total: number,
+    completed: number
+  },
+  modules: {
+    total: number,
+    completed: number
+  },
+  courses: {
+    total: number,
+    completed: number
+  },
+}
 
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { enrolledCourses, fetchEnrolledCourses } = useEnrolledCourses();
-  const [courseProgressSummary, setCourseProgressSummary] = useState(null);
-  const [lastAccessedCourse, setLastAccessedCourse] = useState(null);
+  const [courseProgressSummary, setCourseProgressSummary] = useState<CourseProgressSummary | null>(null);
+  const [lastAccessedCourse, setLastAccessedCourse] = useState<EnrolledCourse | null>(null);
   const [enolledCoursesFilter, setEnrolledCoursesFilter] = useState<"active" | "completed">("active");
 
   useEffect(() => {
@@ -51,7 +68,7 @@ const Dashboard = () => {
     fetchEnrolledCourses(enolledCoursesFilter);
   }, [enolledCoursesFilter])
 
-  const handleCourseClick = (course) => {
+  const handleCourseClick = (course: EnrolledCourse) => {
     if(course.resume_lesson_id){
       navigate(`/courses/${course?.course.slug}/lessons/${course?.resume_lesson_id}`)
     }else{
@@ -114,8 +131,16 @@ const Dashboard = () => {
               </div>
               <div>
                 <CircularProgressbar
-                  value={(courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100}
-                  text={`${Math.floor((courseProgressSummary?.lessons.completed / courseProgressSummary?.lessons.total) * 100) || 0}%`}
+                  value={
+                    courseProgressSummary 
+                      ? ((courseProgressSummary.lessons.completed / courseProgressSummary.lessons.total) * 100) 
+                      : 0
+                  }
+                  text={
+                    courseProgressSummary 
+                    ? `${Math.floor((courseProgressSummary.lessons.completed / courseProgressSummary.lessons.total) * 100) || 0}%`
+                    : '0%'
+                  }
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
@@ -127,7 +152,7 @@ const Dashboard = () => {
               </div>
             </div>
             <h3 className="font-bold text-xl">{courseProgressSummary?.lessons.completed}</h3>
-            <p>{courseProgressSummary?.lessons.completed > 1 ? "Lessons" : "Lesson"}</p>
+            <p>{courseProgressSummary && courseProgressSummary?.lessons.completed > 1 ? "Lessons" : "Lesson"}</p>
             <p className="text-blue-600">of {courseProgressSummary?.lessons.total} completed</p>
           </div>
           <div className="bg-red-100 p-4 flex flex-col rounded-lg gap-y-1">
@@ -137,8 +162,16 @@ const Dashboard = () => {
               </div>
               <div>
                 <CircularProgressbar
-                  value={(courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100}
-                  text={`${Math.floor((courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100) || 0}%`}
+                  value={
+                    courseProgressSummary 
+                      ? (courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100
+                      : 0
+                  }
+                  text={
+                    courseProgressSummary 
+                      ?`${Math.floor((courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100) || 0}%`
+                      : '0%'
+                  }
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
@@ -150,7 +183,7 @@ const Dashboard = () => {
               </div>
             </div>
             <h3 className="font-bold text-xl">{courseProgressSummary?.modules.completed}</h3>
-            <p>{courseProgressSummary?.modules.completed > 1 ? "Modules" : "Module"}</p>
+            <p>{courseProgressSummary && courseProgressSummary?.modules.completed > 1 ? "Modules" : "Module"}</p>
             <p className="text-blue-600">of {courseProgressSummary?.modules.total} completed</p>
           </div>
           <div className="bg-green-100 p-4 flex flex-col rounded-lg gap-y-1">
@@ -160,8 +193,16 @@ const Dashboard = () => {
               </div>
               <div>
                 <CircularProgressbar
-                  value={(courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100}
-                  text={`${Math.floor((courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100) || 0}%`}
+                  value={
+                    courseProgressSummary 
+                      ? (courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100
+                      : 0
+                  }
+                  text={
+                    courseProgressSummary 
+                      ? `${Math.floor((courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100) || 0}%`
+                      : '0%'
+                  }
                   strokeWidth={18}
                   className='h-14'
                   styles={buildStyles({
@@ -173,7 +214,7 @@ const Dashboard = () => {
               </div>
             </div>
             <h3 className="font-bold text-xl">{courseProgressSummary?.courses.completed}</h3>
-            <p>{courseProgressSummary?.courses.completed > 1 ? "Courses" : "Course"}</p>
+            <p>{courseProgressSummary && courseProgressSummary?.courses.completed > 1 ? "Courses" : "Course"}</p>
             <p className="text-blue-600">of {courseProgressSummary?.courses.total} completed</p>
           </div>
         </div>

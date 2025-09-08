@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import type { ReactNode, SetStateAction } from 'react';
+import type { User } from "../types/User";
 
 interface AuthContextType {
   login: (data: LoginResponseData) => void,
@@ -7,18 +8,9 @@ interface AuthContextType {
   setUser: React.Dispatch<SetStateAction<User | null>>
 }
 
-type User = {
-  username: string,
-  email: string,
-}
-
 interface LoginResponseData {
   access: string,
-  user: {
-    username: string,
-    email: string,
-    account_type: string
-  }
+  user: User
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -27,7 +27,6 @@ class EnrollmentDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class UserEnrollmentList(APIView):
-
     def get(self, request):
         logger.info(request.query_params)
         filter = request.query_params.get("filter", "active")

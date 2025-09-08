@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
 import CourseForm from "./CourseForm";
+import type { Course } from "../types/Course";
 
 const InstructorCourses = () => {
   const [courses, setCourses] = useState<any[]>([]);
@@ -20,7 +21,7 @@ const InstructorCourses = () => {
     fetchCourses();
   }, []);
 
-  const handleCourseSave = (data) => {
+  const handleCourseSave = (data: Course) => {
     setAddingCourse(false);
     setCourses((prev) => ([...prev, data])); 
   }

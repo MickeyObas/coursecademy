@@ -5,11 +5,7 @@ export default function CourseAsessmentDetail() {
   const navigate = useNavigate();
   const { courseSlug } = useParams();
 
-  // Fetch session + assessment details
-
-
-
-  // Example static assessment details
+  // TODO: Set up actual course assessments
   const assessment = {
     id: 1,
     title: "Course Assessment",

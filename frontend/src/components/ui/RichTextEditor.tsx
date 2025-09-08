@@ -1,9 +1,13 @@
 // components/RichTextEditor.jsx
-import { useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-export default function RichTextEditor({ value, onChange }) {
+type RichTextEditorProps = {
+  value: string,
+  onChange: (content: string) => void
+}
+
+export default function RichTextEditor({ value, onChange }: RichTextEditorProps) {
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],

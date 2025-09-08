@@ -1,14 +1,15 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
+import type { Course } from "../types/Course";
 
 const CourseDetail = () => {
   const navigate = useNavigate();
   const { courseSlug } = useParams();
-  const [course, setCourse] = useState(null);
+  const [course, setCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
-  const [isEnrolled, setIsEnrolled] = useState(null);
+  const [isEnrolled, setIsEnrolled] = useState<boolean | null>(null);
 
   const fetchCourse = async () => {
       try{
@@ -30,7 +31,7 @@ const CourseDetail = () => {
   if (loading) return <div className="text-center mt-10 text-lg">Loading...</div>;
   if (!course) return <div className="text-center mt-10 text-red-500">Course not found</div>;
 
-  const handleCourseEnroll = async (courseId) => {
+  const handleCourseEnroll = async (courseId: number) => {
     try {
       setIsEnrolling(true);
       const response = await api.post(`/api/courses/${courseId}/enroll/`);

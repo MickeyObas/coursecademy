@@ -2,33 +2,18 @@ import { useEffect, useState } from "react";
 import api from "../utils/axios";
 import RichTextEditor from "../components/ui/RichTextEditor";
 import { debounce } from 'lodash';
+import type { Lesson, Module } from "../types/Course";
 
-
-type Lesson = {
-  id?: number;
-  title: string;
-  type: "VIDEO" | "ARTICLE";
-  videoUrl?: string;
-  content?: string;
-  isNewLesson: boolean
-};
-
-type Module = {
-  id?: number;
-  title: string;
-  lessons: Lesson[];
-};
 
 export default function ModuleLessonBuilder() {
   const [courses, setCourses] = useState<any[]>([]);
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [selectedModule, setSelectedModule] = useState<Module | null>(null);
-  const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
+  const [editingLesson, setEditingLesson] = useState<EditLesson | null>(null);
   const [addingModule, setAddingModule] = useState(false);
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [newModuleDescription, setNewModuleDescription] = useState("");
-  const [viewingPreview, setViewingPreview] = useState(false);
 
   // Load user’s courses
   useEffect(() => {
@@ -82,7 +67,7 @@ export default function ModuleLessonBuilder() {
       console.log("DRAFT", draft);
       const parsedDraft = JSON.parse(draft);
       console.log("Updated at", lesson.updated_at);
-      const backendTime = new Date(lesson.updated_at).getTime();
+      const backendTime = new Date(lesson.updated_at || "").getTime();
       const localTime = parsedDraft.lastEdited;
 
       console.log(localTime, backendTime);
@@ -97,12 +82,12 @@ export default function ModuleLessonBuilder() {
     
     setEditingLesson((prev) => ({
       ...prev,
+      "status": "DRAFT",
       "isNewLesson": false,
       "id": lesson.id,
       "title": lesson.title,
       "type": lesson.type,
       "draft_content": contentToUse,
-      "videoUrl": lesson.videoUrl,
       "updated_at": lesson.updated_at
     }));
   };
@@ -114,9 +99,6 @@ export default function ModuleLessonBuilder() {
 
   const handleSaveLesson = async () => {
     if (!selectedModule || !editingLesson) return;
-
-    // Update existing Lesson
-
 
     try {
       const response = await api.patch(`/api/lessons/${editingLesson.id}/update/`, {
@@ -173,15 +155,24 @@ export default function ModuleLessonBuilder() {
     }
   };
 
+  type EditLesson = {
+    id: number,
+    title: string,
+    type: "ARTICLE" | "VIDEO",
+    status: "PUBLISHED" | "DRAFT" | "ARCHIVED",
+    draft_content?: string,
+    video_file?: string
+  }
+
   const handleAddLesson = async () => {
     try {
       const newLesson = await addBlankLesson();
       // localStorage.setItem(`lesson_draft_${newLessonId}`, '');
       setEditingLesson({ 
         id: newLesson.id, 
-        isNewLesson: false, 
         title: newLesson.title, 
-        type: "ARTICLE" 
+        type: "ARTICLE" ,
+        status: "DRAFT"
       })
     } catch (err) {
       console.log("Something went wrong: ", err);
@@ -371,15 +362,9 @@ export default function ModuleLessonBuilder() {
 
           {editingLesson.type === "ARTICLE" ? (
             <>
-              {/* <textarea
-                className="w-full border rounded-lg p-2"
-                placeholder="Lesson content"
-                value={editingLesson.content || ""}
-                onChange={(e) => handleLessonChange("content", e.target.value)}
-              /> */}
               <RichTextEditor 
-                value={editingLesson.draft_content} 
-                onChange={(content) => {
+                value={editingLesson.draft_content || ""} 
+                onChange={(content: string) => {
                   handleLessonChange("draft_content", content)
                   storeLessonDraft(content)
                 }}
@@ -391,7 +376,7 @@ export default function ModuleLessonBuilder() {
               className="w-full border rounded-lg p-2"
               placeholder="Video URL"
               value={editingLesson.video_file || ""}
-              onChange={(e) => handleLessonChange("videoUrl", e.target.value)}
+              onChange={(e) => handleLessonChange("video_file", e.target.value)}
             />
           )}
 

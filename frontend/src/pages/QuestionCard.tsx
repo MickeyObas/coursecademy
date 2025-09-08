@@ -1,5 +1,6 @@
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import api from "../utils/axios";
+import type { Current } from "../types/Question";
 
 type QuestionType = "MCQ" | "FIB" | "TF";
 
@@ -12,17 +13,12 @@ type Question = {
   };
 };
 
-type Current = {
-  order: number,
-  question: Question
-}
-
 type AnswersMap = {
   [key: number]: string | number
 }
 
 type QuestionCardProps = {
-  current: Current,
+  current: Current | null,
   currentIndex: number,
   totalQuestions: number,
   answers: AnswersMap,
@@ -47,7 +43,7 @@ type TFQuestionProps = {
 }
 
 type MCQQuestionProps = {
-  current: Current,
+  current: Current | null,
   answers: AnswersMap,
   handleMCQInput: (questionId: number, optionId: number) => void
 }
@@ -66,16 +62,10 @@ export default function QuestionCard({
   onSubmit
 }: QuestionCardProps) {
 
-  const location = useLocation();
-  const { modelId, assessmentType, sessionId, testSessionId } = useParams();
-  // assessmentType = enum(lesson, module, course);
-  // moduleId is the lesson|module|course + id
-  // If it's a lession assessment, an assessment key will be in the session storage
-  const stored = sessionStorage.getItem('assessment');
-  const assessment = stored ? JSON.parse(stored) : null;
-
+  const { assessmentType, sessionId, testSessionId } = useParams();
 
   const handleAnswerSave = async () => {
+    if(!current) return;
     // Save to local storage?
     localStorage.setItem('answers', JSON.stringify(answers));
   
@@ -238,6 +228,7 @@ const TFQuestion = ({current, answers, handleTFInput}: TFQuestionProps) => {
 }
 
 const MCQQuestion = ({current, answers, handleMCQInput}: MCQQuestionProps) => {
+  if(!current) return;
   const value = 
     answers[current?.id] ??
     "";

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
+import type { EnrolledCourse } from "../types/Course";
 
 export const useEnrolledCourses = () => {
-  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 

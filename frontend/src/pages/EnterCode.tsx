@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BACKEND_URL } from '../config';
 import api from '../utils/axios';
 
 

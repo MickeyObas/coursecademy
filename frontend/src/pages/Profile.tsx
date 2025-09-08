@@ -1,14 +1,14 @@
 import { Pencil, UserCircle2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import api from "../utils/axios";
 import { BACKEND_URL } from "../config";
+import { type Profile } from "../types/User";
 
 
 const Profile = () => {
-  const [profile, setProfile] = useState(null);
-  const [newProfilePicture, setNewProfilePicture] = useState('');
-  const [preview, setPreview] = useState(null);
-  const profilePictureInputRef = useRef(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [preview, setPreview] = useState<string | ArrayBuffer | null>(null);
+  const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -49,7 +49,8 @@ const Profile = () => {
     profilePictureInputRef?.current?.click();
   }
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(!e.target.files) return;
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -81,7 +82,7 @@ const Profile = () => {
             />
             {profile?.profile_picture ? (
             <img
-              src={ preview || `${BACKEND_URL}${profile?.profile_picture}`}
+              src={ preview as string || `${BACKEND_URL}${profile?.profile_picture}` || ""}
               alt="User avatar"
               className="w-28 h-28 rounded-full object-cover border"
             />

@@ -1,14 +1,31 @@
 import { useEffect, useState } from "react";
-import type { Category } from "../types/Category";
 import api from '../utils/axios';
 import { useNavigate } from "react-router-dom";
+import type { Category } from "../types/Course";
+
+
+type Test = {
+  id: number,
+  category: Category,
+  description: string,
+  duration_minutes: number
+}
+
+type TestSession = {
+  id: number,
+  test_assessment: Test,
+  status: "IP" | "S" | "ERR",
+  score: number,
+  submitted_at: string,
+  is_expired: boolean
+}
+
 
 const Tests = () => {
 
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tests, setTests] = useState([]);
-  const [testSessions, setTestSessions] = useState([]);
+  const [tests, setTests] = useState<Test[]>([]);
+  const [testSessions, setTestSessions] = useState<TestSession[]>([]);
 
   const formatStatus = (statusChar: string) => {
     switch(statusChar){
@@ -21,7 +38,7 @@ const Tests = () => {
     }
   }
 
-  function formatDate(inputDate) {
+  function formatDate(inputDate: string) {
     const date = new Date(inputDate);
 
     return date.toLocaleString("en-US", {
@@ -42,22 +59,22 @@ const Tests = () => {
     navigate(`/dashboard/take-test/${sessionId}/`)
   }
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await api.get(`/api/categories/`);
-        const data = await response.data;
-        setCategories(data);
-      }catch(error: any){
-        if(error.response){
-          console.log(error.response.data);
-        }else{
-          console.error(error);
-        }
-      }
-    };
-    fetchCategories();
-  }, [])
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const response = await api.get(`/api/categories/`);
+  //       const data = await response.data;
+  //       setCategories(data);
+  //     }catch(error: any){
+  //       if(error.response){
+  //         console.log(error.response.data);
+  //       }else{
+  //         console.error(error);
+  //       }
+  //     }
+  //   };
+  //   fetchCategories();
+  // }, [])
 
   useEffect(() => {
     const fetchTestAssessments = async () => {
@@ -111,7 +128,7 @@ const Tests = () => {
         <h2 className="text-xl font-bold">My Tests</h2>
         {testSessions.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 mt-4">
-            {testSessions.map((testSession, idx) => (
+            {testSessions.map((testSession) => (
               <div className="bg-slate-100 p-2.5 rounded-lg flex justify-between items-center">
                 <div className="flex w-full gap-x-7">
                   <div className="w-[25%]">

@@ -1,11 +1,8 @@
 import { Book, ClipboardList, Layers, LogOut } from "lucide-react";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import api from "../../utils/axios";
 
-interface Props {
-  children: ReactNode;
-}
 
 export default function InstructorDashboardLayout() {
   const navigate = useNavigate();

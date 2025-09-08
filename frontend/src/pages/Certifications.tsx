@@ -2,24 +2,15 @@ import { BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
 
-const certifications = [
-  {
-    id: "CERT-001",
-    course: "Frontend Web Development",
-    dateIssued: "2025-06-15",
-    downloadUrl: "/certs/frontend-web.pdf",
-  },
-  {
-    id: "CERT-002",
-    course: "Python for Beginners",
-    dateIssued: "2025-07-01",
-    downloadUrl: "/certs/python-beginners.pdf",
-  },
-  // Add more certs or fetch from API
-];
+type Certification = {
+  id: number, 
+  course: string,
+  issued_at: string,
+  certificate_file: string
+}
 
 const Certifications = () => {
-  const [certifications, setCertifications] = useState([]);
+  const [certifications, setCertifications] = useState<Certification[]>([]);
 
   useEffect(() => {
     const fetchCertifications = async () => {

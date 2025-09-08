@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import QuestionCard from "./QuestionCard";
 import api from "../utils/axios";
+import type { Answers } from "../types/Question";
 
 const TakeTest = () => {
   const navigate = useNavigate();
   const { testSessionId } = useParams();
   const location = useLocation();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState(
+  const [answers, setAnswers] = useState<Answers>(
     JSON.parse(localStorage.getItem("answers") || "{}")
   );
   const questions = location.state?.questions || JSON.parse(localStorage.getItem("questions") || "[]");
@@ -40,7 +41,7 @@ const TakeTest = () => {
 
 
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = ''; // Chrome shows default message
     };
@@ -48,14 +49,6 @@ const TakeTest = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
-
-  // useEffect(() => {
-  //   if (location.state) {
-  //     localStorage.setItem("questions", JSON.stringify(location.state?.questions));
-  //     localStorage.setItem("startedAt", location.state.startedAt);
-  //     localStorage.setItem("durationMinutes", location.state.durationMinutes.toString());
-  //   }
-  // }, [location.state]);
 
   useEffect(() => {
     const start = new Date(startedAt);

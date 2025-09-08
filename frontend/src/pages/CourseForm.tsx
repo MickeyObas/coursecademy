@@ -1,8 +1,26 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import api from "../utils/axios";
+import type { Course } from "../types/Course";
+import type { Category } from "../types/Category";
 
-export default function CourseForm({ onCourseSave }) {
-  const [course, setCourse] = useState({
+
+type CourseFormProps = {
+  onCourseSave: (data: Course) => void
+}
+
+type CourseFormInput = {
+  title: string,
+  category: string,
+  description: string,
+  thumbnail: string | File,
+  price: number,
+  skillsInput: string[],
+  learningPointsInput: string[],
+  tags: string
+}
+
+export default function CourseForm({ onCourseSave }: CourseFormProps) {
+  const [course, setCourse] = useState<CourseFormInput>({
     title: "",
     category: "",
     description: "",
@@ -12,7 +30,7 @@ export default function CourseForm({ onCourseSave }) {
     learningPointsInput: [""],
     tags: ""
   });
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   console.log(course);
 
   useEffect(() => {
@@ -26,7 +44,7 @@ export default function CourseForm({ onCourseSave }) {
   }, [])
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setCourse((prev) => ({ ...prev, [name]: value }));
@@ -42,7 +60,8 @@ export default function CourseForm({ onCourseSave }) {
     setCourse((prev) => ({ ...prev, [field]: newArr }));
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if(!e.target.files) return;
     const file = e.target?.files[0] || null;
     if (file) {
       setCourse((prev) => ({...prev, thumbnail: file}));

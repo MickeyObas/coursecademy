@@ -1,22 +1,17 @@
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
+import type { Lesson, ThinCourse } from "../types/Course";
+import type { FIBDetails, MCQDetails, Question, QuestionType, TFDetails } from "../types/Question";
 
-type Question = {
-  type: "MCQ" | "TF" | "FIB";
-  text: string;
-  options?: string[];
-  answer: string;
-};
+
 
 export default function AssessmentBuilder() {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [courses, setCourses] = useState([]);
-  const [lessons, setLessons] = useState([]);
+  const [courses, setCourses] = useState<ThinCourse[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [assessmentType, setAssessmentType] = useState<null | string>(null);
-  const [selectedCourseId, setSelectedCourseId] = useState<null | string | number>(null);
-  const [selectedLessonId, setSelectedLessonId] = useState(null);
-  const [newAssessmentCourse, setNewAssessmentCourse] = useState(null);
-  const [newAssessmentLesson, setNewAssessmentLesson] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState<null | number>(null);
+  const [selectedLessonId, setSelectedLessonId] = useState<null | number>(null);
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -93,7 +88,7 @@ export default function AssessmentBuilder() {
     }
   }
 
-  const handleLessonAssessment = async (lessonId, hasAssessment) => {
+  const handleLessonAssessment = async (lessonId: number, hasAssessment: boolean) => {
     // If has assessment change lessonId immediately
     if(hasAssessment){
       setSelectedLessonId(lessonId);
@@ -107,37 +102,34 @@ export default function AssessmentBuilder() {
       }catch (err: any){
         console.error(err);
       }
-
     }
   }
 
+// --- Overloads ---
+function getDefaultDetails(type: "MCQ"): MCQDetails;
+function getDefaultDetails(type: "FIB"): FIBDetails;
+function getDefaultDetails(type: "TF"): TFDetails;
 
-  const getDefaultDetails = (type: string) => {
-    switch (type) {
-      case "MCQ":
-        return {
-          options: [
-            { text: "", is_correct: false },
-            { text: "", is_correct: false },
-            { text: "", is_correct: false },
-            { text: "", is_correct: true }
-          ]
-        };
+// --- Implementation ---
+function getDefaultDetails(type: QuestionType): MCQDetails | FIBDetails | TFDetails {
+  switch (type) {
+    case "MCQ":
+      return {
+        options: [
+          { text: "", is_correct: false },
+          { text: "", is_correct: false },
+          { text: "", is_correct: false },
+          { text: "", is_correct: true },
+        ],
+      };
 
-      case "TF":
-        return {
-          is_true: false
-        };
+    case "FIB":
+      return { correct_answer: "" };
 
-      case "FIB":
-        return {
-          correct_answer: ""
-        };
-
-      default:
-        return {};
-    }
-  };
+    case "TF":
+      return { is_true: false };
+  }
+}
 
   const addQuestion = () =>
     setQuestions([
@@ -145,8 +137,15 @@ export default function AssessmentBuilder() {
       { 
         type: "MCQ", 
         text: "",
-        category: 1, // Fix Later 
-        details: getDefaultDetails("MCQ"),
+        category: 1, // TODO: Get Category from Parent 
+        details: {
+          options: [
+            { text: "", is_correct: false },
+            { text: "", is_correct: false },
+            { text: "", is_correct: false },
+            { text: "", is_correct: true }
+          ]
+        },
         answer: ""
       },
     ]);
@@ -158,15 +157,39 @@ export default function AssessmentBuilder() {
     setQuestions(newQ);
   };
 
-  const handleTypeChange = (index, newType) => {
-    setQuestions((prev) =>
-      prev.map((q, i) =>
-        i === index
-          ? { ...q, type: newType, details: getDefaultDetails(newType) }
-          : q
-      )
-    );
-  };
+
+
+const handleTypeChange = (index: number, newType: QuestionType) => {
+  setQuestions((prev) =>
+    prev.map((q, i) => {
+      if (i !== index) return q;
+
+      switch (newType) {
+        case "MCQ":
+          return {
+            ...q,
+            type: "MCQ", // literal, not union
+            details: getDefaultDetails("MCQ"),
+          };
+
+        case "FIB":
+          return {
+            ...q,
+            type: "FIB",
+            details: getDefaultDetails("FIB"),
+          };
+
+        case "TF":
+          return {
+            ...q,
+            type: "TF",
+            details: getDefaultDetails("TF"),
+          };
+      }
+    })
+  );
+};
+
 
   return (
     <div className="max-w-3xl mx-auto mt-6 space-y-6">
@@ -236,10 +259,10 @@ export default function AssessmentBuilder() {
           <h3 className="font-semibold mb-2">Question {i + 1}</h3>
 
           <select
-            disabled={q.id}
+            disabled={!!q.id}
             className="border rounded-lg p-2 mb-2 w-full"
             value={q.type}
-            onChange={(e) => handleTypeChange(i, e.target.value)}
+            onChange={(e) => handleTypeChange(i, e.target.value as QuestionType)}
           >
             <option value="MCQ">Multiple Choice</option>
             <option value="TF">True/False</option>
@@ -263,7 +286,7 @@ export default function AssessmentBuilder() {
                   className="w-full border rounded-lg p-2"
                   value={opt.text}
                   onChange={(e) => {
-                    const opts = [...(q.details.options || [])];
+                    const opts = [...(q.details.options|| [])];
                     opts[j] = {text: e.target.value, is_correct: e.target.value === q.answer};
                     updateQuestion(i, { ...q, details: {...q.details, options: opts} });
                   }}

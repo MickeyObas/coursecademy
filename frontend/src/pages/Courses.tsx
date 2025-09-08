@@ -1,4 +1,4 @@
-import { Book, ClipboardList, Dot, Ellipsis, MessageCircleQuestionMark, PencilLineIcon, UserCheck } from 'lucide-react';
+import { Book, ClipboardList, Dot, Ellipsis, PencilLineIcon, UserCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
@@ -6,11 +6,12 @@ import api from '../utils/axios';
 import { useEnrolledCourses } from '../hooks/useEnrolledCourses';
 import { timeAgo } from '../utils/utils';
 import { useNavigate } from 'react-router-dom';
+import type { Course } from '../types/Course';
 
 
 const Courses = () => {
   const navigate = useNavigate();
-  const [otherCourses, setOtherCourses] = useState([]);
+  const [otherCourses, setOtherCourses] = useState<Course[]>([]);
   const { enrolledCourses } = useEnrolledCourses();
 
   useEffect(() => {

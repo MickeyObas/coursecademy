@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { data, useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useCourse } from "../hooks/useCourse";
 import api from "../utils/axios";
+import type { Lesson } from "../types/Course";
 
 
 export default function CoursePlayer() {
@@ -9,15 +10,15 @@ export default function CoursePlayer() {
   const { courseSlug, lessonId } = useParams();
   const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
-  const prevLessonId = useRef<string | null>(null);
-  const lessonBody = useRef(null);
+  const prevLessonId = useRef<string | undefined>(undefined);
+  const lessonBody = useRef<HTMLDivElement | null>(null);
 
   const allLessons = course?.modules?.flatMap(module => module.lessons.map((lesson => ({...lesson})))) || [];
   const [currentLessonIndex, setCurrentLessonIndex] = useState<null | number>(null);
-  const currentLesson = allLessons.find((l) => l.id == lessonId);
-  const [lessonContent, setLessonContent] = useState(null);
+  const currentLesson = allLessons.find((l) => l.id === Number(lessonId));
+  const [lessonContent, setLessonContent] = useState<Lesson | null>(null); 
 
-  const handleLessonSelect = (lessonId) => {
+  const handleLessonSelect = (lessonId: number) => {
     const selectedLessonIndex = allLessons.findIndex((lesson) => lesson.id == lessonId);
     const selectedLesson = allLessons[selectedLessonIndex];
     if(!selectedLesson.is_unlocked) return;
@@ -46,10 +47,11 @@ export default function CoursePlayer() {
   }
 
   const goToPrevious = () => {
+    if(!currentLessonIndex) return;
     if(currentLessonIndex > 0){
       const previousLesson = allLessons[currentLessonIndex-1];
       navigate(`/courses/${courseSlug}/lessons/${previousLesson.id}`)
-      setCurrentLessonIndex(prev => prev - 1);
+      setCurrentLessonIndex(prev => prev && prev - 1);
     }
   }
 
@@ -74,7 +76,7 @@ export default function CoursePlayer() {
         const data = response.data;
         setLessonContent(data);
         prevLessonId.current = lessonId;
-      }catch(err){
+      }catch(err: any){
         console.error(err);
         if(err.response.status === 403){
           alert("You do not have access to lesson.");
@@ -164,7 +166,7 @@ export default function CoursePlayer() {
         ) : (
           <div
             className="prose max-w-3xl mb-6"
-            dangerouslySetInnerHTML={{ __html: lessonContent?.content }}
+            dangerouslySetInnerHTML={{ __html: lessonContent?.content || '' }}
           />
         )}
 
@@ -206,8 +208,8 @@ export default function CoursePlayer() {
   );
 }
 
-const VideoPlayer = ({lessonId, videoUrl}) => {
-  const videoRef = useRef(null);
+const VideoPlayer = ({lessonId, videoUrl}: {lessonId: string | undefined, videoUrl: string | undefined}) => {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const [savedProgress, setSavedProgress] = useState(null);
 
   useEffect(() => {
