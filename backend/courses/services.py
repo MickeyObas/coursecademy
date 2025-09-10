@@ -106,9 +106,6 @@ def get_next_step(user, course, current_lesson_id=None, current_assessment_id=No
             if a.lesson.id == lesson.id:
                 sequence.append(("assessment", a))
 
-    # logger.info(sequence)
-    # logger.info(f"{type(sequence[0][1].id)} and {type(current_lesson_id)}")
-
     current_index = None
     current_obj = None
     for i, (type_, obj) in enumerate(sequence):

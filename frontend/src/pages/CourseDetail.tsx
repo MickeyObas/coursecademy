@@ -36,6 +36,7 @@ const CourseDetail = () => {
       setIsEnrolling(true);
       const response = await api.post(`/api/courses/${courseId}/enroll/`);
       const data = response.data;
+      console.log(data);
       setIsEnrolled(true);
       alert("Course enrollment successful");
     } catch(err){

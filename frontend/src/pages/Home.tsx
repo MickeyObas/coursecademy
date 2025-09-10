@@ -8,6 +8,7 @@ function Home() {
     const getProfile = async () => {
       try{
         const response = await api.get('/api/auth/check/');
+        console.log(response.data);
       }catch(error: any){
         if(error.response){
           console.error(error.response.data);

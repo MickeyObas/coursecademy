@@ -5,7 +5,7 @@ import type { Category } from "../types/Category";
 
 
 type CourseFormProps = {
-  onCourseSave: (data: Course) => void
+  onCourseSave?: (data: Course) => void
 }
 
 type CourseFormInput = {
@@ -113,7 +113,7 @@ export default function CourseForm({ onCourseSave }: CourseFormProps) {
       });
 
       // Handle after save
-      onCourseSave(data);
+      onCourseSave?.(data);
 
     }catch(err: any){
       const { data } = err.response;

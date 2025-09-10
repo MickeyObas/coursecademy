@@ -1,6 +1,7 @@
 import { BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 type Certification = {
   id: number, 
@@ -10,6 +11,7 @@ type Certification = {
 }
 
 const Certifications = () => {
+  usePageTitle("Certifications");
   const [certifications, setCertifications] = useState<Certification[]>([]);
 
   useEffect(() => {

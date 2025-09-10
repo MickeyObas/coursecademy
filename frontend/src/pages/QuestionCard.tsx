@@ -2,17 +2,6 @@ import { useParams } from "react-router-dom";
 import api from "../utils/axios";
 import type { Current } from "../types/Question";
 
-type QuestionType = "MCQ" | "FIB" | "TF";
-
-type Question = {
-  id: number;
-  text: string;
-  type: QuestionType;
-  details?: {
-    options?: { id: number; text: string }[];
-  };
-};
-
 type AnswersMap = {
   [key: number]: string | number
 }
@@ -87,6 +76,7 @@ export default function QuestionCard({
         });
       }
       const data = response.data;
+      console.log(data);
     } catch (error: any){
       if(error.response.data){
         console.error(error.response.data);

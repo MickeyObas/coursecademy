@@ -114,6 +114,7 @@ const TakeTest = () => {
         test_session_id: testSessionId
       })
       const data = response.data;
+      console.log(data);
       localStorage.removeItem('answers');
       localStorage.removeItem('questions');
       localStorage.removeItem('startedAt');

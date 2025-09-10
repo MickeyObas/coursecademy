@@ -7,7 +7,7 @@ export type User = {
 
 export type Role = "I" | "S";
 
-export type Profile = {
+export type ProfileData = {
   user: User,
   profile_picture: string
 }

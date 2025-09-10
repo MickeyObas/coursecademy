@@ -1,4 +1,4 @@
-import { Book, Clipboard, ClipboardCheck, Play, Scroll } from "lucide-react";
+import { Book, ClipboardCheck, Play, Scroll } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useEnrolledCourses } from "../hooks/useEnrolledCourses";
 import api from "../utils/axios";
@@ -6,6 +6,7 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { useNavigate } from "react-router-dom";
 import type { EnrolledCourse } from "../types/Course";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 
 type CourseProgressSummary = {
@@ -25,6 +26,7 @@ type CourseProgressSummary = {
 
 
 const Dashboard = () => {
+  usePageTitle('Dashboard');
   const navigate = useNavigate();
   const { enrolledCourses, fetchEnrolledCourses } = useEnrolledCourses();
   const [courseProgressSummary, setCourseProgressSummary] = useState<CourseProgressSummary | null>(null);

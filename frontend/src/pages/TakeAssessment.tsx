@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import QuestionCard from "./QuestionCard";
 import api from "../utils/axios";
-import type { Answers, Current, Question, QuestionType } from "../types/Question";
+import type { Answers, Current } from "../types/Question";
 
 type Assessment = {
   id: number,

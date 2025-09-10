@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import api from '../utils/axios';
 import { useNavigate } from "react-router-dom";
 import type { Category } from "../types/Course";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 
 type Test = {
@@ -22,7 +23,7 @@ type TestSession = {
 
 
 const Tests = () => {
-
+  usePageTitle("Tests");
   const navigate = useNavigate();
   const [tests, setTests] = useState<Test[]>([]);
   const [testSessions, setTestSessions] = useState<TestSession[]>([]);

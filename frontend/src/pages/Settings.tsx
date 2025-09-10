@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 const Settings = () => {
+  usePageTitle("Settings");
   const [formData, setFormData] = useState({
     name: "",
     email: "",

@@ -6,10 +6,12 @@ import api from '../utils/axios';
 import { useEnrolledCourses } from '../hooks/useEnrolledCourses';
 import { timeAgo } from '../utils/utils';
 import { useNavigate } from 'react-router-dom';
+import { usePageTitle } from "../hooks/usePageTitle";
 import type { Course } from '../types/Course';
 
 
 const Courses = () => {
+  usePageTitle("Courses");
   const navigate = useNavigate();
   const [otherCourses, setOtherCourses] = useState<Course[]>([]);
   const { enrolledCourses } = useEnrolledCourses();

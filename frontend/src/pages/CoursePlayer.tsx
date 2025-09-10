@@ -58,6 +58,7 @@ export default function CoursePlayer() {
   const handleFinishCourse = async () => {
     const response = await api.patch(`/api/lessons/${currentLesson?.id}/complete/`);
     const { data } = response.data;
+    console.log(data);
     navigate(`/courses/${courseSlug}/assessment/`);
   }
 

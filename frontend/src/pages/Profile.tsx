@@ -2,11 +2,15 @@ import { Pencil, UserCircle2 } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import api from "../utils/axios";
 import { BACKEND_URL } from "../config";
-import { type Profile } from "../types/User";
+import { type ProfileData } from "../types/User";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { useAuth } from "../contexts/AuthContext";
 
 
-const Profile = () => {
-  const [profile, setProfile] = useState<Profile | null>(null);
+export const Profile = () => {
+  const { user } = useAuth();
+  usePageTitle(`${user?.full_name.split(" ")[0]}'s Profile`);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
   const [preview, setPreview] = useState<string | ArrayBuffer | null>(null);
   const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -115,5 +119,3 @@ const Profile = () => {
     </main>
   );
 };
-
-export default Profile;

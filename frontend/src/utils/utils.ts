@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 export const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -26,3 +28,4 @@ export function timeAgo(isoDateString: string) {
 
   return "just now";
 }
+

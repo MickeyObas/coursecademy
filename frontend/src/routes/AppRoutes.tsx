@@ -9,7 +9,7 @@ import DashboardLayout from "../components/layouts/DashboardLayout";
 import Courses from "../pages/Courses";
 import Tests from "../pages/Tests";
 import Certifications from "../pages/Certifications";
-import Profile from "../pages/Profile";
+import { Profile} from "../pages/Profile";
 import Settings from "../pages/Settings";
 import TestDetails from "../pages/TestDetails";
 import TakeTest from "../pages/TakeTest";

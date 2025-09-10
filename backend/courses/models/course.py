@@ -1,11 +1,21 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Count, Avg
+from django.db.models.functions import Coalesce
 from django.utils.text import slugify
 
 from api.models import TimeStampedModel
 
 User = get_user_model()
 
+
+class CourseQuerySet(models.QuerySet):
+    def with_stats(self):
+        return self.annotate(
+            enrollment_count=Count("enrollments", distinct=True),
+            rating_count=Coalesce(Count("ratings", distinct=True), 0),
+            average_rating=Coalesce(Avg("ratings__stars"), 0)
+        )
 
 class Course(TimeStampedModel):
     title = models.CharField(max_length=300)
@@ -20,10 +30,11 @@ class Course(TimeStampedModel):
     tags = models.CharField(
         max_length=255, blank=True, help_text="Comma-separated values"
     )
-    rating_count = models.PositiveIntegerField(default=0)
-    average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
-    enrollment_count = models.PositiveBigIntegerField(default=0)
+    # rating_count = models.PositiveIntegerField(default=0)
+    # average_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
+    # enrollment_count = models.PositiveBigIntegerField(default=0)
     price = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
+    objects = CourseQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created_at"]
