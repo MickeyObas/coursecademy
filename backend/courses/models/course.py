@@ -13,8 +13,9 @@ class CourseQuerySet(models.QuerySet):
     def with_stats(self):
         return self.annotate(
             enrollment_count=Count("enrollments", distinct=True),
-            rating_count=Coalesce(Count("ratings", distinct=True), 0),
-            average_rating=Coalesce(Avg("ratings__stars"), 0)
+            rating_count=Coalesce(0, 0),
+            average_rating=Coalesce(0, 0)
+            # TODO Rating system
         )
 
 class Course(TimeStampedModel):

@@ -3,10 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useCourse } from "../hooks/useCourse";
 import api from "../utils/axios";
 import type { Lesson } from "../types/Course";
+import { useRateLimit } from "../contexts/RateLimitContext";
+import toast from "react-hot-toast";
 
 
 export default function CoursePlayer() {
-
+  const { isRateLimited, cooldown } = useRateLimit();
+  console.log(isRateLimited, cooldown);
   const { courseSlug, lessonId } = useParams();
   const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
@@ -17,6 +20,12 @@ export default function CoursePlayer() {
   const [currentLessonIndex, setCurrentLessonIndex] = useState<null | number>(null);
   const currentLesson = allLessons.find((l) => l.id === Number(lessonId));
   const [lessonContent, setLessonContent] = useState<Lesson | null>(null); 
+
+  useEffect(() => {
+    if(isRateLimited){
+      toast.error(`Sorry about that, you're being rate-limited. Please try again in ${cooldown} seconds.`, {duration: 4000})
+    }
+  }, [lessonId])
 
   const handleLessonSelect = (lessonId: number) => {
     const selectedLessonIndex = allLessons.findIndex((lesson) => lesson.id == lessonId);

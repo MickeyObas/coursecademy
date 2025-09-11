@@ -7,6 +7,8 @@ import 'react-circular-progressbar/dist/styles.css';
 import { useNavigate } from "react-router-dom";
 import type { EnrolledCourse } from "../types/Course";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useRateLimit } from "../contexts/RateLimitContext";
+import toast from "react-hot-toast";
 
 
 type CourseProgressSummary = {
@@ -26,12 +28,19 @@ type CourseProgressSummary = {
 
 
 const Dashboard = () => {
+  const { isRateLimited, cooldown } = useRateLimit();
   usePageTitle('Dashboard');
   const navigate = useNavigate();
   const { enrolledCourses, fetchEnrolledCourses } = useEnrolledCourses();
   const [courseProgressSummary, setCourseProgressSummary] = useState<CourseProgressSummary | null>(null);
   const [lastAccessedCourse, setLastAccessedCourse] = useState<EnrolledCourse | null>(null);
   const [enolledCoursesFilter, setEnrolledCoursesFilter] = useState<"active" | "completed">("active");
+
+  useEffect(() => {
+    if(isRateLimited){
+      toast.error(`Sorry about that, you're being rate-limited. Please try again in ${cooldown} seconds.`, {duration: 4000})
+    }
+  }, [])
 
   useEffect(() => {
     const fetchCourseProgressSummary = async () => {
@@ -114,12 +123,13 @@ const Dashboard = () => {
                 </span> */}
               </div>
             </div>   
-            <div
+            <button
+              disabled={isRateLimited}
               onClick={() => navigate(`/courses/${lastAccessedCourse?.course.slug}/lessons/${lastAccessedCourse?.resume_lesson_id}`)} 
-              className="flex bg-slate-100 px-2 py-1.5 rounded-lg gap-x-2 cursor-pointer hover:bg-slate-200">
+              className={`flex bg-slate-100 px-2 py-1.5 rounded-lg gap-x-2   ${isRateLimited ? 'hover:cursor-wait' : 'cursor-pointer hover:bg-slate-200'}`}>
               <Play color="blue"/>
               <span>Resume</span>
-            </div>       
+            </button>       
           </div>
         </div>
       )}

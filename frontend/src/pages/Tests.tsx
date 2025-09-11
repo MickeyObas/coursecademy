@@ -3,6 +3,8 @@ import api from '../utils/axios';
 import { useNavigate } from "react-router-dom";
 import type { Category } from "../types/Course";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useRateLimit } from "../contexts/RateLimitContext";
+import toast from "react-hot-toast";
 
 
 type Test = {
@@ -23,6 +25,7 @@ type TestSession = {
 
 
 const Tests = () => {
+  const { isRateLimited, cooldown } = useRateLimit();
   usePageTitle("Tests");
   const navigate = useNavigate();
   const [tests, setTests] = useState<Test[]>([]);
@@ -60,22 +63,11 @@ const Tests = () => {
     navigate(`/dashboard/take-test/${sessionId}/`)
   }
 
-  // useEffect(() => {
-  //   const fetchCategories = async () => {
-  //     try {
-  //       const response = await api.get(`/api/categories/`);
-  //       const data = await response.data;
-  //       setCategories(data);
-  //     }catch(error: any){
-  //       if(error.response){
-  //         console.log(error.response.data);
-  //       }else{
-  //         console.error(error);
-  //       }
-  //     }
-  //   };
-  //   fetchCategories();
-  // }, [])
+  useEffect(() => {
+    if(isRateLimited){
+      toast.error(`Sorry about that, you're being rate-limited. Please try again in ${cooldown} seconds.`, {duration: 4000})
+    }
+  }, [])
 
   useEffect(() => {
     const fetchTestAssessments = async () => {

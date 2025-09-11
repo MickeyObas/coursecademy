@@ -5,14 +5,23 @@ import { BACKEND_URL } from "../config";
 import { type ProfileData } from "../types/User";
 import { usePageTitle } from "../hooks/usePageTitle";
 import { useAuth } from "../contexts/AuthContext";
+import { useRateLimit } from "../contexts/RateLimitContext";
+import toast from "react-hot-toast";
 
 
 export const Profile = () => {
+  const { isRateLimited, cooldown } = useRateLimit();
   const { user } = useAuth();
   usePageTitle(`${user?.full_name.split(" ")[0]}'s Profile`);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [preview, setPreview] = useState<string | ArrayBuffer | null>(null);
   const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if(isRateLimited){
+      toast.error(`Sorry about that, you're being rate-limited. Please try again in ${cooldown} seconds.`, {duration: 4000})
+    }
+  }, [])
 
   useEffect(() => {
     const fetchProfile = async () => {

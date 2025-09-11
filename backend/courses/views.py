@@ -40,7 +40,7 @@ class CourseListView(generics.ListAPIView):
 
 
 class CourseDetailView(generics.RetrieveAPIView):
-    queryset = Course.objects.all()
+    queryset = Course.objects.with_stats()
     serializer_class = CourseSerializer
     lookup_field = "slug"
     lookup_url_kwarg = "course_slug"
@@ -242,7 +242,7 @@ class OtherCoursesView(APIView):
         enrolled_ids = Course.objects.filter(enrollments__user=user).values_list(
             "id", flat=True
         )
-        other_courses_qs = Course.objects.exclude(id__in=enrolled_ids)
+        other_courses_qs = Course.objects.exclude(id__in=enrolled_ids).with_stats()
         serializer = CourseSerializer(
             other_courses_qs, many=True, context={"request": request}
         )

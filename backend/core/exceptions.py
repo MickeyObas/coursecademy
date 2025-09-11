@@ -65,8 +65,12 @@ def custom_exception_handler(exc, context):
     
     if isinstance(exc, Throttled):
         return Response(
-            {'error': 'You have made too many requests. Please try again later.'},
-            status=429
+            {
+                'error': 'You have made too many requests. Please try again later.',
+                'retry_after': exc.wait
+            },
+            status=429,
+            headers={"Retry-After": exc.wait}
         )
     
     if isinstance(exc, LessonLockedError):

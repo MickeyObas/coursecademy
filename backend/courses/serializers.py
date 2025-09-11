@@ -295,6 +295,9 @@ class CourseSerializer(serializers.ModelSerializer):
     resume_lesson_id = serializers.SerializerMethodField()
     first_lesson_id = serializers.SerializerMethodField()
     is_enrolled = serializers.SerializerMethodField()
+    enrollment_count = serializers.SerializerMethodField(source='course.enrollment_count')
+    rating_count = serializers.SerializerMethodField(source='course.rating_count')
+    average_rating = serializers.SerializerMethodField(source='course.acerage_rating')
 
     class Meta:
         model = Course
@@ -322,6 +325,16 @@ class CourseSerializer(serializers.ModelSerializer):
             "module_count",
             "is_enrolled"
         ]
+
+    def get_enrollment_count(self, obj):
+        return obj.enrollment_count
+    
+    def get_rating_count(self, obj):
+        return obj.rating_count
+    
+    def get_average_rating(self, obj):
+        return obj.average_rating
+
 
     def create(self, validated_data):
         learning_points_data = validated_data.pop("learning_points_input", [])

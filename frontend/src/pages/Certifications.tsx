@@ -2,6 +2,8 @@ import { BadgeCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../utils/axios";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useRateLimit } from "../contexts/RateLimitContext";
+import toast from "react-hot-toast";
 
 type Certification = {
   id: number, 
@@ -11,8 +13,15 @@ type Certification = {
 }
 
 const Certifications = () => {
+  const { isRateLimited, cooldown } = useRateLimit();
   usePageTitle("Certifications");
   const [certifications, setCertifications] = useState<Certification[]>([]);
+
+  useEffect(() => {
+    if(isRateLimited){
+      toast.error(`Sorry about that, you're being rate-limited. Please try again in ${cooldown} seconds.`, {duration: 4000})
+    }
+  }, [])
 
   useEffect(() => {
     const fetchCertifications = async () => {
@@ -26,6 +35,7 @@ const Certifications = () => {
     fetchCertifications();
 
   }, [])
+  
 
   return (
     <div className="bg-slate-100 h-full px-6 py-10">
@@ -43,8 +53,10 @@ const Certifications = () => {
               key={cert.id}
               className="border border-slate-200 rounded-2xl shadow-sm p-5 flex flex-col justify-between bg-white hover:shadow-md transition"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <BadgeCheck className="text-green-600" />
+              <div className="flex items-start gap-3 mb-4">
+                <div>
+                  <BadgeCheck className="text-green-600 mt-1" />
+                </div>
                 <h2 className="text-lg font-semibold">{cert.course}</h2>
               </div>
               <div className="text-sm text-gray-600 space-y-1">

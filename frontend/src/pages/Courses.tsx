@@ -8,13 +8,23 @@ import { timeAgo } from '../utils/utils';
 import { useNavigate } from 'react-router-dom';
 import { usePageTitle } from "../hooks/usePageTitle";
 import type { Course } from '../types/Course';
+import { useRateLimit } from '../contexts/RateLimitContext';
+import toast from 'react-hot-toast';
 
 
 const Courses = () => {
+  const { cooldown, isRateLimited } = useRateLimit();
+  console.log(isRateLimited, cooldown);
   usePageTitle("Courses");
   const navigate = useNavigate();
   const [otherCourses, setOtherCourses] = useState<Course[]>([]);
   const { enrolledCourses } = useEnrolledCourses();
+
+  useEffect(() => {
+    if(isRateLimited){
+      toast.error(`Sorry about that, you're being rate-limited. Please try again in ${cooldown} seconds.`, {duration: 4000})
+    }
+  }, [])
 
   useEffect(() => {
     const fetchOtherCourses = async () => {

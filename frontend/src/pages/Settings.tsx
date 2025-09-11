@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { usePageTitle } from "../hooks/usePageTitle";
+import { useRateLimit } from "../contexts/RateLimitContext";
+import toast from "react-hot-toast";
 
 const Settings = () => {
+  const { isRateLimited, cooldown } = useRateLimit();
   usePageTitle("Settings");
   const [formData, setFormData] = useState({
     name: "",
@@ -24,6 +27,12 @@ const Settings = () => {
     console.log("Submitting settings:", formData);
     // You can connect this to your backend update endpoint
   };
+
+  useEffect(() => {
+    if(isRateLimited){
+      toast.error(`Sorry about that, you're being rate-limited. Please try again in ${cooldown} seconds.`, {duration: 4000})
+    }
+  }, [])
 
   return (
     <main className="bg-slate-100 h-full">
