@@ -117,7 +117,7 @@ export default function CoursePlayer() {
       if(currentLesson){
         api.post(`/api/lessons/${currentLesson.id}/accessed/`);
       }
-    }, 3000);
+    }, 1000);
     return () => clearInterval(timer);
   }, [currentLesson?.id])
  

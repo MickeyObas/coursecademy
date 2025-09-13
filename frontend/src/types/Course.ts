@@ -30,7 +30,7 @@ export type EnrolledCourse = {
     thumbnail: string,
     slug: string,
     lesson_count: number,
-    module_count: number
+    module_count: number,
   },
   progress: {
     percentage: number,
@@ -38,7 +38,8 @@ export type EnrolledCourse = {
     module: number
   },
   resume_lesson_id: number | null,
-  last_accessed_at: string
+  last_accessed_at: string,
+  status?: string
 }
 
 export type ThinCourse = {

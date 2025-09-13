@@ -326,7 +326,10 @@ class LastAccessedCourseView(APIView):
             serializer = CourseUserSerializer(
                 last_accessed_course, context={"request": request}
             )
-            return Response(serializer.data)
+            resp = Response(serializer.data)
+            resp.data["status"] = "present"
+            return resp
+        
         return Response({'status': 'empty', 'message': 'No course accessed'}, status=200)
 
 

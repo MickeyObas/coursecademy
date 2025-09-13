@@ -70,9 +70,7 @@ const Dashboard = () => {
         const response = await api.get('/api/courses/last-accessed/');
         const data = response.data;
         console.log(data);
-        if(data?.status !== 'empty'){
-          setLastAccessedCourse(data);
-        }
+        setLastAccessedCourse(data);
       }catch(err){
         console.error(err);
       }
@@ -94,51 +92,55 @@ const Dashboard = () => {
 
   return (
     <main className=" p-4 flex flex-col gap-y-4 select-none">
-      {lastAccessedCourse ? (
-        <div className="flex items-center bg-white p-4 rounded-lg justify-between">
-          <div className="flex gap-x-4 items-center w-[60%]">
-            <div className="w-25 bg-slate-50 p-1.5 rounded-xl">
-              <img className="w-full h-full object-cover" src={lastAccessedCourse?.course.thumbnail} alt="" />
-            </div>
-            <div className="flex flex-col w-full gap-y-3">
-              <span className="line-clamp-1">{lastAccessedCourse?.course.title}</span>
-              <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
-                <div
-                  className="h-full bg-blue-700"
-                  style={{ width: `${lastAccessedCourse?.progress.percentage}%` }}
-                ></div>
+      {lastAccessedCourse 
+        ? lastAccessedCourse?.status !== 'empty' 
+          ? (
+            <div className="flex items-center bg-white p-4 rounded-lg justify-between">
+              <div className="flex gap-x-4 items-center w-[60%]">
+                <div className="w-25 bg-slate-50 p-1.5 rounded-xl">
+                  <img className="w-full h-full object-cover" src={lastAccessedCourse?.course.thumbnail} alt="" />
+                </div>
+                <div className="flex flex-col w-full gap-y-3">
+                  <span className="line-clamp-1">{lastAccessedCourse?.course.title}</span>
+                  <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
+                    <div
+                      className="h-full bg-blue-700"
+                      style={{ width: `${lastAccessedCourse?.progress.percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+              <div className="w-[35%] flex justify-between">
+                <div className="bg-slate-200 w-0.5"></div>
+                <div className="flex items-center">
+                  <div className="flex items-center gap-x-3">
+                    <span className="flex items-center gap-1.5">
+                      <Book color="gray" />
+                      <span>{lastAccessedCourse?.progress.module}</span>
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <Scroll color="gray" />
+                      <span>{lastAccessedCourse?.progress.lesson}</span>
+                    </span>
+                    {/* <span className="flex items-center gap-1.5">
+                      <Clipboard color="gray" />
+                      <span>15</span>
+                    </span> */}
+                  </div>
+                </div>   
+                <button
+                  disabled={isRateLimited}
+                  onClick={() => navigate(`/courses/${lastAccessedCourse?.course.slug}/lessons/${lastAccessedCourse?.resume_lesson_id}`)} 
+                  className={`flex bg-slate-100 px-2 py-1.5 rounded-lg gap-x-2   ${isRateLimited ? 'hover:cursor-wait' : 'cursor-pointer hover:bg-slate-200'}`}>
+                  <Play color="blue"/>
+                  <span>Resume</span>
+                </button>       
               </div>
             </div>
-          </div>
-          <div className="w-[35%] flex justify-between">
-            <div className="bg-slate-200 w-0.5"></div>
-            <div className="flex items-center">
-              <div className="flex items-center gap-x-3">
-                <span className="flex items-center gap-1.5">
-                  <Book color="gray" />
-                  <span>{lastAccessedCourse?.progress.module}</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Scroll color="gray" />
-                  <span>{lastAccessedCourse?.progress.lesson}</span>
-                </span>
-                {/* <span className="flex items-center gap-1.5">
-                  <Clipboard color="gray" />
-                  <span>15</span>
-                </span> */}
-              </div>
-            </div>   
-            <button
-              disabled={isRateLimited}
-              onClick={() => navigate(`/courses/${lastAccessedCourse?.course.slug}/lessons/${lastAccessedCourse?.resume_lesson_id}`)} 
-              className={`flex bg-slate-100 px-2 py-1.5 rounded-lg gap-x-2   ${isRateLimited ? 'hover:cursor-wait' : 'cursor-pointer hover:bg-slate-200'}`}>
-              <Play color="blue"/>
-              <span>Resume</span>
-            </button>       
-          </div>
-        </div>
-      ) : (
-          <div className="flex items-center bg-white p-5 rounded-lg justify-between">
+        ) : (
+            <></>
+        ) : (
+        <div className="flex items-center bg-white p-5 rounded-lg justify-between">
           <div className="flex gap-x-4 items-center w-[60%]">
             <div className="animate-pulse w-25 h-18 bg-slate-100 p-1.5 rounded-xl"></div>
             <div className="flex flex-col w-full gap-y-3">
