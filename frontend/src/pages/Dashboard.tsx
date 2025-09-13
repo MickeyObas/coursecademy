@@ -1,4 +1,4 @@
-import { Book, ClipboardCheck, Play, Scroll } from "lucide-react";
+import { Book, ClipboardCheck, Loader, Play, Scroll } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useEnrolledCourses } from "../hooks/useEnrolledCourses";
 import api from "../utils/axios";
@@ -89,7 +89,7 @@ const Dashboard = () => {
 
   return (
     <main className=" p-4 flex flex-col gap-y-4 select-none">
-      {lastAccessedCourse && (
+      {lastAccessedCourse ? (
         <div className="flex items-center bg-white p-4 rounded-lg justify-between">
           <div className="flex gap-x-4 items-center w-[60%]">
             <div className="w-25 bg-slate-50 p-1.5 rounded-xl">
@@ -132,10 +132,45 @@ const Dashboard = () => {
             </button>       
           </div>
         </div>
+      ) : (
+          <div className="flex items-center bg-white p-5 rounded-lg justify-between">
+          <div className="flex gap-x-4 items-center w-[60%]">
+            <div className="animate-pulse w-25 h-18 bg-slate-100 p-1.5 rounded-xl"></div>
+            <div className="flex flex-col w-full gap-y-3">
+              <span className="animate-pulse bg-slate-50 h-4"></span>
+              <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
+                <div
+                  className="h-full animate-pulse bg-slate-100"
+                  style={{ width: `100%` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div className="w-[35%] flex justify-between">
+            <div className="bg-slate-200 w-0.5"></div>
+            <div className="flex items-center">
+              <div className="flex items-center gap-x-3 animate-pulse">
+                <span className="flex items-center gap-1.5">
+                  <span className="bg-slate-100 w-5 h-6"></span>
+                  <span className="opacity-0">0</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="bg-slate-100 w-5 h-6"></span>
+                  <span className="opacity-0">0</span>
+                </span>
+              </div>
+            </div>   
+            <button
+              disabled={true}
+              className={`animate-pulse flex bg-slate-100 py-4.5 rounded-lg gap-x-2 hover:cursor-wait w-16 px-10`}>
+            </button>       
+          </div>
+        </div>
       )}
       <div className="flex flex-col bg-white p-4 rounded-lg">
         <h2 className="text-xl font-bold">Status</h2>
-        <div className="grid grid-cols-3 mt-5 gap-x-3">
+        {courseProgressSummary ? (
+          <div className="grid grid-cols-3 mt-5 gap-x-3">
           <div className="bg-orange-100 p-4 flex flex-col rounded-lg gap-y-1">
             <div className="flex mb-2.5 justify-between items-center">
               <div className="bg-orange-300 flex items-center justify-center w-10 h-10 rounded-full">
@@ -164,7 +199,7 @@ const Dashboard = () => {
               </div>
             </div>
             <h3 className="font-bold text-xl">{courseProgressSummary?.lessons.completed}</h3>
-            <p>{courseProgressSummary && courseProgressSummary?.lessons.completed > 1 ? "Lessons" : "Lesson"}</p>
+            <p>{courseProgressSummary && (courseProgressSummary?.lessons.completed > 1 || courseProgressSummary?.lessons.completed === 0)  ? "Lessons" : "Lesson"}</p>
             <p className="text-blue-600">of {courseProgressSummary?.lessons.total} completed</p>
           </div>
           <div className="bg-red-100 p-4 flex flex-col rounded-lg gap-y-1">
@@ -195,7 +230,7 @@ const Dashboard = () => {
               </div>
             </div>
             <h3 className="font-bold text-xl">{courseProgressSummary?.modules.completed}</h3>
-            <p>{courseProgressSummary && courseProgressSummary?.modules.completed > 1 ? "Modules" : "Module"}</p>
+            <p>{courseProgressSummary && (courseProgressSummary?.modules.completed > 1 || courseProgressSummary?.modules.completed === 0) ? "Modules" : "Module"}</p>
             <p className="text-blue-600">of {courseProgressSummary?.modules.total} completed</p>
           </div>
           <div className="bg-green-100 p-4 flex flex-col rounded-lg gap-y-1">
@@ -226,10 +261,18 @@ const Dashboard = () => {
               </div>
             </div>
             <h3 className="font-bold text-xl">{courseProgressSummary?.courses.completed}</h3>
-            <p>{courseProgressSummary && courseProgressSummary?.courses.completed > 1 ? "Courses" : "Course"}</p>
+            <p>{courseProgressSummary && (courseProgressSummary?.courses.completed > 1 || courseProgressSummary?.courses.completed === 0) ? "Courses" : "Course"}</p>
             <p className="text-blue-600">of {courseProgressSummary?.courses.total} completed</p>
           </div>
         </div>
+        ) : (
+          <div className="grid grid-cols-3 mt-5 gap-x-3 animate-pulse">
+            <div className="bg-slate-100 h-44 p-4 flex flex-col rounded-lg gap-y-1"></div>
+            <div className="bg-slate-100 h-44 p-4 flex flex-col rounded-lg gap-y-1"></div>
+            <div className="bg-slate-100 h-44 p-4 flex flex-col rounded-lg gap-y-1"></div>
+          </div>
+        )}
+        
       </div>
       <div className="flex flex-col bg-white p-4 rounded-lg">
         <div className="flex justify-between w-full mb-4">
@@ -255,48 +298,56 @@ const Dashboard = () => {
             </tr>
           </thead>
           
-          <tbody>
-            {enrolledCourses.length > 0 ? enrolledCourses.map((course, idx) => (
-              <tr
-                onClick={() => handleCourseClick(course)} 
-                key={idx} 
-                className="rounded-lg hover:bg-slate-50 cursor-pointer">
-                <td className="py-3 px-2 flex justify-center">
-                  <div className="border border-slate-300 p-0.5 w-10 h-10 rounded-xl">
-                    <img 
-                      className="object-contain object-center w-full h-full"
-                      src={course?.course.thumbnail} alt="" />
-                  </div>
+          <tbody className="">
+            {enrolledCourses 
+              ? enrolledCourses.length > 0 
+                ? enrolledCourses.map((course, idx) => (
+                  <tr
+                    onClick={() => handleCourseClick(course)} 
+                    key={idx} 
+                    className="rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <td className="py-3 px-2 flex justify-center">
+                      <div className="border border-slate-300 p-0.5 w-10 h-10 rounded-xl">
+                        <img 
+                          className="object-contain object-center w-full h-full"
+                          src={course?.course.thumbnail} alt="" />
+                      </div>
+                    </td>
+                    <td className="py-3 px-2">
+                      <p className="line-clamp-1">{course?.course.title}</p>
+                    </td>
+                    <td className="py-3 px-2">
+                      <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
+                        <div
+                          className="h-full bg-blue-700"
+                          style={{ width: `${course?.progress.percentage}%` }}
+                        ></div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-2 text-center">
+                      <div className="flex justify-center gap-x-3 items-center w-full">
+                        <span className="flex gap-x-1 text-sm">
+                          <Book size={18} color="gray" />
+                          <span>{course?.progress.module}</span>
+                        </span>
+                        <span className="flex gap-x-1 text-sm">
+                          <Scroll size={18} color="gray" />
+                          <span>{course?.progress.lesson}</span>
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                )) : (
+                <td className="text-center" colSpan={4}>
+                  <p>{enolledCoursesFilter === "active" ? "You haven't enrolled in any courses yet." : "You haven't completed any course yet."}</p>
                 </td>
-                <td className="py-3 px-2">
-                  <p className="line-clamp-1">{course?.course.title}</p>
-                </td>
-                <td className="py-3 px-2">
-                  <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
-                    <div
-                      className="h-full bg-blue-700"
-                      style={{ width: `${course?.progress.percentage}%` }}
-                    ></div>
-                  </div>
-                </td>
-                <td className="py-3 px-2 text-center">
-                  <div className="flex justify-center gap-x-3 items-center w-full">
-                    <span className="flex gap-x-1 text-sm">
-                      <Book size={18} color="gray" />
-                      <span>{course?.progress.module}</span>
-                    </span>
-                    <span className="flex gap-x-1 text-sm">
-                      <Scroll size={18} color="gray" />
-                      <span>{course?.progress.lesson}</span>
-                    </span>
-                  </div>
-                </td>
-              </tr>
-            )) : (
-              <td className="text-center" colSpan={4}>
-                <p>{enolledCoursesFilter === "active" ? "You haven't enrolled in any courses yet." : "You haven't completed any course yet."}</p>
-              </td>
-            )}
+              ) : (
+                <tr className="">
+                  <td colSpan={4} className="h-40 text-center align-middle">
+                    <Loader className="animate-spin inline-block text-blue-600 w-8 h-8"/>
+                  </td>
+                </tr>
+              )}
           </tbody>
         </table>
       </div>

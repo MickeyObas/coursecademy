@@ -3,7 +3,7 @@ import api from "../utils/axios";
 import type { EnrolledCourse } from "../types/Course";
 
 export const useEnrolledCourses = () => {
-  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<EnrolledCourse[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
