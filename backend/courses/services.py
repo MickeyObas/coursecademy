@@ -1,9 +1,10 @@
 import logging
 
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.utils.timezone import now
 
-from assessments.models import LessonAssessment
+from assessments.models import LessonAssessment, AssessmentSession
 from assessments.services import start_lesson_assessment
 from certifications.services import issue_certificate
 from courses.exceptions import LessonLockedError
@@ -148,8 +149,27 @@ def get_next_step(user, course, current_lesson_id=None, current_assessment_id=No
                     else current_obj.lesson.id
                 ),
             )
+
+            # If the current assessment's lesson hasn't been marked completed for the user AND he has passed the necessary assessment, go ahead an do that
             if not lesson_progress.completed_at:
-                update_lesson_completion(user, lesson_progress.lesson)
+                if current_assessment_id:
+                    if AssessmentSession.objects.filter(
+                        user=user,
+                        content_type=ContentType.objects.get_for_model(LessonAssessment),
+                        object_id=current_assessment_id,
+                        score__gte=50
+                    ).exists():
+                        update_lesson_completion(user, lesson_progress.lesson)
+                        return {
+                            "type": next_type,
+                            "id": next_obj.id,
+                            "title": str(next_obj),
+                            "url": f"/courses/{course.slug}/lessons/{next_obj.id}/",
+                            "is_unlocked": is_lesson_unlocked(user, next_obj),
+                        }
+                else:
+                    update_lesson_completion(user, lesson_progress.lesson)
+
             return {
                 "type": next_type,
                 "id": next_obj.id,
