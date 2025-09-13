@@ -1,3 +1,5 @@
+from cloudinary_storage.storage import RawMediaCloudinaryStorage
+
 from django.db import models
 
 from api.models import TimeStampedModel
@@ -9,7 +11,7 @@ class Certification(TimeStampedModel):
     )
     issued_at = models.DateTimeField(blank=True, null=True)
     certificate_file = models.FileField(
-        upload_to="certificates/", blank=True, null=True
+        upload_to="certificates/", blank=True, null=True, storage=RawMediaCloudinaryStorage()
     )
 
     def __str__(self):
