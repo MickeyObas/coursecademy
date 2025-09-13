@@ -1,36 +1,43 @@
-from django.utils.timezone import now
+from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.contrib.contenttypes.models import ContentType
+from django.utils.timezone import now
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from assessments.models import CourseAssessment, LessonAssessment, Question
+from assessments.serializers import QuestionSerializer
+from assessments.services import (update_course_assessment,
+                                  update_lesson_assessment)
+from core.permissions import (IsAdminOrInstructor, IsCourseOwner, IsInstructor,
+                              IsStudent)
+from courses.exceptions import NoCourseError, NoLessonError
+from courses.services import (get_next_step, is_lesson_unlocked,
+                              update_lesson_access, update_lesson_completion)
 from enrollments.models import Enrollment
+from enrollments.permissions import IsEnrolled
 
 from .models import (Course, CourseProgress, Lesson, LessonProgress, Module,
                      ModuleProgress)
 from .serializers import (CourseSerializer, CourseUserSerializer,
+                          LessonCreateSerializer, LessonInstructorSerializer,
                           LessonListSerializer, LessonSerializer,
-                          ThinCourseSerializer, LessonUpdateSerializer, ModuleCreateSerializer, LessonCreateSerializer, LessonInstructorSerializer)
+                          LessonUpdateSerializer, ModuleCreateSerializer,
+                          ThinCourseSerializer)
 from .services import enroll_user_in_course
-from assessments.models import Question, LessonAssessment, CourseAssessment
-from assessments.serializers import QuestionSerializer
-from assessments.services import update_lesson_assessment, update_course_assessment
-from core.permissions import IsAdminOrInstructor, IsInstructor, IsCourseOwner, IsStudent
-from courses.exceptions import NoLessonError, NoCourseError
-from courses.services import update_lesson_access, update_lesson_completion, get_next_step, is_lesson_unlocked
-from enrollments.permissions import IsEnrolled
 
 
 class CourseCreateView(APIView):
     permission_classes = [IsAdminOrInstructor]
 
     def post(self, request, *args, **kwargs):
-        serializer = CourseSerializer(data=request.data, context={'request': request})
+        serializer = CourseSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             course = serializer.save()
-            return Response(CourseSerializer(course, context={'request': request}).data, status=201)
+            return Response(
+                CourseSerializer(course, context={"request": request}).data, status=201
+            )
         return Response(serializer.errors, status=400)
 
 
@@ -53,70 +60,70 @@ class ModuleCreateView(APIView):
         serializer = ModuleCreateSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'message': 'Module has been created!'})
+            return Response({"message": "Module has been created!"})
         return Response(serializer.errors, status=400)
 
 
 class InstructorCourseListView(APIView):
     permission_classes = [IsInstructor]
+
     def get(self, request, *args, **kwargs):
         courses = Course.objects.filter(instructor=request.user)
         serializer = ThinCourseSerializer(courses, many=True)
         return Response(serializer.data)
-    
+
 
 class CourseLessonListView(APIView):
     def get(self, request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
+        course_id = kwargs.get("course_id")
         if not course_id:
-            return Response({'error':  'course_id is required'}, status=400)
-        
-        lessons = Lesson.objects.filter(module__course_id=course_id).order_by('module__order', 'order')
+            return Response({"error": "course_id is required"}, status=400)
+
+        lessons = Lesson.objects.filter(module__course_id=course_id).order_by(
+            "module__order", "order"
+        )
         return Response(
-            LessonListSerializer(
-                lessons, 
-                context={'request': request},
-                many=True
-                ).data
-            )
-    
+            LessonListSerializer(lessons, context={"request": request}, many=True).data
+        )
+
+
 class LessonAssessmentQuestionsView(APIView):
     def get(self, request, *args, **kwargs):
-        lesson_id = kwargs.get('lesson_id')
+        lesson_id = kwargs.get("lesson_id")
         if not lesson_id:
-            return Response({'error': 'lesson_id is required.'}, status=400)
-        
+            return Response({"error": "lesson_id is required."}, status=400)
+
         try:
             lesson = Lesson.objects.get(id=lesson_id)
         except Lesson.DoesNotExist:
             raise NoLessonError()
-        
+
         if hasattr(lesson, "lessonassessment"):
             questions = Question.objects.filter(
                 content_type=ContentType.objects.get_for_model(LessonAssessment),
-                object_id=lesson.lessonassessment.id
+                object_id=lesson.lessonassessment.id,
             )
             serializer = QuestionSerializer(questions, many=True)
             return Response(serializer.data)
         else:
             # No assessment and thus no questions
             return Response([])
-        
+
 
 class CourseAssessmentQuestionsView(APIView):
     def get(self, request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
+        course_id = kwargs.get("course_id")
         if not course_id:
-            return Response({'error': 'course_id is required.'}, status=400)
+            return Response({"error": "course_id is required."}, status=400)
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
             raise NoCourseError()
-        
+
         if hasattr(course, "courseassessment"):
             questions = Question.objects.filter(
                 content_type=ContentType.objects.get_for_model(CourseAssessment),
-                object_id=course.courseassessment.id
+                object_id=course.courseassessment.id,
             )
             serializer = QuestionSerializer(questions, many=True)
             return Response(serializer.data)
@@ -127,24 +134,24 @@ class CourseAssessmentQuestionsView(APIView):
 
 class LessonAssessmentUpdateView(APIView):
     permission_classes = [IsAdminOrInstructor, IsCourseOwner]
-    
+
     def post(self, request, *args, **kwargs):
-        lesson_id = kwargs.get('lesson_id')
+        lesson_id = kwargs.get("lesson_id")
         if not lesson_id:
-            return Response({'error': 'Lesson ID is required'}, status=400)
-        
-        questions = request.data.get('questions')
+            return Response({"error": "Lesson ID is required"}, status=400)
+
+        questions = request.data.get("questions")
         if not isinstance(questions, list):
             return Response({"error": "Questions must be a list"}, status=400)
-        
+
         try:
             lesson = Lesson.objects.get(id=lesson_id)
         except Lesson.DoesNotExist:
             raise NoLessonError()
-        
+
         self.check_object_permissions(request, lesson)
         results = update_lesson_assessment(lesson, questions, request)
-            
+
         return Response(results)
 
 
@@ -152,20 +159,20 @@ class CourseAssessmentUpdateView(APIView):
     permission_classes = [IsAdminOrInstructor, IsCourseOwner]
 
     def post(self, request, *args, **kwargs):
-        course_id = kwargs.get('course_id')
+        course_id = kwargs.get("course_id")
         if not course_id:
-            return Response({'error': 'Course ID is required'}, status=400)
-        
+            return Response({"error": "Course ID is required"}, status=400)
+
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
             raise NoCourseError()
         self.check_object_permissions(request, course)
-        
-        questions = request.data.get('questions')
+
+        questions = request.data.get("questions")
         if not isinstance(questions, list):
             return Response({"error": "Questions must be a list"}, status=400)
-            
+
         results = update_course_assessment(course, questions, request)
 
         return Response(results)
@@ -175,43 +182,47 @@ class LessonCreateView(APIView):
     permission_classes = [IsInstructor]
 
     def post(self, request, *args, **kwargs):
-        course_id = request.data.get('course_id')
+        course_id = request.data.get("course_id")
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
             raise NoCourseError()
-        
+
         if course.instructor != request.user:
-            return Response({'error': "You do not own this course"}, status=403)
+            return Response({"error": "You do not own this course"}, status=403)
 
         serializer = LessonCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         lesson = serializer.save()
 
         return Response(
-            LessonSerializer(lesson, context={"request": request}).data,
-            status=201
+            LessonSerializer(lesson, context={"request": request}).data, status=201
         )
-    
+
 
 class LessonAssessmentCreateView(APIView):
     permission_classes = [IsAdminOrInstructor]
+
     def post(self, request, *args, **kwargs):
-        lesson_id = kwargs.get('lesson_id')
+        lesson_id = kwargs.get("lesson_id")
         if not lesson_id:
-            return Response({'error': "Lesson ID is required"}, status=400)
+            return Response({"error": "Lesson ID is required"}, status=400)
 
         try:
             lesson = Lesson.objects.get(id=lesson_id)
         except Lesson.DoesNotExist:
             raise NoLessonError()
-        
+
         if lesson.module.course.instructor != request.user:
             return Response({"error": "You do not own this course"}, status=403)
 
-        lesson_assessment, created = LessonAssessment.objects.get_or_create(lesson=lesson)
+        lesson_assessment, created = LessonAssessment.objects.get_or_create(
+            lesson=lesson
+        )
 
-        return Response({'message': f'Lesson Assessment {"created" if created else "fetched"}'})
+        return Response(
+            {"message": f'Lesson Assessment {"created" if created else "fetched"}'}
+        )
 
 
 class LessonUpdateView(APIView):
@@ -220,21 +231,24 @@ class LessonUpdateView(APIView):
     def patch(self, request, *args, **kwargs):
         lesson_id = kwargs.get("lesson_id")
         if not lesson_id:
-            return Response({'error': "Lesson ID is required"}, status=400)
-        
+            return Response({"error": "Lesson ID is required"}, status=400)
+
         try:
             lesson = Lesson.objects.get(id=lesson_id)
         except Lesson.DoesNotExist:
             raise NoLessonError()
-        
+
         self.check_object_permissions(request, lesson)
 
         serializer = LessonUpdateSerializer(lesson, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        updated_lesson = serializer.save()    
+        updated_lesson = serializer.save()
 
-        return Response(LessonListSerializer(updated_lesson, context={"request": request}).data, status=200)
-    
+        return Response(
+            LessonListSerializer(updated_lesson, context={"request": request}).data,
+            status=200,
+        )
+
 
 class OtherCoursesView(APIView):
     def get(self, request):
@@ -254,26 +268,26 @@ class CourseEnrollView(APIView):
 
     def post(self, request, pk):
         if not pk:
-            return Response({'error': "Course pk is required"}, status=400)
-        
+            return Response({"error": "Course pk is required"}, status=400)
+
         try:
             course = Course.objects.get(pk=pk)
         except Course.DoesNotExist:
             raise NoCourseError()
-        
+
         enroll_user_in_course(request.user, course)
 
-        first_lesson = Lesson.objects.filter(module__course=course).order_by('module__order', 'order')
+        first_lesson = Lesson.objects.filter(module__course=course).order_by(
+            "module__order", "order"
+        )
         if first_lesson.exists():
             first_lesson_id = first_lesson.first().id
         else:
             first_lesson_id = None
 
         return Response(
-            {
-                "message": "Enrolled successfully.",
-                "first_lesson_id": first_lesson_id
-                }, status=status.HTTP_201_CREATED
+            {"message": "Enrolled successfully.", "first_lesson_id": first_lesson_id},
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -303,7 +317,9 @@ class MyEnrolledProgresssSummary(APIView):
             enrollment__user=user, completed_at__isnull=False, module_id__in=module_ids
         ).count()
         course_completed = CourseProgress.objects.filter(
-            enrollment__user=user, completed_at__isnull=False, enrollment__course_id__in=enrolled_course_ids
+            enrollment__user=user,
+            completed_at__isnull=False,
+            enrollment__course_id__in=enrolled_course_ids,
         ).count()
 
         return Response(
@@ -320,17 +336,23 @@ class LastAccessedCourseView(APIView):
 
     def get(self, request):
         user = request.user
-        course_progress = CourseProgress.objects.filter(enrollment__user=user, last_accessed_at__isnull=False)
+        course_progress = CourseProgress.objects.filter(
+            enrollment__user=user, last_accessed_at__isnull=False
+        )
         if course_progress.exists():
-            last_accessed_course = course_progress.latest('last_accessed_at').enrollment.course
+            last_accessed_course = course_progress.latest(
+                "last_accessed_at"
+            ).enrollment.course
             serializer = CourseUserSerializer(
                 last_accessed_course, context={"request": request}
             )
             resp = Response(serializer.data)
             resp.data["status"] = "present"
             return resp
-        
-        return Response({'status': 'empty', 'message': 'No course accessed'}, status=200)
+
+        return Response(
+            {"status": "empty", "message": "No course accessed"}, status=200
+        )
 
 
 class LessonAccessedView(APIView):
@@ -340,7 +362,7 @@ class LessonAccessedView(APIView):
         user = request.user
 
         if not lesson_id:
-            return Response({'error': 'Lesson ID is required'}, status=400)
+            return Response({"error": "Lesson ID is required"}, status=400)
 
         try:
             lesson = Lesson.objects.select_related("module__course").get(id=lesson_id)
@@ -358,7 +380,7 @@ class LessonDetailView(APIView):
     def get(self, request, *args, **kwargs):
         if not kwargs.get("lesson_id"):
             return Response({"error": "Lesson ID is required"}, status=400)
-        
+
         lesson = generics.get_object_or_404(Lesson, id=kwargs.get("lesson_id"))
 
         if not is_lesson_unlocked(request.user, lesson):
@@ -367,29 +389,33 @@ class LessonDetailView(APIView):
                 status=403,
             )
 
-        serializer_class = (LessonSerializer if request.user.account_type == "S" else LessonInstructorSerializer)
+        serializer_class = (
+            LessonSerializer
+            if request.user.account_type == "S"
+            else LessonInstructorSerializer
+        )
 
         return Response(serializer_class(lesson, context={"request": request}).data)
-    
+
 
 class LessonCompleteView(APIView):
     permission_classes = [IsStudent, IsEnrolled]
 
     def patch(self, request, *args, **kwargs):
-        lesson_id = kwargs.get('lesson_id')
+        lesson_id = kwargs.get("lesson_id")
 
         if not lesson_id:
             return Response({"error": "Lesson ID required"}, status=400)
-        
+
         try:
             lesson = Lesson.objects.get(id=lesson_id)
         except Lesson.DoesNotExist:
             raise NoLessonError()
 
         update_lesson_completion(request.user, lesson)
-        
-        return Response({'message': 'Lesson complete status updated'})
-    
+
+        return Response({"message": "Lesson complete status updated"})
+
 
 class LastAccessedLessonView(APIView):
     permission_classes = [IsStudent, IsEnrolled]
@@ -397,17 +423,17 @@ class LastAccessedLessonView(APIView):
     def get(self, request, *args, **kwargs):
         if not kwargs.get("course_slug"):
             return Response({"error": "Course slug is requried"}, status=400)
-        
+
         try:
-            course = Course.objects.get(slug=kwargs.get('course_slug'))
+            course = Course.objects.get(slug=kwargs.get("course_slug"))
         except Course.DoesNotExist:
             raise NoCourseError()
-        
+
         course_progress = CourseProgress.objects.get(enrollment__course=course)
         if course_progress.last_accessed_lesson:
-            return Response({'lessonId': course_progress.last_accessed_lesson.id})
+            return Response({"lessonId": course_progress.last_accessed_lesson.id})
         else:
-            return Response({'error': 'No last accessed lesson'})
+            return Response({"error": "No last accessed lesson"})
 
 
 class LessonVideoProgress(APIView):
@@ -416,18 +442,17 @@ class LessonVideoProgress(APIView):
     def get(self, request, *args, **kwargs):
         if not kwargs.get("lesson_id"):
             return Response({"error": "Lesson ID is required"}, status=400)
-        
+
         try:
-            lesson = Lesson.objects.get(id=kwargs.get('lesson_id'), type="VIDEO")
+            lesson = Lesson.objects.get(id=kwargs.get("lesson_id"), type="VIDEO")
         except Lesson.DoesNotExist:
             raise NoLessonError()
-        
+
         lesson_progress = LessonProgress.objects.get(
-            enrollment__user=request.user,
-            lesson=lesson
+            enrollment__user=request.user, lesson=lesson
         )
 
-        return Response({'progress': lesson_progress.progress})
+        return Response({"progress": lesson_progress.progress})
 
 
 class SaveLessonVideoProgress(APIView):
@@ -435,24 +460,25 @@ class SaveLessonVideoProgress(APIView):
 
     def post(self, request, *args, **kwargs):
         try:
-            current_time = request.data.get('current_time')
+            current_time = request.data.get("current_time")
 
             if not current_time:
                 return Response({"error": "Current time is required"}, status=400)
 
-            lesson = Lesson.objects.get(id=kwargs.get('lesson_id'))
+            lesson = Lesson.objects.get(id=kwargs.get("lesson_id"))
             lesson_progress = LessonProgress.objects.get(
-                enrollment__user=request.user,
-                lesson=lesson
-            ) 
+                enrollment__user=request.user, lesson=lesson
+            )
             lesson_progress.progress = current_time
             lesson_progress.save()
-            return Response({'message': 'Watch time updated'})
+            return Response({"message": "Watch time updated"})
         except Lesson.DoesNotExist:
             raise NoLessonError()
         except LessonProgress.DoesNotExist:
-            return Response({"error": "Lesson video progress does not exist"}, status=404)
-        
+            return Response(
+                {"error": "Lesson video progress does not exist"}, status=404
+            )
+
 
 class NextStepView(APIView):
     permission_classes = [IsStudent]
@@ -460,13 +486,13 @@ class NextStepView(APIView):
     def get(self, request, course_slug):
         if not course_slug:
             return Response({"error": "Course slug is required"}, status=400)
-        
+
         course = get_object_or_404(Course, slug=course_slug)
         current_lesson_id = request.query_params.get("current_lesson")
         current_assessment_id = request.query_params.get("current_assessment")
 
-        data = get_next_step(request.user, course, current_lesson_id, current_assessment_id)
+        data = get_next_step(
+            request.user, course, current_lesson_id, current_assessment_id
+        )
 
         return Response(data)
-        
-

@@ -6,22 +6,22 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0020_courseprogress_progress_lessonprogress_progress_and_more'),
+        ("courses", "0020_courseprogress_progress_lessonprogress_progress_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='lessonvideo',
-            name='lesson',
+            model_name="lessonvideo",
+            name="lesson",
         ),
         migrations.AlterModelOptions(
-            name='lesson',
-            options={'ordering': ['module__order', 'order']},
+            name="lesson",
+            options={"ordering": ["module__order", "order"]},
         ),
         migrations.DeleteModel(
-            name='LessonArticle',
+            name="LessonArticle",
         ),
         migrations.DeleteModel(
-            name='LessonVideo',
+            name="LessonVideo",
         ),
     ]

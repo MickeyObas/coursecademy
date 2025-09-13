@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
 
+from assessments.models import CourseAssessment, LessonAssessment
 
-from .models import Course, Module, Lesson
-from assessments.models import LessonAssessment, CourseAssessment
+from .models import Course, Lesson, Module
 
 
 def get_course_from_object(obj):
@@ -26,7 +26,7 @@ def resolve_course_from_kwargs(kwargs):
     """
     if "course_id" in kwargs:
         return get_object_or_404(Course, id=kwargs["course_id"])
-    
+
     if "course_slug" in kwargs:
         return get_object_or_404(Course, slug=kwargs["course_slug"])
 

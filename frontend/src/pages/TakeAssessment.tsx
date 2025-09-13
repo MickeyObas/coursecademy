@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import QuestionCard from "./QuestionCard";
 import api from "../utils/axios";
 import type { Answers, Current } from "../types/Question";
+import { LoaderCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 type Assessment = {
   id: number,
@@ -20,6 +22,7 @@ const TakeAssessment = () => {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState<Current | null>(null);
+  const ready = assessment && current;
 
   useEffect(() => {
     const fetchAssessmentSessionData = async () => {
@@ -73,6 +76,10 @@ const TakeAssessment = () => {
   }
 
   const submitAsssessment = async () => {
+    if(Object.keys(answers).length === 0){
+      toast.error("Uhm, this is awkward. You haven't answered any question 😳", { duration: 4000});
+      return;
+    }
     if(!assessment) return;
 
     const unsavedAnswers = questions.length - Object.keys(answers).length;
@@ -80,14 +87,17 @@ const TakeAssessment = () => {
 
     try{
       const response = await api.post(`/api/assessments/${assessmentType}/${assessment.id}/submit/${sessionId}/`, {
-        test_session_id: assessment?.sessionId
+        test_session_id: assessment?.sessionId,
+        answers: answers
       })
       const next = response.data;
       if(next.type === "retry_lesson"){
-        alert("Whoops. You didn't quite hit the pass mark. Let's review the lesson and try again.");
-        navigate(next.url);
+        toast.error("Whoops. You didn't quite hit the pass mark. Let's review the lesson and try again.", {duration: 4000});
+        setTimeout(() => navigate(next.url), 2000);
+        ;
       }else if(next.type === "lesson"){
-        navigate(next.url);
+        toast.success("Let's gooo. You passed the test. On to the next!", {duration: 4000});
+        setTimeout(() => navigate(next.url), 2000);
       }else if(next.type === "end"){
         alert("Wohooo, you have completed this course!");
         navigate("/");
@@ -100,22 +110,32 @@ const TakeAssessment = () => {
     }
   }
 
+
   return (
     <div className="flex h-screen justify-center items-center">
-      <div className="">
-        <QuestionCard 
-          current={current}
-          currentIndex={currentQuestionIndex}
-          totalQuestions={questions?.length}
-          answers={answers}
-          handleMCQInput={handleMCQInput}
-          handleFIBInput={handleFIBInput}
-          handleTFInput={handleTFInput}
-          handleNext={handleNext}
-          handlePrev={handlePrev}
-          onSubmit={submitAsssessment}
-        />
+      {ready ? (
+        <div className="">
+          <QuestionCard 
+            current={current}
+            currentIndex={currentQuestionIndex}
+            totalQuestions={questions?.length}
+            answers={answers}
+            handleMCQInput={handleMCQInput}
+            handleFIBInput={handleFIBInput}
+            handleTFInput={handleTFInput}
+            handleNext={handleNext}
+            handlePrev={handlePrev}
+            onSubmit={submitAsssessment}
+          />
       </div>
+      ) : (
+        <div className="flex justify-center items-center flex-col">
+          <span className="block text-3xl ">Just a sec. We're loading your questions...</span>
+          <LoaderCircle className="animate-spin w-28 h-40 text-blue-600"/>
+          
+        </div>
+      )}
+      
     </div>
   );
 }

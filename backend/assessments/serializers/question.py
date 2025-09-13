@@ -1,10 +1,10 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-
 from rest_framework import serializers
 
-from assessments.models import Option, Question, LessonAssessment, CourseAssessment
-from courses.models import Lesson, Course
+from assessments.models import (CourseAssessment, LessonAssessment, Option,
+                                Question)
+from courses.models import Course, Lesson
 
 
 class OptionSerializer(serializers.ModelSerializer):
@@ -68,17 +68,15 @@ class QuestionSerializer(serializers.ModelSerializer):
             "assessment_type",
             "assessment_type_input",
             "assessment_id",
-            "lesson_id", 
-            "course_id"
+            "lesson_id",
+            "course_id",
         ]
-        extra_kwargs = {
-            "category": {"read_only": True}
-        }
+        extra_kwargs = {"category": {"read_only": True}}
 
     def validate(self, data):
         details_serializer = QuestionDetailsSerializer(
             data=self.initial_data.get("details", {}),
-            context={"question_type": data.get("type")}
+            context={"question_type": data.get("type")},
         )
         details_serializer.is_valid(raise_exception=True)
         data["details"] = details_serializer.validated_data
@@ -103,82 +101,92 @@ class QuestionSerializer(serializers.ModelSerializer):
         return obj.object_id
 
     def create(self, validated_data):
-        details = validated_data.pop('details', {})
-        assessment_type = validated_data.pop('assessment_type_input', None)
-        
+        details = validated_data.pop("details", {})
+        assessment_type = validated_data.pop("assessment_type_input", None)
+
         if assessment_type == "lesson":
-            lesson_id = validated_data.pop('lesson_id', None)
+            lesson_id = validated_data.pop("lesson_id", None)
             if not lesson_id:
-                raise serializers.ValidationError({"lesson_id": "This field is required for lesson assessments"})
+                raise serializers.ValidationError(
+                    {"lesson_id": "This field is required for lesson assessments"}
+                )
             try:
                 lesson = Lesson.objects.get(id=lesson_id)
             except Lesson.DoesNotExist:
-                raise serializers.ValidationError({"lesson_id": f"Lesson {lesson_id} does not exist"})
+                raise serializers.ValidationError(
+                    {"lesson_id": f"Lesson {lesson_id} does not exist"}
+                )
             target = lesson.lessonassessment
             category = lesson.module.course.category
             ct = ContentType.objects.get_for_model(LessonAssessment)
 
         elif assessment_type == "course":
-            course_id = validated_data.pop('course_id', None)
+            course_id = validated_data.pop("course_id", None)
             if not course_id:
-                raise serializers.ValidationError({"course_id": "This field is required for course assessments"})
+                raise serializers.ValidationError(
+                    {"course_id": "This field is required for course assessments"}
+                )
             try:
                 course = Course.objects.get(id=course_id)
             except Course.DoesNotExist:
-                raise serializers.ValidationError({"course_id": f"Course {course_id} does not exist"})
+                raise serializers.ValidationError(
+                    {"course_id": f"Course {course_id} does not exist"}
+                )
             target = course.courseassessment
             category = course.category
             ct = ContentType.objects.get_for_model(CourseAssessment)
 
         with transaction.atomic():
             question = Question.objects.create(
-                content_type=ct, 
+                content_type=ct,
                 object_id=target.id,
                 category=category,
-                **validated_data
-                )
+                **validated_data,
+            )
 
             if question.type == "MCQ":
-                options_data = details.get('options', [])
+                options_data = details.get("options", [])
                 if len(options_data) < 4:
-                    raise serializers.ValidationError({"details": "MCQ questions must have at least four options"})
+                    raise serializers.ValidationError(
+                        {"details": "MCQ questions must have at least four options"}
+                    )
                 for option in options_data:
                     Option.objects.create(question=question, **option)
 
             elif question.type == "FIB":
-                question.correct_answer = details.get('correct_answer')
+                question.correct_answer = details.get("correct_answer")
                 question.save()
 
             elif question.type == "TF":
-                question.is_true = details.get('is_true')
+                question.is_true = details.get("is_true")
                 question.save()
 
             return question
-        
+
     def update(self, instance, validated_data):
-        
-        details = validated_data.get('details', {})
+
+        details = validated_data.get("details", {})
 
         with transaction.atomic():
             for attr, value in validated_data.items():
                 setattr(instance, attr, value)
-            
+
             instance.save()
 
             if instance.type == "MCQ":
-                options_data = details.get('options', [])
+                options_data = details.get("options", [])
                 instance.options.all().delete()
                 for option in options_data:
                     Option.objects.create(question=instance, **option)
             elif instance.type == "TF":
-                instance.is_true = True if details.get('is_true') else False
+                instance.is_true = True if details.get("is_true") else False
                 instance.save()
             elif instance.type == "FIB":
-                instance.correct_answer = details.get('correct_answer')
+                instance.correct_answer = details.get("correct_answer")
                 instance.save()
 
             return instance
-    
+
     def to_representation(self, instance):
         rep = super().to_representation(instance)
         rep["details"] = self.get_details(instance)

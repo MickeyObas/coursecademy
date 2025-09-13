@@ -37,8 +37,8 @@ class Question(TimeStampedModel):
 
     def clean(self) -> None:
         if not self.pk:
-            return 
-        
+            return
+
         if (self.type == self.QuestionTypes.FIB) and not self.correct_answer:
             raise ValidationError("FIB questions must have 'correct_answer' set.")
 

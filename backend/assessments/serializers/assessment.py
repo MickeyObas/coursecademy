@@ -1,10 +1,11 @@
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from django.contrib.contenttypes.models import ContentType
-
-from .question import QuestionDisplaySerializer
 from categories.serializers import CategorySerializer
-from ..models import TestAssessment, Question, TestSession, LessonAssessment, AssessmentSession
+
+from ..models import (AssessmentSession, LessonAssessment, Question,
+                      TestAssessment, TestSession)
+from .question import QuestionDisplaySerializer
 
 
 class TestAssessmentSerializer(serializers.ModelSerializer):
@@ -24,7 +25,7 @@ class SaveTestAssessmentAnswerSerializer(serializers.Serializer):
         if not Question.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invalid question_id")
         return value
-    
+
     def validate_test_session_id(self, value):
         if not TestSession.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invalid test_session_id")
@@ -47,21 +48,21 @@ class SaveAssessmentAnswerSerializer(serializers.Serializer):
         if not Question.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invalid question_id")
         return value
-    
+
     def validate_assessment_type(self, value):
         if value not in {"lesson", "course"}:
             raise serializers.ValidationError("Invalid assessment type")
         return value
-    
+
     def validate_session_id(self, value):
-        if self.initial_data.get('assessment_type', '') == "lesson":
+        if self.initial_data.get("assessment_type", "") == "lesson":
             if not AssessmentSession.objects.filter(
                 content_type=ContentType.objects.get_for_model(LessonAssessment),
-                id=value
+                id=value,
             ).exists():
                 raise serializers.ValidationError("Invalid session ID")
         return value
-    
+
 
 class SubmitAssessmentSessionSerializer(serializers.Serializer):
     session_id = serializers.CharField()

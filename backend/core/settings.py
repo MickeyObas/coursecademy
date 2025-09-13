@@ -2,8 +2,8 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
-from dotenv import load_dotenv
 import dj_database_url
+from dotenv import load_dotenv
 
 load_dotenv()
 import logging
@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
-    "rest_framework_simplejwt.token_blacklist"
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
@@ -54,7 +54,7 @@ MIDDLEWARE = [
 if not DEBUG:
     MIDDLEWARE.insert(
         MIDDLEWARE.index("django.middleware.security.SecurityMiddleware") + 1,
-        "whitenoise.middleware.WhiteNoiseMiddleware"
+        "whitenoise.middleware.WhiteNoiseMiddleware",
     )
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
@@ -143,15 +143,14 @@ CACHES = {
         "LOCATION": REDIS_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
+        },
     }
 }
 
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 CORS_ALLOWED_ORIGINS = os.getenv(
-    "CORS_ALLOWED_ORIGINS",
-    "http://127.0.0.1:5173,http://localhost:5173"
+    "CORS_ALLOWED_ORIGINS", "http://127.0.0.1:5173,http://localhost:5173"
 ).split(",")
 
 CORS_ALLOW_CREDENTIALS = True
@@ -163,29 +162,27 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https") 
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.BasicAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "EXCEPTION_HANDLER": "core.exceptions.custom_exception_handler",
-    'DEFAULT_THROTTLE_CLASSES': [
+    "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.ScopedRateThrottle",
-        'rest_framework.throttling.AnonRateThrottle',
-        'core.throttling.BurstRateThrottle',
-        'core.throttling.SustainedRateThrottle',
+        "rest_framework.throttling.AnonRateThrottle",
+        "core.throttling.BurstRateThrottle",
+        "core.throttling.SustainedRateThrottle",
     ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '45/day',
-        'burst': '30/min',
-        'sustained': '1200/day',
-        'login': '5/minute'
-    }
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "200/day",
+        "burst": "100/min",
+        "sustained": "3000/day",
+        "login": "10/hour",
+    },
 }
 
 LOGGING = {
@@ -227,24 +224,16 @@ LOGGING = {
         "level": "DEBUG",
     },
     "loggers": {
-        "django": {
-            "level": "WARNING",
-            "handlers": ["console"],
-            "propagate": False
-        },
-        "users": {
-            "level": "DEBUG",
-            "handlers": ["console"],
-            "propagate": False
-        }
-    }
+        "django": {"level": "WARNING", "handlers": ["console"], "propagate": False},
+        "users": {"level": "DEBUG", "handlers": ["console"], "propagate": False},
+    },
 }
 
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": False
+    "BLACKLIST_AFTER_ROTATION": False,
 }
 
 # STATICFILES_DIRS = [BASE_DIR / "static"]

@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0018_lesson_video_url'),
+        ("courses", "0018_lesson_video_url"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='lesson',
-            name='video_url',
+            model_name="lesson",
+            name="video_url",
         ),
         migrations.AddField(
-            model_name='lesson',
-            name='video_file',
-            field=models.FileField(blank=True, null=True, upload_to='lessons/videos/'),
+            model_name="lesson",
+            name="video_file",
+            field=models.FileField(blank=True, null=True, upload_to="lessons/videos/"),
         ),
     ]

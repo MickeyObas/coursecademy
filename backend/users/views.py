@@ -1,13 +1,17 @@
+import logging
+from datetime import timedelta
+
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from rest_framework import generics, parsers, permissions, status
-from rest_framework.decorators import api_view, parser_classes, permission_classes, throttle_classes
+from rest_framework.decorators import (api_view, parser_classes,
+                                       permission_classes, throttle_classes)
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -21,8 +25,6 @@ from users.serializers import (PasswordResetConfirmSerializer,
                                UserSerializer)
 
 from .services import VerificationService
-import logging
-from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +150,7 @@ def register(request):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
-    throttle_scope = 'login'
+    throttle_scope = "login"
 
     def post(self, request, *args, **kwargs):
         email = request.data.get("email")
@@ -169,7 +171,7 @@ class LoginView(APIView):
             return Response(
                 {"error": "Invalid Credentials"}, status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         refresh = RefreshToken.for_user(user)
         if remember_me:
             refresh.set_exp(lifetime=timedelta(days=30))
@@ -196,7 +198,6 @@ class LoginView(APIView):
             max_age=max_age,
         )
         return response
-    
 
 
 class LogoutView(APIView):
@@ -204,14 +205,14 @@ class LogoutView(APIView):
 
     def post(self, request):
         try:
-            refresh_token = request.COOKIES.get('refresh')
+            refresh_token = request.COOKIES.get("refresh")
             if refresh_token:
                 token = RefreshToken(refresh_token)
                 token.blacklist()
         except Exception:
             pass
 
-        response = Response({'message': 'Logged out'})
+        response = Response({"message": "Logged out"})
 
         # Deleting the refresh cookie
         response.set_cookie(
@@ -221,7 +222,7 @@ class LogoutView(APIView):
             samesite="None",
             secure=True,
             path="/",
-            expires="Thu, 01 Jan 1970 00:00:00 GMT"
+            expires="Thu, 01 Jan 1970 00:00:00 GMT",
         )
         return response
 

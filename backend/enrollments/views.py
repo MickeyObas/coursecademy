@@ -1,16 +1,16 @@
+import logging
+
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from courses.models import Course
+from core.permissions import IsCourseOwner, IsOwner, IsStudent
+from courses.models import Course, CourseProgress
 from courses.serializers import CourseUserSerializer, ThinCourseSerializer
 
 from .models import Enrollment
-from courses.models import CourseProgress
 from .serializers import EnrollmentSerializer
-from core.permissions import IsStudent, IsCourseOwner, IsOwner
 
-import logging
 logger = logging.getLogger(__name__)
 
 
@@ -34,14 +34,17 @@ class UserEnrollmentList(APIView):
 
         if filter == "completed":
             completed_course_ids = CourseProgress.objects.filter(
-                enrollment__user=request.user,
-                completed_at__isnull=False
-            ).values_list('enrollment__course_id')
+                enrollment__user=request.user, completed_at__isnull=False
+            ).values_list("enrollment__course_id")
             enrolled_qs = enrolled_qs.filter(id__in=completed_course_ids)
 
         serializer = CourseUserSerializer(
             enrolled_qs, many=True, context={"request": request}
         )
-        data = sorted(serializer.data, key=lambda enrollment: enrollment["progress"]["percentage"], reverse=True)
+        data = sorted(
+            serializer.data,
+            key=lambda enrollment: enrollment["progress"]["percentage"],
+            reverse=True,
+        )
 
         return Response(data)

@@ -9,7 +9,8 @@ urlpatterns = [
         "lessons/<int:lesson_id>/start/", views.StartLessonAssessmentSession.as_view()
     ),
     path(
-        "courses/<slug:course_slug>/start/", views.StartCourseAssessmentSession.as_view()
+        "courses/<slug:course_slug>/start/",
+        views.StartCourseAssessmentSession.as_view(),
     ),
     path("<int:session_id>/test/submit/", views.SubmitTestSession.as_view()),
     path(

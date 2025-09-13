@@ -7,7 +7,7 @@ type AnswersMap = {
 }
 
 type QuestionCardProps = {
-  current: Current | null,
+  current: Current,
   currentIndex: number,
   totalQuestions: number,
   answers: AnswersMap,
@@ -32,7 +32,7 @@ type TFQuestionProps = {
 }
 
 type MCQQuestionProps = {
-  current: Current | null,
+  current: Current,
   answers: AnswersMap,
   handleMCQInput: (questionId: number, optionId: number) => void
 }
@@ -136,12 +136,16 @@ export default function QuestionCard({
           Previous
         </button>
         <div className="flex gap-x-3">
-          <button
-            onClick={handleAnswerSave}
-            className="cursor-pointer px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-          >
-            Save Answer
+          {/* NOTE: Only for test assessments tbh, removing later  */}
+          {assessmentType === "test" && (
+            <button
+              onClick={handleAnswerSave}
+              className="cursor-pointer px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+            >
+            {`${current.id in answers ? 'Saved' : 'Save Answer'}`}
           </button>
+          )}
+          
           {currentIndex === totalQuestions - 1 ? (
             <button
             onClick={onSubmit}

@@ -6,16 +6,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0014_alter_courseprogress_unique_together_and_more'),
+        ("courses", "0014_alter_courseprogress_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='lessonprogress',
+            name="lessonprogress",
             unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
-            name='moduleprogress',
+            name="moduleprogress",
             unique_together=set(),
         ),
     ]

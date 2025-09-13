@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from categories.models import Category
-from ..models import TestSessionQuestion, TestSession
+
+from ..models import TestSession, TestSessionQuestion
 from ..serializers import TestAssessmentSerializer
 from .question import QuestionDisplaySerializer
 
@@ -14,7 +15,7 @@ class StartTestSessionSerializer(serializers.Serializer):
         if not Category.objects.filter(id=value).exists():
             raise serializers.ValidationError("Invalid category_id")
         return value
-    
+
     def validate_difficulty(self, value):
         if value not in ["EASY", "NORMAL", "DIFFICULTY"]:
             return serializers.ValidationError("Invalid difficulty type.")
@@ -33,7 +34,7 @@ class TestSessionQuestionSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep.update(QuestionDisplaySerializer(instance.question).data)
         return rep
-    
+
 
 class TestSessionSerializer(serializers.ModelSerializer):
     test_assessment = TestAssessmentSerializer()

@@ -4,10 +4,12 @@ from api.models import TimeStampedModel
 
 
 class Certification(TimeStampedModel):
-    enrollment = models.OneToOneField('enrollments.Enrollment', on_delete=models.CASCADE)
+    enrollment = models.OneToOneField(
+        "enrollments.Enrollment", on_delete=models.CASCADE
+    )
     issued_at = models.DateTimeField(blank=True, null=True)
     certificate_file = models.FileField(
-        upload_to='certificates/', blank=True, null=True
+        upload_to="certificates/", blank=True, null=True
     )
 
     def __str__(self):

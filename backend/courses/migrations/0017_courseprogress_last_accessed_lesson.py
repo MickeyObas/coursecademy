@@ -7,13 +7,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0016_alter_lessonprogress_unique_together_and_more'),
+        ("courses", "0016_alter_lessonprogress_unique_together_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='courseprogress',
-            name='last_accessed_lesson',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='courses.lesson'),
+            model_name="courseprogress",
+            name="last_accessed_lesson",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="courses.lesson",
+            ),
         ),
     ]

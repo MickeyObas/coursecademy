@@ -59,11 +59,12 @@ class AssessmentAnswerModelAdmin(admin.ModelAdmin):
 
 
 class LessonAssessmentModelAdmin(admin.ModelAdmin):
-    list_display = ['id', '__str__']
+    list_display = ["id", "__str__"]
 
 
 class OptionModelAdmin(admin.ModelAdmin):
-    list_display = ['id', '__str__']
+    list_display = ["id", "__str__"]
+
 
 admin.site.register(TestBlueprint, TestBlueprintModelAdmin)
 admin.site.register(TestSession, TestSessionModelAdmin)

@@ -9,8 +9,4 @@ class IsEnrolled(BasePermission):
         course = resolve_course_from_kwargs(view.kwargs)
         if not course:
             return False
-        return Enrollment.objects.filter(
-            user=request.user,
-            course=course
-        ).exists()
-        
+        return Enrollment.objects.filter(user=request.user, course=course).exists()

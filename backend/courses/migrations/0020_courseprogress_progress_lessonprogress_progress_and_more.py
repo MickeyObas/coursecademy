@@ -6,23 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0019_remove_lesson_video_url_lesson_video_file'),
+        ("courses", "0019_remove_lesson_video_url_lesson_video_file"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='courseprogress',
-            name='progress',
+            model_name="courseprogress",
+            name="progress",
             field=models.PositiveIntegerField(blank=True, default=0, null=True),
         ),
         migrations.AddField(
-            model_name='lessonprogress',
-            name='progress',
+            model_name="lessonprogress",
+            name="progress",
             field=models.PositiveIntegerField(blank=True, default=0, null=True),
         ),
         migrations.AddField(
-            model_name='moduleprogress',
-            name='progress',
+            model_name="moduleprogress",
+            name="progress",
             field=models.PositiveIntegerField(blank=True, default=0, null=True),
         ),
     ]

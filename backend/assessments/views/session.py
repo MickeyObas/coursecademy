@@ -1,45 +1,57 @@
+import logging
 from datetime import datetime
 
 from django.contrib.contenttypes.models import ContentType
-
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..models import (Question, TestSession, TestSessionAnswer,
-                      TestSessionQuestion, LessonAssessment, AssessmentSession, CourseAssessment)
-from ..serializers import (SaveAssessmentAnswerSerializer,
-                           SaveTestAssessmentAnswerSerializer, TestSessionSerializer)
-from ..services import (mark_assessment_session, mark_test_session,
-                        save_assessment_answer, save_test_answer)
-from assessments.serializers import QuestionDisplaySerializer, SubmitAssessmentSessionSerializer, TestSessionQuestionSerializer
+from assessments.serializers import (QuestionDisplaySerializer,
+                                     SubmitAssessmentSessionSerializer,
+                                     TestSessionQuestionSerializer)
 from core.permissions import IsStudent
 from courses.helpers import get_course_from_object
+
+from ..models import (AssessmentSession, CourseAssessment, LessonAssessment,
+                      Question, TestSession, TestSessionAnswer,
+                      TestSessionQuestion)
+from ..serializers import (SaveAssessmentAnswerSerializer,
+                           SaveTestAssessmentAnswerSerializer,
+                           TestSessionSerializer)
+from ..services import (generate_assessment_answer_objects,
+                        mark_assessment_session, mark_test_session,
+                        save_assessment_answer, save_test_answer)
+
+logger = logging.getLogger(__name__)
 
 
 class TestSessionDetail(APIView):
     def get(self, request, **kwargs):
-        test_session_id = kwargs.get('test_session_id')
+        test_session_id = kwargs.get("test_session_id")
         if not test_session_id:
             return Response({"error": "Test session ID is required"}, status=400)
-        
+
         try:
             test_session = TestSession.objects.get(id=test_session_id)
         except TestSession.DoesNotExist:
             return Response({"error": "Invalid test session ID"}, status=400)
 
         if test_session.user != request.user:
-            return Response({"error": "You are not authorized to perform this action"}, status=403)
-        
+            return Response(
+                {"error": "You are not authorized to perform this action"}, status=403
+            )
+
         test_session_questions = TestSessionQuestion.objects.filter(
             test_session=test_session
         )
-        test_question_data = TestSessionQuestionSerializer(test_session_questions, many=True).data
+        test_question_data = TestSessionQuestionSerializer(
+            test_session_questions, many=True
+        ).data
 
         data = {
             "started_at": test_session.started_at,
             "duration_minutes": test_session.test_assessment.duration_minutes,
-            "questions": test_question_data
+            "questions": test_question_data,
         }
 
         return Response(data)
@@ -71,10 +83,10 @@ class SaveTestAssesmentSessionAnswer(APIView):
         serializer.is_valid(raise_exception=True)
 
         result = save_test_answer(
-            request.user, 
-            data.get("question_id"), 
-            data.get("test_session_id"), 
-            data.get("answer")
+            request.user,
+            data.get("question_id"),
+            data.get("test_session_id"),
+            data.get("answer"),
         )
 
         return Response({"message": result["message"]})
@@ -90,9 +102,7 @@ class SaveAssessmentSessionAnswer(APIView):
         serializer.is_valid(raise_exception=True)
 
         result = save_assessment_answer(
-            request.user, 
-            data.get("question_id"), 
-            data.get("answer")
+            request.user, data.get("question_id"), data.get("answer")
         )
 
         return Response({"message": "Answer saved"})
@@ -120,11 +130,19 @@ class SubmitAssessmentSession(APIView):
         serializer.is_valid(raise_exception=True)
         validated = serializer.validated_data
 
+        logger.info(
+            f"DA ANSWERS {request.data['answers']} ----> {type(request.data['answers'])}"
+        )
+
+        generate_assessment_answer_objects(
+            validated["session_id"], request.data["answers"]
+        )
+
         result = mark_assessment_session(
-            request.user, 
-            validated["session_id"], 
-            validated["assessment_id"], 
-            validated["assessment_type"]
+            request.user,
+            validated["session_id"],
+            validated["assessment_id"],
+            validated["assessment_type"],
         )
 
         return Response(result)
@@ -132,39 +150,49 @@ class SubmitAssessmentSession(APIView):
         if result.get("error"):
             return Response({"error": result["error"]}, status=400)
 
-        return Response({"message": result["message"], "score": result["score"], "lessonId": result['lessonId'], "isCourseAssessment": result['isCourseAssessment']})
+        return Response(
+            {
+                "message": result["message"],
+                "score": result["score"],
+                "lessonId": result["lessonId"],
+                "isCourseAssessment": result["isCourseAssessment"],
+            }
+        )
 
 
 class AssessmentSessionDetail(APIView):
     permissions = [IsStudent]
 
     def get(self, request, *args, **kwargs):
-        assessment_type = kwargs.get('assessment_type').lower()
-        session_id = kwargs.get('session_id')
+        assessment_type = kwargs.get("assessment_type").lower()
+        session_id = kwargs.get("session_id")
 
         if assessment_type not in ["lesson", "course"]:
-            return Response({'error': "Invalid request. Improper assessment type."}, status=400)
-        
+            return Response(
+                {"error": "Invalid request. Improper assessment type."}, status=400
+            )
+
         if assessment_type == "lesson":
             content_type = ContentType.objects.get_for_model(LessonAssessment)
         else:
             content_type = ContentType.objects.get_for_model(CourseAssessment)
 
         session = AssessmentSession.objects.get(
-            id=session_id,
-            user=request.user,
-            content_type=content_type
+            id=session_id, user=request.user, content_type=content_type
         )
         if session:
             questions = Question.objects.filter(
-                content_type=content_type,
-                object_id=session.assessment_object.id
+                content_type=content_type, object_id=session.assessment_object.id
             )
-            return Response({
-                'courseSlug': get_course_from_object(session.assessment_object).slug,
-                'sessionId': session.id,
-                'assessmentId': session.assessment_object.id,
-                'questions': QuestionDisplaySerializer(questions, many=True).data
-            })
+            return Response(
+                {
+                    "courseSlug": get_course_from_object(
+                        session.assessment_object
+                    ).slug,
+                    "sessionId": session.id,
+                    "assessmentId": session.assessment_object.id,
+                    "questions": QuestionDisplaySerializer(questions, many=True).data,
+                }
+            )
 
-        return Response({'error': 'No session found'}, status=404)
+        return Response({"error": "No session found"}, status=404)

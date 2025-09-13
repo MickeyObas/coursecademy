@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.db.models import Count, Avg
+from django.db.models import Avg, Count
 from django.db.models.functions import Coalesce
 from django.utils.text import slugify
 
@@ -14,9 +14,10 @@ class CourseQuerySet(models.QuerySet):
         return self.annotate(
             enrollment_count=Count("enrollments", distinct=True),
             rating_count=Coalesce(0, 0),
-            average_rating=Coalesce(0, 0)
+            average_rating=Coalesce(0, 0),
             # TODO Rating system
         )
+
 
 class Course(TimeStampedModel):
     title = models.CharField(max_length=300)
@@ -55,8 +56,9 @@ class Course(TimeStampedModel):
     @property
     def lesson_count(self):
         from ..models import Lesson
+
         return Lesson.objects.filter(module__course=self).count()
-    
+
     @property
     def module_count(self):
         return self.modules.count()

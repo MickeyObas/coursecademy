@@ -2,9 +2,10 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from core.permissions import IsAdminInstructorOrReadOnly
+
 from ..models import Option, Question
 from ..serializers import OptionSerializer, QuestionSerializer
-from core.permissions import IsAdminInstructorOrReadOnly
 
 
 # Check which situations I'm fetching questions anyway
@@ -26,5 +27,3 @@ class OptionCreateView(APIView):
             return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
-
-

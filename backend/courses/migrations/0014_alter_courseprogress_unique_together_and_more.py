@@ -7,55 +7,67 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('courses', '0013_alter_moduleprogress_module'),
-        ('enrollments', '0003_alter_enrollment_course'),
+        ("courses", "0013_alter_moduleprogress_module"),
+        ("enrollments", "0003_alter_enrollment_course"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='courseprogress',
-            name='enrollment',
-            field=models.OneToOneField(default=1, on_delete=django.db.models.deletion.CASCADE, to='enrollments.enrollment'),
+            model_name="courseprogress",
+            name="enrollment",
+            field=models.OneToOneField(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="enrollments.enrollment",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='lessonprogress',
-            name='enrollment',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='enrollments.enrollment'),
+            model_name="lessonprogress",
+            name="enrollment",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="enrollments.enrollment",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='moduleprogress',
-            name='enrollment',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='enrollments.enrollment'),
+            model_name="moduleprogress",
+            name="enrollment",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="enrollments.enrollment",
+            ),
             preserve_default=False,
         ),
         migrations.AlterUniqueTogether(
-            name='courseprogress',
+            name="courseprogress",
             unique_together=set(),
         ),
         migrations.AlterUniqueTogether(
-            name='lessonprogress',
-            unique_together={('enrollment', 'lesson')},
+            name="lessonprogress",
+            unique_together={("enrollment", "lesson")},
         ),
         migrations.AlterUniqueTogether(
-            name='moduleprogress',
-            unique_together={('enrollment', 'module')},
+            name="moduleprogress",
+            unique_together={("enrollment", "module")},
         ),
         migrations.RemoveField(
-            model_name='courseprogress',
-            name='course',
+            model_name="courseprogress",
+            name="course",
         ),
         migrations.RemoveField(
-            model_name='courseprogress',
-            name='user',
+            model_name="courseprogress",
+            name="user",
         ),
         migrations.RemoveField(
-            model_name='lessonprogress',
-            name='user',
+            model_name="lessonprogress",
+            name="user",
         ),
         migrations.RemoveField(
-            model_name='moduleprogress',
-            name='user',
+            model_name="moduleprogress",
+            name="user",
         ),
     ]
