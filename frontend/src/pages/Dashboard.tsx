@@ -28,6 +28,11 @@ type CourseProgressSummary = {
 
 
 const Dashboard = () => {
+  
+  useEffect(() => {
+    console.log(window.scrollX, window.scrollY);
+  }, [window.scrollX, window.scrollY])
+
   const { isRateLimited, cooldown } = useRateLimit();
   usePageTitle('Dashboard');
   const navigate = useNavigate();
