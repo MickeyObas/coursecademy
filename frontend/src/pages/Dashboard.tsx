@@ -346,7 +346,14 @@ const Dashboard = () => {
                   </tr>
                 )) : (
                 <td className="text-center" colSpan={4}>
-                  <p>{enolledCoursesFilter === "active" ? "You haven't enrolled in any courses yet." : "You haven't completed any course yet."}</p>
+                  {enolledCoursesFilter === "active" ? (
+                    <>
+                      <p>You haven't enrolled in any course yet.</p>
+                      <p>Please check the <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => navigate('/dashboard/courses/')}>Courses</span>&nbsp;section to get started.</p>
+                    </>
+                  ) : (
+                    <p></p>
+                  )}
                 </td>
               ) : (
                 <tr className="">

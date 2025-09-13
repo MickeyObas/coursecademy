@@ -99,8 +99,8 @@ const TakeAssessment = () => {
         toast.success("Let's gooo. You passed the test. On to the next!", {duration: 4000});
         setTimeout(() => navigate(next.url), 2000);
       }else if(next.type === "end"){
-        alert("Wohooo, you have completed this course!");
-        navigate("/");
+        toast.success("Wohooo, you have completed this course! Go check out your new certificate!", {duration: 4000});
+        setTimeout(() => navigate('/'), 2000);
       }
     } catch (err){
       console.error(err);

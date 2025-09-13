@@ -135,7 +135,7 @@ const Courses = () => {
                 ))}
               </div>
             ) : (
-              <div>No Enrolled Course</div>
+              <div className='py-3 text-center bg-white mt-4 rounded-lg'>Your courses will appear here 🫠</div>
             ) : (
               <div className="grid grid-cols-3 gap-4 mt-8">
                 <div className='h-72 flex flex-col bg-white animate-pulse p-1 rounded-lg hover:shadow cursor-pointer'></div>
