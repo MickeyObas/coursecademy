@@ -202,17 +202,6 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
             if isinstance(ao, LessonAssessment):
                 update_lesson_completion(user, ao.lesson)
 
-                # Get next lesson OR use get_next_step hehe
-                # lesson_ids = list(Lesson.objects.filter(module__course=user_lesson_progress.enrollment.course).order_by('module__order', 'order').values_list('id', flat=True))
-                # current_id = user_lesson_progress.lesson.id
-                # try:
-                #     current_index = lesson_ids.index(current_id)
-                # except ValueError:
-                #     current_index = None
-
-                # if current_index is not None:
-                #     if current_index < len(lesson_ids) - 1:
-                #         resume_lesson_id = lesson_ids[current_index + 1]
             elif isinstance(ao, CourseAssessment):
                 course_progress = CourseProgress.objects.get(
                     enrollment__course=ao.course, enrollment__user=user
@@ -223,9 +212,7 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
         next_step = get_next_step(
             user, ao.lesson.module.course, current_assessment_id=ao.id
         )
-        # is_course_assessment = isinstance(ao, CourseAssessment)
 
-        # Return next_step
         if session.score >= 50:
             return next_step
 
@@ -235,14 +222,6 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
             f"/courses/{ao.lesson.module.course.slug}/lessons/{ao.lesson.id}/"
         )
         return next_step
-
-        return {
-            "success": True,
-            "message": "Test submitted successfully",
-            "score": session.score,
-            "lessonId": resume_lesson_id,
-            "isCourseAssessment": is_course_assessment,
-        }
 
     except Exception as e:
         print(e)

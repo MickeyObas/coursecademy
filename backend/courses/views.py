@@ -68,7 +68,7 @@ class InstructorCourseListView(APIView):
     permission_classes = [IsInstructor]
 
     def get(self, request, *args, **kwargs):
-        courses = Course.objects.filter(instructor=request.user)
+        courses = Course.objects.filter(instructor=request.user).with_stats()
         serializer = ThinCourseSerializer(courses, many=True)
         return Response(serializer.data)
 

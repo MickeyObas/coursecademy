@@ -60,80 +60,95 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8">
-        <h2 className="text-2xl font-semibold text-center mb-6">Login to Your Account</h2>
-        
-        {error && (
-          <div className="text-red-600 text-sm mb-4 text-center">{error}</div>
-        )}
+  <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="w-full max-w-md sm:max-w-lg bg-white rounded-xl shadow-md p-6 sm:p-8">
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6">
+        Login to Your Account
+      </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">Email</label>
+      {error && (
+        <div className="text-red-600 text-sm sm:text-base mb-4 text-center px-2">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Email */}
+        <div>
+          <label htmlFor="email" className="block text-sm sm:text-base font-medium mb-1">
+            Email
+          </label>
+          <input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border rounded px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        {/* Password */}
+        <div>
+          <label htmlFor="password" className="block text-sm sm:text-base font-medium mb-1">
+            Password
+          </label>
+          <div className="relative">
             <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500"
+              id="password"
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded px-3 py-2 pr-16 text-sm sm:text-base focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-2 text-xs sm:text-sm text-gray-600"
+            >
+              {showPassword ? 'Hide' : 'Show'}
+            </button>
           </div>
+        </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium mb-1">Password</label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border rounded px-3 py-2 pr-10 focus:outline-none focus:ring focus:ring-blue-500"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-2 top-2 text-sm text-gray-600"
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={() => setRememberMe(!rememberMe)}
-                className="form-checkbox"
-              />
-              <span className="text-sm">Remember me</span>
-            </label>
-            <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white rounded py-2 hover:bg-blue-700 transition"
+        {/* Remember me + Forgot password */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2">
+          <label className="flex items-center space-x-2 text-sm sm:text-base">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={() => setRememberMe(!rememberMe)}
+              className="form-checkbox"
+            />
+            <span>Remember me</span>
+          </label>
+          <Link
+            to="/forgot-password"
+            className="text-sm sm:text-base text-blue-600 hover:underline"
           >
-            {loading ? 'Loading...' : 'Login'}
-          </button>
-        </form>
-
-        <p className="text-center text-sm mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register here
+            Forgot password?
           </Link>
-        </p>
-      </div>
+        </div>
+
+        {/* Submit button */}
+        <button
+          type="submit"
+          className="w-full bg-blue-600 text-white rounded py-2 sm:py-3 text-sm sm:text-base hover:bg-blue-700 transition"
+        >
+          {loading ? 'Loading...' : 'Login'}
+        </button>
+      </form>
+
+      <p className="text-center text-sm sm:text-base mt-6">
+        Don't have an account?{' '}
+        <Link to="/register" className="text-blue-600 hover:underline">
+          Register here
+        </Link>
+      </p>
     </div>
-  );
-};
+  </div>
+)}
+
 
 export default Login;
