@@ -313,7 +313,7 @@ class CourseSerializer(serializers.ModelSerializer):
         source="course.enrollment_count"
     )
     rating_count = serializers.SerializerMethodField(source="course.rating_count")
-    average_rating = serializers.SerializerMethodField(source="course.acerage_rating")
+    average_rating = serializers.SerializerMethodField(source="course.average_rating")
 
     class Meta:
         model = Course
@@ -423,6 +423,7 @@ class CourseSerializer(serializers.ModelSerializer):
 
 class ThinCourseSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source="category.title")
+    average_rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Course

@@ -91,233 +91,297 @@ const Dashboard = () => {
   }
 
   return (
-    <main className=" p-4 flex flex-col gap-y-4 select-none">
-      {lastAccessedCourse 
-        ? lastAccessedCourse?.status !== 'empty' 
-          ? (
-            <div className="flex items-center bg-white p-4 rounded-lg justify-between">
-              <div className="flex gap-x-4 items-center w-[60%]">
-                <div className="w-25 bg-slate-50 p-1.5 rounded-xl">
-                  <img className="w-full h-full object-cover" src={lastAccessedCourse?.course.thumbnail} alt="" />
-                </div>
-                <div className="flex flex-col w-full gap-y-3">
-                  <span className="line-clamp-1">{lastAccessedCourse?.course.title}</span>
-                  <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
-                    <div
-                      className="h-full bg-blue-700"
-                      style={{ width: `${lastAccessedCourse?.progress.percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-              <div className="w-[35%] flex justify-between">
-                <div className="bg-slate-200 w-0.5"></div>
-                <div className="flex items-center">
-                  <div className="flex items-center gap-x-3">
-                    <span className="flex items-center gap-1.5">
-                      <Book color="gray" />
-                      <span>{lastAccessedCourse?.progress.module}</span>
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Scroll color="gray" />
-                      <span>{lastAccessedCourse?.progress.lesson}</span>
-                    </span>
-                    {/* <span className="flex items-center gap-1.5">
-                      <Clipboard color="gray" />
-                      <span>15</span>
-                    </span> */}
-                  </div>
-                </div>   
-                <button
-                  disabled={isRateLimited}
-                  onClick={() => navigate(`/courses/${lastAccessedCourse?.course.slug}/lessons/${lastAccessedCourse?.resume_lesson_id}`)} 
-                  className={`flex bg-slate-100 px-2 py-1.5 rounded-lg gap-x-2   ${isRateLimited ? 'hover:cursor-wait' : 'cursor-pointer hover:bg-slate-200'}`}>
-                  <Play color="blue"/>
-                  <span>Resume</span>
-                </button>       
-              </div>
+  <main className="p-4 flex flex-col gap-y-4 select-none">
+    {lastAccessedCourse ? (
+      lastAccessedCourse?.status !== "empty" ? (
+        <div className="flex flex-col md:flex-row bg-white p-4 rounded-lg gap-4 md:justify-between">
+          {/* Course Thumbnail + Title + Progress */}
+          <div className="flex gap-4 items-center w-full md:w-3/5">
+            <div className="w-24 flex-shrink-0 bg-slate-50 p-1.5 rounded-xl">
+              <img
+                className="w-full h-full object-cover rounded-lg"
+                src={lastAccessedCourse?.course.thumbnail}
+                alt=""
+              />
             </div>
-        ) : (
-            <></>
-        ) : (
-        <div className="flex items-center bg-white p-5 rounded-lg justify-between">
-          <div className="flex gap-x-4 items-center w-[60%]">
-            <div className="animate-pulse w-25 h-18 bg-slate-100 p-1.5 rounded-xl"></div>
             <div className="flex flex-col w-full gap-y-3">
-              <span className="animate-pulse bg-slate-50 h-4"></span>
+              <span className="line-clamp-1">
+                {lastAccessedCourse?.course.title}
+              </span>
               <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
                 <div
-                  className="h-full animate-pulse bg-slate-100"
-                  style={{ width: `100%` }}
+                  className="h-full bg-blue-700"
+                  style={{
+                    width: `${lastAccessedCourse?.progress.percentage}%`,
+                  }}
                 ></div>
               </div>
             </div>
           </div>
-          <div className="w-[35%] flex justify-between">
-            <div className="bg-slate-200 w-0.5"></div>
-            <div className="flex items-center">
-              <div className="flex items-center gap-x-3 animate-pulse">
-                <span className="flex items-center gap-1.5">
-                  <span className="bg-slate-100 w-5 h-6"></span>
-                  <span className="opacity-0">0</span>
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="bg-slate-100 w-5 h-6"></span>
-                  <span className="opacity-0">0</span>
-                </span>
-              </div>
-            </div>   
+
+          {/* Resume + Progress Info */}
+          <div className="flex flex-col md:flex-row items-center justify-between w-full md:w-2/5 gap-4">
+            <div className="hidden md:block bg-slate-200 w-0.5"></div>
+            <div className="flex items-center flex-wrap gap-3">
+              <span className="flex items-center gap-1.5">
+                <Book color="gray" />
+                <span>{lastAccessedCourse?.progress.module}</span>
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Scroll color="gray" />
+                <span>{lastAccessedCourse?.progress.lesson}</span>
+              </span>
+            </div>
             <button
-              disabled={true}
-              className={`animate-pulse flex bg-slate-100 py-4.5 rounded-lg gap-x-2 hover:cursor-wait w-16 px-10`}>
-            </button>       
+              disabled={isRateLimited}
+              onClick={() =>
+                navigate(
+                  `/courses/${lastAccessedCourse?.course.slug}/lessons/${lastAccessedCourse?.resume_lesson_id}`
+                )
+              }
+              className={`flex items-center bg-slate-100 px-3 py-2 rounded-lg gap-x-2 ${
+                isRateLimited
+                  ? "hover:cursor-wait"
+                  : "cursor-pointer hover:bg-slate-200"
+              }`}
+            >
+              <Play color="blue" />
+              <span>Resume</span>
+            </button>
           </div>
         </div>
-      )}
-      <div className="flex flex-col bg-white p-4 rounded-lg">
-        <h2 className="text-xl font-bold">Status</h2>
-        {courseProgressSummary ? (
-          <div className="grid grid-cols-3 mt-5 gap-x-3">
+      ) : (
+        <></>
+      )
+    ) : (
+      <div className="flex flex-col md:flex-row bg-white p-5 rounded-lg gap-4 md:justify-between">
+        <div className="flex gap-4 items-center w-full md:w-3/5">
+          <div className="animate-pulse w-24 h-18 bg-slate-100 p-1.5 rounded-xl"></div>
+          <div className="flex flex-col w-full gap-y-3">
+            <span className="animate-pulse bg-slate-50 h-4"></span>
+            <div className="flex bg-blue-100 w-full h-1.5 rounded-lg">
+              <div
+                className="h-full animate-pulse bg-slate-100"
+                style={{ width: `100%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col md:flex-row items-center justify-between w-full md:w-2/5 gap-4">
+          <div className="hidden md:block bg-slate-200 w-0.5"></div>
+          <div className="flex items-center gap-x-3 animate-pulse">
+            <span className="bg-slate-100 w-5 h-6"></span>
+            <span className="bg-slate-100 w-5 h-6"></span>
+          </div>
+          <button
+            disabled={true}
+            className="animate-pulse flex bg-slate-100 rounded-lg hover:cursor-wait w-20 h-8"
+          ></button>
+        </div>
+      </div>
+    )}
+
+    {/* Status Section */}
+    <div className="flex flex-col bg-white p-4 rounded-lg">
+      <h2 className="text-xl font-bold">Status</h2>
+      {courseProgressSummary ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5 gap-3">
+          {/* Lessons */}
           <div className="bg-orange-100 p-4 flex flex-col rounded-lg gap-y-1">
-            <div className="flex mb-2.5 justify-between items-center">
+            <div className="flex mb-2.5 justify-between items-center w-full">
               <div className="bg-orange-300 flex items-center justify-center w-10 h-10 rounded-full">
-                <ClipboardCheck color="#f1f5f9"/>
+                <ClipboardCheck color="#f1f5f9" />
               </div>
               <div>
                 <CircularProgressbar
-                  value={
-                    courseProgressSummary 
-                      ? ((courseProgressSummary.lessons.completed / courseProgressSummary.lessons.total) * 100) 
-                      : 0
-                  }
-                  text={
-                    courseProgressSummary 
-                    ? `${Math.floor((courseProgressSummary.lessons.completed / courseProgressSummary.lessons.total) * 100) || 0}%`
-                    : '0%'
-                  }
-                  strokeWidth={18}
-                  className='h-14'
-                  styles={buildStyles({
-                    textColor: 'black',
-                    pathColor: 'oklch(83.7% 0.128 66.29)',
-                    trailColor: 'oklch(0.9091 0.0567 75.164)',
-                  })}
-                />
+                value={
+                  (courseProgressSummary.lessons.completed /
+                    courseProgressSummary.lessons.total) *
+                  100
+                }
+                text={`${Math.floor(
+                  (courseProgressSummary.lessons.completed /
+                    courseProgressSummary.lessons.total) *
+                    100
+                ) || 0}%`}
+                strokeWidth={18}
+                className="h-14"
+                styles={buildStyles({
+                  textColor: "black",
+                  pathColor: "oklch(83.7% 0.128 66.29)",
+                  trailColor: "oklch(0.9091 0.0567 75.164)",
+                })}
+              />
               </div>
+              
             </div>
-            <h3 className="font-bold text-xl">{courseProgressSummary?.lessons.completed}</h3>
-            <p>{courseProgressSummary && (courseProgressSummary?.lessons.completed > 1 || courseProgressSummary?.lessons.completed === 0)  ? "Lessons" : "Lesson"}</p>
-            <p className="text-blue-600">of {courseProgressSummary?.lessons.total} completed</p>
+            <h3 className="font-bold text-xl">
+              {courseProgressSummary?.lessons.completed}
+            </h3>
+            <p>
+              {courseProgressSummary?.lessons.completed === 1
+                ? "Lesson"
+                : "Lessons"}
+            </p>
+            <p className="text-blue-600">
+              of {courseProgressSummary?.lessons.total} completed
+            </p>
           </div>
+
+          {/* Modules */}
           <div className="bg-red-100 p-4 flex flex-col rounded-lg gap-y-1">
             <div className="flex mb-2.5 justify-between items-center">
               <div className="bg-orange-300 flex items-center justify-center w-10 h-10 rounded-full">
-                <ClipboardCheck color="#f1f5f9"/>
+                <ClipboardCheck color="#f1f5f9" />
               </div>
               <div>
                 <CircularProgressbar
                   value={
-                    courseProgressSummary 
-                      ? (courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100
-                      : 0
+                    (courseProgressSummary.modules.completed /
+                      courseProgressSummary.modules.total) *
+                    100
                   }
-                  text={
-                    courseProgressSummary 
-                      ?`${Math.floor((courseProgressSummary?.modules.completed / courseProgressSummary?.modules.total) * 100) || 0}%`
-                      : '0%'
-                  }
+                  text={`${Math.floor(
+                    (courseProgressSummary.modules.completed /
+                      courseProgressSummary.modules.total) *
+                      100
+                  ) || 0}%`}
                   strokeWidth={18}
-                  className='h-14'
+                  className="h-14"
                   styles={buildStyles({
-                    textColor: 'black',
-                    pathColor: 'oklch(0.8085 0.0691 17.717)',
-                    trailColor: 'oklch(0.9085 0.0691 17.717)',
+                    textColor: "black",
+                    pathColor: "oklch(0.8085 0.0691 17.717)",
+                    trailColor: "oklch(0.9085 0.0691 17.717)",
                   })}
                 />
               </div>
+              
             </div>
-            <h3 className="font-bold text-xl">{courseProgressSummary?.modules.completed}</h3>
-            <p>{courseProgressSummary && (courseProgressSummary?.modules.completed > 1 || courseProgressSummary?.modules.completed === 0) ? "Modules" : "Module"}</p>
-            <p className="text-blue-600">of {courseProgressSummary?.modules.total} completed</p>
+            <h3 className="font-bold text-xl">
+              {courseProgressSummary?.modules.completed}
+            </h3>
+            <p>
+              {courseProgressSummary?.modules.completed === 1
+                ? "Module"
+                : "Modules"}
+            </p>
+            <p className="text-blue-600">
+              of {courseProgressSummary?.modules.total} completed
+            </p>
           </div>
+
+          {/* Courses */}
           <div className="bg-green-100 p-4 flex flex-col rounded-lg gap-y-1">
             <div className="flex mb-2.5 justify-between items-center">
               <div className="bg-orange-300 flex items-center justify-center w-10 h-10 rounded-full">
-                <ClipboardCheck color="#f1f5f9"/>
+                <ClipboardCheck color="#f1f5f9" />
               </div>
               <div>
                 <CircularProgressbar
                   value={
-                    courseProgressSummary 
-                      ? (courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100
-                      : 0
+                    (courseProgressSummary.courses.completed /
+                      courseProgressSummary.courses.total) *
+                    100
                   }
-                  text={
-                    courseProgressSummary 
-                      ? `${Math.floor((courseProgressSummary?.courses.completed / courseProgressSummary?.courses.total) * 100) || 0}%`
-                      : '0%'
-                  }
+                  text={`${Math.floor(
+                    (courseProgressSummary.courses.completed /
+                      courseProgressSummary.courses.total) *
+                      100
+                  ) || 0}%`}
                   strokeWidth={18}
-                  className='h-14'
+                  className="h-14"
                   styles={buildStyles({
-                    textColor: 'black',
-                    pathColor: 'oklch(0.8761 0.1061 156.743)',
-                    trailColor: 'oklch(0.924 0.0419 156.743)',
+                    textColor: "black",
+                    pathColor: "oklch(0.8761 0.1061 156.743)",
+                    trailColor: "oklch(0.924 0.0419 156.743)",
                   })}
                 />
               </div>
+              
             </div>
-            <h3 className="font-bold text-xl">{courseProgressSummary?.courses.completed}</h3>
-            <p>{courseProgressSummary && (courseProgressSummary?.courses.completed > 1 || courseProgressSummary?.courses.completed === 0) ? "Courses" : "Course"}</p>
-            <p className="text-blue-600">of {courseProgressSummary?.courses.total} completed</p>
+            <h3 className="font-bold text-xl">
+              {courseProgressSummary?.courses.completed}
+            </h3>
+            <p>
+              {courseProgressSummary?.courses.completed === 1
+                ? "Course"
+                : "Courses"}
+            </p>
+            <p className="text-blue-600">
+              of {courseProgressSummary?.courses.total} completed
+            </p>
           </div>
         </div>
-        ) : (
-          <div className="grid grid-cols-3 mt-5 gap-x-3 animate-pulse">
-            <div className="bg-slate-100 h-44 p-4 flex flex-col rounded-lg gap-y-1"></div>
-            <div className="bg-slate-100 h-44 p-4 flex flex-col rounded-lg gap-y-1"></div>
-            <div className="bg-slate-100 h-44 p-4 flex flex-col rounded-lg gap-y-1"></div>
-          </div>
-        )}
-        
-      </div>
-      <div className="flex flex-col bg-white p-4 rounded-lg">
-        <div className="flex justify-between w-full mb-4">
-          <h2 className="text-xl font-bold">My Courses</h2>
-          <div className="flex gap-x-1.5">
-            <span 
-              onClick={() => setEnrolledCoursesFilter("active")}
-              className={`${enolledCoursesFilter === 'active' ?'bg-blue-100' : 'hover:bg-slate-100'} cursor-pointer px-3 py-1.5 rounded-lg text-sm`}>Active</span>
-            <span
-              onClick={() => setEnrolledCoursesFilter("completed")}
-             className={`${enolledCoursesFilter === 'completed' ?'bg-blue-100' : 'hover:bg-slate-100'} cursor-pointer px-3 py-1.5 rounded-lg text-sm`}>Completed</span>
-          </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5 gap-3 animate-pulse">
+          <div className="bg-slate-100 h-44 rounded-lg"></div>
+          <div className="bg-slate-100 h-44 rounded-lg"></div>
+          <div className="bg-slate-100 h-44 rounded-lg"></div>
         </div>
+      )}
+    </div>
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-fixed border-separate border-spacing-y-4 px-2">
+    {/* My Courses Section */}
+    <div className="flex flex-col bg-white p-4 rounded-lg">
+      <div className="flex flex-col md:flex-row md:justify-between w-full mb-4 gap-3">
+        <h2 className="text-xl font-bold">My Courses</h2>
+        <div className="flex gap-1.5">
+          <span
+            onClick={() => setEnrolledCoursesFilter("active")}
+            className={`${
+              enolledCoursesFilter === "active"
+                ? "bg-blue-100"
+                : "hover:bg-slate-100"
+            } cursor-pointer px-3 py-1.5 rounded-lg text-sm`}
+          >
+            Active
+          </span>
+          <span
+            onClick={() => setEnrolledCoursesFilter("completed")}
+            className={`${
+              enolledCoursesFilter === "completed"
+                ? "bg-blue-100"
+                : "hover:bg-slate-100"
+            } cursor-pointer px-3 py-1.5 rounded-lg text-sm`}
+          >
+            Completed
+          </span>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-fixed border-separate border-spacing-y-4 text-sm">
           <thead>
-            <tr className="text-center text-gray-500 text-sm">
+            <tr className="text-center text-gray-500">
               <th className="w-[10%] pb-2 border-b border-slate-300">#</th>
-              <th className="w-[40%] pb-2 border-b border-slate-300">Course Name</th>
-              <th className="w-[35%] pb-2 border-b border-slate-300">Completed</th>
-              <th className="w-[15%] pb-2 border-b border-slate-300">Status</th>
+              <th className="w-[40%] pb-2 border-b border-slate-300">
+                Course Name
+              </th>
+              <th className="w-[35%] pb-2 border-b border-slate-300">
+                Completed
+              </th>
+              <th className="w-[15%] pb-2 border-b border-slate-300">
+                Status
+              </th>
             </tr>
           </thead>
-          
-          <tbody className="">
-            {enrolledCourses 
-              ? enrolledCourses.length > 0 
-                ? enrolledCourses.map((course, idx) => (
+
+          <tbody>
+            {enrolledCourses ? (
+              enrolledCourses.length > 0 ? (
+                enrolledCourses.map((course, idx) => (
                   <tr
-                    onClick={() => handleCourseClick(course)} 
-                    key={idx} 
-                    className="rounded-lg hover:bg-slate-50 cursor-pointer">
+                    onClick={() => handleCourseClick(course)}
+                    key={idx}
+                    className="rounded-lg hover:bg-slate-50 cursor-pointer"
+                  >
                     <td className="py-3 px-2 flex justify-center">
                       <div className="border border-slate-300 p-0.5 w-10 h-10 rounded-xl">
-                        <img 
+                        <img
                           className="object-contain object-center w-full h-full"
-                          src={course?.course.thumbnail} alt="" />
+                          src={course?.course.thumbnail}
+                          alt=""
+                        />
                       </div>
                     </td>
                     <td className="py-3 px-2">
@@ -344,31 +408,42 @@ const Dashboard = () => {
                       </div>
                     </td>
                   </tr>
-                )) : (
+                ))
+              ) : (
                 <td className="text-center" colSpan={4}>
                   {enolledCoursesFilter === "active" ? (
                     <>
                       <p>You haven't enrolled in any course yet.</p>
-                      <p>Please check the <span className="text-blue-600 hover:underline cursor-pointer" onClick={() => navigate('/dashboard/courses/')}>Courses</span>&nbsp;section to get started.</p>
+                      <p>
+                        Please check the{" "}
+                        <span
+                          className="text-blue-600 hover:underline cursor-pointer"
+                          onClick={() => navigate("/dashboard/courses/")}
+                        >
+                          Courses
+                        </span>
+                        &nbsp;section to get started.
+                      </p>
                     </>
                   ) : (
                     <p></p>
                   )}
                 </td>
-              ) : (
-                <tr className="">
-                  <td colSpan={4} className="h-40 text-center align-middle">
-                    <Loader className="animate-spin inline-block text-blue-600 w-8 h-8"/>
-                  </td>
-                </tr>
-              )}
+              )
+            ) : (
+              <tr>
+                <td colSpan={4} className="h-40 text-center align-middle">
+                  <Loader className="animate-spin inline-block text-blue-600 w-8 h-8" />
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+    </div>
+  </main>
+);
 
-      </div>
-    </main>
-  )
 }
 
 export default Dashboard;

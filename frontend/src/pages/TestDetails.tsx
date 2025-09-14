@@ -52,27 +52,38 @@ const TestDetails = () => {
   };
 
   return (
-    <div className="px-6 py-10 max-w-3xl">
+  <main className="px-4 sm:px-6 py-10 max-w-3xl mx-auto">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      {/* Title */}
       <h1 className="text-2xl font-bold mb-4">{test?.category?.title}</h1>
 
-      <p className="text-gray-700 mb-4">{test?.description}</p>
+      {/* Description */}
+      <p className="text-gray-700 mb-6">{test?.description}</p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600 mb-6">
+      {/* Test Info Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm text-gray-700 mb-8">
         <p>
-          <span className="font-medium">Duration:</span> {test?.duration_minutes} minutes
+          <span className="font-medium">Duration:</span>{" "}
+          {test?.duration_minutes} minutes
         </p>
         <p>
-          <span className="font-medium">Total Questions:</span> 15 Questions
+          <span className="font-medium">Total Questions:</span>{" "}
+          15 Questions
         </p>
-        <div>
-          <label htmlFor="difficulty" className="font-medium block mb-1">
-            Difficulty Level:
+
+        {/* Difficulty Select */}
+        <div className="sm:col-span-2">
+          <label
+            htmlFor="difficulty"
+            className="font-medium block mb-2 text-gray-800"
+          >
+            Difficulty Level
           </label>
           <select
             id="difficulty"
             value={difficulty}
             onChange={(e) => setDifficulty(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {["easy", "normal", "hard"].map((level) => (
               <option key={level} value={level.toUpperCase()}>
@@ -83,14 +94,19 @@ const TestDetails = () => {
         </div>
       </div>
 
-      <button
-        onClick={handleStartTest}
-        className="cursor-pointer bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
-      >
-        Start Test
-      </button>
+      {/* Start Button */}
+      <div className="text-right">
+        <button
+          onClick={handleStartTest}
+          className="cursor-pointer bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
+          Start Test
+        </button>
+      </div>
     </div>
-  );
+  </main>
+);
+
 };
 
 export default TestDetails;

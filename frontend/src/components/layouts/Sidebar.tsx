@@ -8,7 +8,7 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-slate-100 font-medium" : "hover:bg-slate-50"
   }`;
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -22,43 +22,68 @@ const Sidebar = () => {
 
 
   return (
-    <div className="max-w-[270px] border-r bg-white border-slate-200 mt-18 h-[calc(100vh-73px)] flex flex-col select-none">
+  <>
+    {/* Mobile overlay */}
+    <div
+      className={`fixed inset-0 bg-black opacity-30 z-10 sm:hidden ${
+        isOpen ? "block" : "hidden"
+      }`}
+      onClick={onClose}
+    ></div>
+
+    {/* Sidebar itself */}
+    <div
+      className={`
+        fixed top-[70px] sm:static sm:top-[74px] sm:mt-[74px] left-0 
+        w-[240px] sm:w-[270px] h-[calc(100vh-70px)] sm:h-[calc(100vh-74px)]
+        bg-white border-r border-slate-200
+        flex flex-col select-none
+        z-20 transform transition-transform duration-200
+        ${isOpen ? "translate-x-0" : "-translate-x-full sm:translate-x-0"}
+      `}
+    >
+      {/* Nav links */}
       <div className="flex flex-col py-7 px-5 gap-y-5">
-          <NavLink to='/dashboard' end className={linkClasses}>
-            <LayoutDashboardIcon />
-            <span>Dashboard</span>
-          </NavLink>
-        <NavLink to='/dashboard/courses' className={linkClasses}>
+        <NavLink to="/dashboard" end className={linkClasses}>
+          <LayoutDashboardIcon />
+          <span>Dashboard</span>
+        </NavLink>
+        <NavLink to="/dashboard/courses" className={linkClasses}>
           <Book />
           <span>Courses</span>
         </NavLink>
-        <NavLink to='/dashboard/tests' className={linkClasses}>
+        <NavLink to="/dashboard/tests" className={linkClasses}>
           <Pencil />
           <span>Tests</span>
         </NavLink>
-        <NavLink to='/dashboard/certifications' className={linkClasses}>
+        <NavLink to="/dashboard/certifications" className={linkClasses}>
           <Scroll />
           <span>Certifications</span>
         </NavLink>
-        <NavLink to='/dashboard/profile' className={linkClasses}>
+        <NavLink to="/dashboard/profile" className={linkClasses}>
           <User />
           <span>Profile</span>
         </NavLink>
       </div>
+
+      {/* Bottom links */}
       <div className="flex flex-col pt-10 pb-12 px-5 gap-y-5 mt-auto border-t border-t-slate-200">
-        <NavLink to='/dashboard/settings' className={linkClasses}>
+        <NavLink to="/dashboard/settings" className={linkClasses}>
           <Settings />
           <span>Settings</span>
         </NavLink>
-        <div 
+        <div
           onClick={handleLogout}
-          className="flex items-center gap-x-2 px-4 py-3 rounded-lg hover:bg-slate-50 cursor-pointer">
+          className="flex items-center gap-x-2 px-4 py-3 rounded-lg hover:bg-slate-50 cursor-pointer"
+        >
           <LogOut />
           <span>Logout</span>
         </div>
       </div>
     </div>
-  )
+  </>
+);
+
 }
 
 export default Sidebar;

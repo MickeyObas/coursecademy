@@ -38,17 +38,38 @@ const Certifications = () => {
   
 
   return (
-    <div className="bg-slate-100 h-full px-6 py-10">
-      <h1 className="text-2xl font-bold mb-6">Your Certifications</h1>
+  <div className="bg-slate-100 h-full px-4 sm:px-6 py-10">
+    <h1 className="text-2xl font-bold mb-6">Your Certifications</h1>
 
-      {certifications 
-        ? certifications.length === 0 
-          ? (
-          <div className="text-center text-gray-500 mt-20">
-            <p className="text-lg">🎓 You don’t have any certifications yet.</p>
-            <p className="text-sm mt-2">Complete a course to earn your first certificate.</p>
+    {!certifications ? (
+      // Skeleton Loader
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+        {[1, 2, 3].map(i => (
+          <div
+            key={i}
+            className="h-64 rounded-2xl shadow-sm p-5 flex flex-col justify-between bg-white"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-6 h-6 rounded-full bg-slate-200" />
+              <div className="h-5 w-40 bg-slate-200 rounded" />
+            </div>
+            <div className="space-y-2">
+              <div className="h-4 w-32 bg-slate-200 rounded" />
+              <div className="h-4 w-48 bg-slate-200 rounded" />
+            </div>
+            <div className="h-8 w-28 bg-slate-200 rounded-lg mt-4" />
           </div>
-        ) : (
+        ))}
+      </div>
+    ) : certifications ? (
+      certifications.length === 0 ? (
+        <div className="text-center text-gray-500 mt-20">
+          <p className="text-lg">🎓 You don’t have any certifications yet.</p>
+          <p className="text-sm mt-2">
+            Complete a course to earn your first certificate.
+          </p>
+        </div>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {certifications.map(cert => (
             <div
@@ -62,8 +83,14 @@ const Certifications = () => {
                 <h2 className="text-lg font-semibold">{cert.course}</h2>
               </div>
               <div className="text-sm text-gray-600 space-y-1">
-                <p><span className="font-medium">Issued:</span> {new Date(cert.issued_at).toISOString().split("T")[0]}</p>
-                <p><span className="font-medium">Certificate ID:</span> CERT-00{cert.id}</p>
+                <p>
+                  <span className="font-medium">Issued:</span>{" "}
+                  {new Date(cert.issued_at).toISOString().split("T")[0]}
+                </p>
+                <p>
+                  <span className="font-medium">Certificate ID:</span> CERT-00
+                  {cert.id}
+                </p>
               </div>
               <a
                 href={cert.certificate_file}
@@ -76,15 +103,11 @@ const Certifications = () => {
             </div>
           ))}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
-          <div className="h-64 rounded-2xl shadow-sm p-5 flex flex-col justify-between bg-white"></div>
-          <div className="h-64 rounded-2xl shadow-sm p-5 flex flex-col justify-between bg-white"></div>
-          <div className="h-64 rounded-2xl shadow-sm p-5 flex flex-col justify-between bg-white"></div>
-        </div>
-      )}
-    </div>
-  );
+      )
+    ) : null}
+  </div>
+)
+
 };
 
 export default Certifications;

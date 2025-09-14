@@ -112,32 +112,33 @@ const TakeAssessment = () => {
 
 
   return (
-    <div className="flex h-screen justify-center items-center">
-      {ready ? (
-        <div className="">
-          <QuestionCard 
-            current={current}
-            currentIndex={currentQuestionIndex}
-            totalQuestions={questions?.length}
-            answers={answers}
-            handleMCQInput={handleMCQInput}
-            handleFIBInput={handleFIBInput}
-            handleTFInput={handleTFInput}
-            handleNext={handleNext}
-            handlePrev={handlePrev}
-            onSubmit={submitAsssessment}
-          />
+  <div className="flex h-screen w-full justify-center items-center bg-slate-50 px-4">
+    {ready ? (
+      <div className="w-full max-w-3xl">
+        <QuestionCard
+          current={current}
+          currentIndex={currentQuestionIndex}
+          totalQuestions={questions?.length}
+          answers={answers}
+          handleMCQInput={handleMCQInput}
+          handleFIBInput={handleFIBInput}
+          handleTFInput={handleTFInput}
+          handleNext={handleNext}
+          handlePrev={handlePrev}
+          onSubmit={submitAsssessment}
+        />
       </div>
-      ) : (
-        <div className="flex justify-center items-center flex-col">
-          <span className="block text-3xl ">Just a sec. We're loading your questions...</span>
-          <LoaderCircle className="animate-spin w-28 h-40 text-blue-600"/>
-          
-        </div>
-      )}
-      
-    </div>
-  );
+    ) : (
+      <div className="flex flex-col items-center text-center space-y-6">
+        <span className="block text-lg sm:text-2xl md:text-3xl font-medium text-gray-700">
+          Just a sec. We're loading your questions...
+        </span>
+        <LoaderCircle className="animate-spin w-16 h-16 sm:w-24 sm:h-24 text-blue-600" />
+      </div>
+    )}
+  </div>
+);
+
 }
 
 export default TakeAssessment;

@@ -16,6 +16,7 @@ export const Profile = () => {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [preview, setPreview] = useState<string | ArrayBuffer | null>(null);
   const profilePictureInputRef = useRef<HTMLInputElement | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
     if(isRateLimited){
@@ -36,6 +37,8 @@ export const Profile = () => {
         }else{
           console.error(err);
         }
+      }finally {
+        setLoadingProfile(false);
       }
     };
     fetchProfile();
@@ -79,52 +82,88 @@ export const Profile = () => {
   };
 
   return (
-    <main className="bg-slate-100 h-full">
-    <div className="px-6 py-10 max-w-3xl mx-auto bg-slate-100">
+  <main className="bg-slate-100 h-full">
+    <div className="px-4 sm:px-6 py-10 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-8">Your Profile</h1>
+
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-          {/* Avatar */}
-          <div className="" onClick={handleProfileIconClick}>
-            <input 
-              type="file" 
-              accept="image/*"
-              className="hidden" 
-              ref={profilePictureInputRef}
-              onChange={handleFileChange}
-            />
-            {profile?.profile_picture ? (
-            <img
-              src={ preview as string || `${BACKEND_URL}${profile?.profile_picture}` || ""}
-              alt="User avatar"
-              className="w-28 h-28 rounded-full object-cover border"
-            />
-          ) : (
-            <div className="w-28 h-28 rounded-full bg-slate-100 flex items-center justify-center border">
-              <UserCircle2 className="text-slate-400 w-16 h-16" />
-            </div>
-          )}
-          </div>
-          
+        {loadingProfile ? (
+          /* Skeleton loader */
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6 animate-pulse">
+            {/* Avatar skeleton */}
+            <div className="w-28 h-28 rounded-full bg-slate-200" />
 
-          {/* User Info */}
-          <div className="flex-1">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold">{profile?.user.full_name}</h2>
-              <button className="inline-flex items-center text-sm text-blue-600 hover:underline">
-                <Pencil className="w-4 h-4 mr-1" />
-                Edit
-              </button>
-            </div>
-
-            <div className="mt-4 space-y-2 text-sm text-gray-700">
-              <p><span className="font-medium">Email:</span> {profile?.user?.email}</p>
-              <p><span className="font-medium">Role:</span> {profile?.user?.account_type === 'S' ? "Student" : "Instructor"}</p>
+            {/* Info skeleton */}
+            <div className="flex-1 space-y-4">
+              <div className="flex justify-between items-center">
+                <div className="h-6 w-40 bg-slate-200 rounded" />
+                <div className="h-4 w-12 bg-slate-200 rounded" />
+              </div>
+              <div className="space-y-2">
+                <div className="h-4 w-56 bg-slate-200 rounded" />
+                <div className="h-4 w-32 bg-slate-200 rounded" />
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          /* Actual profile content */
+          <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+            {/* Avatar */}
+            <div onClick={handleProfileIconClick}>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={profilePictureInputRef}
+                onChange={handleFileChange}
+              />
+              {profile?.profile_picture ? (
+                <img
+                  src={
+                    (preview as string) ||
+                    `${BACKEND_URL}${profile?.profile_picture}` ||
+                    ""
+                  }
+                  alt="User avatar"
+                  className="w-28 h-28 rounded-full object-cover border"
+                />
+              ) : (
+                <div className="w-28 h-28 rounded-full bg-slate-100 flex items-center justify-center border">
+                  <UserCircle2 className="text-slate-400 w-16 h-16" />
+                </div>
+              )}
+            </div>
+
+            {/* User Info */}
+            <div className="flex-1">
+              <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold">
+                  {profile?.user.full_name}
+                </h2>
+                <button className="inline-flex items-center text-sm text-blue-600 hover:underline">
+                  <Pencil className="w-4 h-4 mr-1" />
+                  Edit
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-2 text-sm text-gray-700">
+                <p>
+                  <span className="font-medium">Email:</span>{" "}
+                  {profile?.user?.email}
+                </p>
+                <p>
+                  <span className="font-medium">Role:</span>{" "}
+                  {profile?.user?.account_type === "S"
+                    ? "Student"
+                    : "Instructor"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-    </main>
-  );
+  </main>
+)
+
 };

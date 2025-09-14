@@ -5,12 +5,14 @@ import api from "../utils/axios";
 import type { Lesson } from "../types/Course";
 import { useRateLimit } from "../contexts/RateLimitContext";
 import toast from "react-hot-toast";
+import { X, Menu } from "lucide-react"; 
 
 
 export default function CoursePlayer() {
   const { isRateLimited, cooldown } = useRateLimit();
   console.log(isRateLimited, cooldown);
   const { courseSlug, lessonId } = useParams();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { course, refetchCourse } = useCourse(courseSlug || '');
   const navigate = useNavigate();
   const prevLessonId = useRef<string | undefined>(undefined);
@@ -33,6 +35,7 @@ export default function CoursePlayer() {
     if(!selectedLesson.is_unlocked) return;
     setCurrentLessonIndex(selectedLessonIndex);
     navigate(`/courses/${courseSlug}/lessons/${lessonId}`);
+    setMobileSidebarOpen(false);
     return;
   };
 
@@ -128,8 +131,64 @@ export default function CoursePlayer() {
 
   return (
     <div className="flex h-screen font-sans">
-      {/* Sidebar */}
-      <div className="w-72 border-r bg-slate-50 overflow-y-auto p-4">
+      {/* Mobile Sidebar (Drawer) */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Overlay */}
+          <div
+            className="flex-1 bg-black/40"
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          {/* Drawer */}
+          <aside className="w-72 bg-slate-50 border-r p-4 overflow-y-auto relative">
+            <button
+              onClick={() => setMobileSidebarOpen(false)}
+              className="absolute top-3 right-3 text-gray-600 hover:text-black"
+            >
+              <X size={20} />
+            </button>
+
+            <button
+              onClick={() => navigate("/dashboard/")}
+              className="cursor-pointer mb-4 text-blue-600 text-sm hover:underline"
+            >
+              ← Back to Dashboard
+            </button>
+
+            <h2 className="font-bold text-lg mb-2">{course?.title}</h2>
+
+            {course?.modules.map((module) => (
+              <div key={module.id} className="mb-4">
+                <h3 className="font-semibold text-sm mb-1">{module?.title}</h3>
+                <ul className="ml-2 space-y-1">
+                  {module?.lessons.map((lesson) => (
+                    <li
+                      key={lesson.id}
+                      onClick={() =>
+                        lesson?.is_unlocked ? handleLessonSelect(lesson.id) : null
+                      }
+                      className={`cursor-pointer px-2 py-1 rounded text-sm transition ${
+                        currentLesson?.id === lesson.id
+                          ? "bg-blue-100 text-blue-700"
+                          : "hover:bg-slate-100"
+                      } ${
+                        lesson?.is_unlocked
+                          ? ""
+                          : "text-gray-400 !cursor-not-allowed hover:!bg-slate-50"
+                      }`}
+                    >
+                      {lesson?.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:block w-72 border-r bg-slate-50 overflow-y-auto p-4">
         <button
           onClick={() => navigate("/dashboard/")}
           className="cursor-pointer mb-4 text-blue-600 text-sm hover:underline"
@@ -138,15 +197,18 @@ export default function CoursePlayer() {
         </button>
 
         <h2 className="font-bold text-lg mb-2">{course?.title}</h2>
+
         {course?.modules.map((module) => (
           <div key={module.id} className="mb-4">
             <h3 className="font-semibold text-sm mb-1">{module?.title}</h3>
-            <ul className="ml-2">
+            <ul className="ml-2 space-y-1">
               {module?.lessons.map((lesson) => (
                 <li
                   key={lesson.id}
-                  onClick={() => handleLessonSelect(lesson.id)}
-                  className={`cursor-pointer px-2 py-1 rounded text-sm ${
+                  onClick={() =>
+                    lesson?.is_unlocked ? handleLessonSelect(lesson.id) : null
+                  }
+                  className={`cursor-pointer px-2 py-1 rounded text-sm transition ${
                     currentLesson?.id === lesson.id
                       ? "bg-blue-100 text-blue-700"
                       : "hover:bg-slate-100"
@@ -162,61 +224,83 @@ export default function CoursePlayer() {
             </ul>
           </div>
         ))}
-      </div>
+      </aside>
 
       {/* Main Content */}
-      <div ref={lessonBody} className="flex-1 p-6 overflow-y-auto">
+      <main
+        ref={lessonBody}
+        className="flex-1 flex flex-col p-4 md:p-6 overflow-y-auto"
+      >
+        {/* Mobile Nav Button */}
+        <div className="md:hidden mb-4">
+          <button
+            onClick={() => setMobileSidebarOpen(true)}
+            className="flex items-center gap-2 text-sm text-blue-600"
+          >
+            <Menu size={18} /> Lessons
+          </button>
+        </div>
+
+        {/* Lesson Title */}
         <h1 className="text-xl font-bold mb-4">{currentLesson?.title}</h1>
 
+        {/* Video or Content */}
         {currentLesson?.type === "VIDEO" ? (
-          <VideoPlayer 
-            lessonId={lessonId}
-            videoUrl={lessonContent?.video_file}
-          />
+          <div className="w-full max-w-4xl aspect-video mb-6">
+            <VideoPlayer
+              lessonId={lessonId}
+              videoUrl={lessonContent?.video_file}
+            />
+          </div>
         ) : (
           <div
             className="prose max-w-3xl mb-6"
-            dangerouslySetInnerHTML={{ __html: lessonContent?.content || '' }}
+            dangerouslySetInnerHTML={{
+              __html: lessonContent?.content || "",
+            }}
           />
         )}
 
-        <div className="flex gap-4">
+        {/* Navigation Buttons */}
+        <div className="flex flex-wrap gap-3 mt-auto">
           <button
             onClick={goToPrevious}
-            disabled={currentLessonIndex == 0}
+            disabled={currentLessonIndex === 0}
             className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
+
           {currentLesson?.has_assessment ? (
             <button
               onClick={goToNext}
-              className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+              className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
             >
               Proceed to Test
             </button>
-          ) : currentLessonIndex == allLessons.length - 1 
-            ? (
-              <button
-                onClick={handleFinishCourse} // Take course assessment
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-              >
+          ) : currentLessonIndex === allLessons.length - 1 ? (
+            <button
+              onClick={handleFinishCourse}
+              className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
               Finish Course
-              </button>
-            ) : (
-              <button
-                onClick={goToNext}
-                disabled={currentLessonIndex == allLessons.length-1 }
-                className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            )}
+            </button>
+          ) : (
+            <button
+              onClick={goToNext}
+              disabled={currentLessonIndex === allLessons.length - 1}
+              className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
+
+
 
 const VideoPlayer = ({lessonId, videoUrl}: {lessonId: string | undefined, videoUrl: string | undefined}) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -264,12 +348,17 @@ const VideoPlayer = ({lessonId, videoUrl}: {lessonId: string | undefined, videoU
   }, [lessonId])
 
   return (
+  <div className="w-full max-w-4xl mx-auto mb-6">
     <video
       ref={videoRef}
       controls
-      className="w-full max-w-4xl mb-6 rounded-lg shadow"
+      className="w-full aspect-video rounded-lg shadow-lg bg-black"
       src={videoUrl}
-    />
-  )
+    >
+      Sorry, your browser does not support embedded videos.
+    </video>
+  </div>
+);
+
 
 }

@@ -105,84 +105,110 @@ const Tests = () => {
   }, [])
 
   return (
-    <main className="bg-slate-100 h-full px-6 py-10 flex flex-col gap-y-4">
-      <div className="flex flex-col bg-white p-4 rounded-lg">
-        <h2 className="text-xl font-bold">Available Tests</h2>
-          {tests
-            ? tests.length > 0
-              ? <div className="flex flex-wrap mt-4 gap-3">
-                  {tests.map((test, idx) => (
-                    <span 
-                    key={idx}
-                    onClick={() => navigate(`/dashboard/tests/${test.category.id}/`)}
-                    className="bg-blue-200 rounded-full p-2 cursor-pointer hover:bg-blue-300">{test.category.title}</span>
-                  ))}
-                </div>
-              : (
-                <div className="my-2 text-center">Whoops, there are no tests available at the moment 😞</div>
-            ) : (
-              <div className="flex flex-wrap mt-4 gap-3 animate-pulse">
-                <span className="bg-slate-100 rounded-full p-2 w-25 h-8"></span>
-                <span className="bg-slate-100 rounded-full p-2 w-25 h-8"></span>
-                <span className="bg-slate-100 rounded-full p-2 w-25 h-8"></span>
-                <span className="bg-slate-100 rounded-full p-2 w-25 h-8"></span>
-                <span className="bg-slate-100 rounded-full p-2 w-25 h-8"></span>
-              </div>
-            )}
-        
-      </div>
-      <div className="flex flex-col bg-white p-4 rounded-lg">
-        <h2 className="text-xl font-bold">My Tests</h2>
-        {testSessions 
-          ? testSessions?.length > 0 
-            ? (
-              <div className="grid grid-cols-1 gap-4 mt-4">
-                {testSessions.map((testSession) => (
-                  <div className="bg-slate-100 p-2.5 rounded-lg flex justify-between items-center">
-                    <div className="flex w-full gap-x-7">
-                      <div className="w-[25%]">
-                        <p className="font-bold text-lg">{testSession?.test_assessment?.category?.title}</p>
-                      </div>
-                      <div className="w-[15%]">
-                        <p>Status: {formatStatus(testSession.status)}</p>
-                      </div>
-                      <div className="w-[15%]">
-                        <p>Score: {testSession.score}%</p>
-                      </div>
-                      <div className='w-[40%]'>
-                        {testSession.submitted_at ? (
-                          <p>Date: {formatDate(testSession.submitted_at)}</p>
-                        ) : (
-                          <div className="flex w-full justify-between items-center h-full">
-                            <p>N/A</p>
-                            {!testSession.is_expired && (
-                              <div className="">
-                                <button 
-                                onClick={() => handleTestResume(testSession.id)}
-                                className="bg-blue-400 px-2 py-1.5 rounded-lg text-white cursor-pointer">Resume Test</button>
-                              </div>
-                              )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+  <main className="bg-slate-100 h-full px-4 sm:px-6 py-6 sm:py-10 flex flex-col gap-y-4">
+    
+    {/* Available Tests */}
+    <div className="flex flex-col bg-white p-4 rounded-lg">
+      <h2 className="text-lg sm:text-xl font-bold">Available Tests</h2>
+      {tests ? (
+        tests.length > 0 ? (
+          <div className="flex flex-wrap mt-4 gap-3">
+            {tests.map((test, idx) => (
+              <span
+                key={idx}
+                onClick={() => navigate(`/dashboard/tests/${test.category.id}/`)}
+                className="bg-blue-200 rounded-full px-4 py-2 min-w-[100px] text-center cursor-pointer hover:bg-blue-300 transition"
+              >
+                {test.category.title}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="my-2 text-center">
+            Whoops, there are no tests available at the moment 😞
+          </div>
+        )
+      ) : (
+        <div className="flex flex-wrap mt-4 gap-3 animate-pulse">
+          {Array(5)
+            .fill(null)
+            .map((_, idx) => (
+              <span
+                key={idx}
+                className="bg-slate-100 rounded-full w-28 h-8"
+              ></span>
+            ))}
+        </div>
+      )}
+    </div>
+
+    {/* My Tests */}
+    <div className="flex flex-col bg-white p-4 rounded-lg">
+      <h2 className="text-lg sm:text-xl font-bold">My Tests</h2>
+      {testSessions ? (
+        testSessions.length > 0 ? (
+          <div className="grid grid-cols-1 gap-4 mt-4">
+            {testSessions.map((testSession) => (
+              <div
+                key={testSession.id}
+                className="bg-slate-100 p-2.5 rounded-lg grid grid-cols-1 md:grid-cols-[1fr_0.5fr_0.5fr_1fr] gap-y-2 md:gap-y-0 items-center"
+              >
+                {/* Category */}
+                <p className="font-bold text-lg">
+                  {testSession?.test_assessment?.category?.title}
+                </p>
+
+                {/* Status */}
+                <p className="text-sm sm:text-base">
+                  Status: {formatStatus(testSession.status)}
+                </p>
+
+                {/* Score */}
+                <p className="text-sm sm:text-base">
+                  Score: {testSession.score}%
+                </p>
+
+                {/* Date / Actions */}
+                {testSession.submitted_at ? (
+                  <p className="text-sm sm:text-base">
+                    Date: {formatDate(testSession.submitted_at)}
+                  </p>
+                ) : (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <p className="text-sm sm:text-base">N/A</p>
+                    {!testSession.is_expired && (
+                      <button
+                        onClick={() => handleTestResume(testSession.id)}
+                        className="bg-blue-400 px-3 py-1.5 rounded-lg text-white hover:bg-blue-500 transition w-auto sm:w-auto md:ms-auto cursor-pointer"
+                      >
+                        Resume Test
+                      </button>
+                    )}
                   </div>
-                ))}
+                )}
               </div>
-            ) : (
-              <p className="text-center p-10">You have not taken any test yet.</p>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 mt-4 animate-pulse">
-                <div className="bg-slate-100 h-20 p-2.5 rounded-lg flex justify-between items-center"></div>
-                <div className="bg-slate-100 h-20 p-2.5 rounded-lg flex justify-between items-center"></div>
-                <div className="bg-slate-100 h-20 p-2.5 rounded-lg flex justify-between items-center"></div>
-                <div className="bg-slate-100 h-20 p-2.5 rounded-lg flex justify-between items-center"></div>
-                <div className="bg-slate-100 h-20 p-2.5 rounded-lg flex justify-between items-center"></div>
-              </div>
-            )}        
-      </div>
-    </main>
-  )
+            ))}
+          </div>
+        ) : (
+          <p className="text-center p-10">You have not taken any test yet.</p>
+        )
+      ) : (
+        <div className="grid grid-cols-1 gap-4 mt-4 animate-pulse">
+          {Array(5)
+            .fill(null)
+            .map((_, idx) => (
+              <div
+                key={idx}
+                className="bg-slate-100 h-24 sm:h-20 p-2.5 rounded-lg grid grid-cols-1 md:grid-cols-[1fr_0.5fr_0.5fr_1fr]"
+              ></div>
+            ))}
+        </div>
+      )}
+    </div>
+  </main>
+)
+
+
 }
 
 export default Tests;

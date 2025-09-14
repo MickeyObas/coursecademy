@@ -87,85 +87,89 @@ export default function QuestionCard({
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-2xl shadow-md select-none flex flex-col justify-between">
+  <div className="w-full bg-white rounded-2xl shadow-md border border-slate-200 p-6 sm:p-8 flex flex-col justify-between select-none">
+    {/* Header */}
+    <div>
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+        Question {currentIndex + 1} of {totalQuestions}
+      </h2>
+
+      {/* Question Renderer */}
       <div>
-        <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Question {currentIndex+1} of {totalQuestions}
-          </h2>
-        </div>
+        {current?.type === "FIB" && (
+          <FIBQuestion
+            current={current}
+            handleFIBInput={handleFIBInput}
+            answers={answers}
+          />
+        )}
 
-        <div>
-          {current?.type === 'FIB' && (
-            <FIBQuestion 
-              current={current}
-              handleFIBInput={handleFIBInput}
-              answers={answers}
-            />
-          )}
+        {current?.type === "MCQ" && (
+          <MCQQuestion
+            current={current}
+            handleMCQInput={handleMCQInput}
+            answers={answers}
+          />
+        )}
 
-          {current?.type === 'MCQ' && (
-            <MCQQuestion 
-              current={current}
-              handleMCQInput={handleMCQInput}
-              answers={answers}
-            />
-          )}
-
-          {current?.type === 'TF' && (
-            <TFQuestion 
-              current={current}
-              handleTFInput={handleTFInput}
-              answers={answers}
-            />
-          )}
-        </div>
+        {current?.type === "TF" && (
+          <TFQuestion
+            current={current}
+            handleTFInput={handleTFInput}
+            answers={answers}
+          />
+        )}
       </div>
+    </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex gap-x-4 justify-between items-center mt-8">
-        <button
-          onClick={handlePrev}
-          disabled={currentIndex === 0}
-          className={`cursor-pointer px-4 py-2 rounded-lg text-white ${
-            currentIndex === 0
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-gray-600 hover:bg-gray-700'
-          }`}
-        >
-          Previous
-        </button>
-        <div className="flex gap-x-3">
-          {/* NOTE: Only for test assessments tbh, removing later  */}
-          {assessmentType === "test" && (
-            <button
-              onClick={handleAnswerSave}
-              className="cursor-pointer px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
-            >
-            {`${current.id in answers ? 'Saved' : 'Save Answer'}`}
+    {/* Navigation */}
+    <div className="flex flex-col sm:flex-row gap-4 justify-between items-center mt-8">
+      {/* Previous */}
+      <button
+        onClick={handlePrev}
+        disabled={currentIndex === 0}
+        className={`w-full sm:w-auto px-4 py-2 rounded-lg text-white transition ${
+          currentIndex === 0
+            ? "bg-gray-300 cursor-not-allowed"
+            : "bg-gray-600 hover:bg-gray-700"
+        }`}
+      >
+        Previous
+      </button>
+
+      {/* Right-side actions */}
+      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+        {/* Save (only for test assessments) */}
+        {assessmentType === "test" && (
+          <button
+            onClick={handleAnswerSave}
+            className="w-full sm:w-auto px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+          >
+            {`${current.id in answers ? "Saved" : "Save Answer"}`}
           </button>
-          )}
-          
-          {currentIndex === totalQuestions - 1 ? (
-            <button
+        )}
+
+        {/* Next / Finish */}
+        {currentIndex === totalQuestions - 1 ? (
+          <button
             onClick={onSubmit}
-            className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Finish
           </button>
-          ) : (
-            <button
+        ) : (
+          <button
             onClick={handleNext}
-            className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Next
           </button>
-          )}
-        </div>
-        
+        )}
       </div>
     </div>
-  );
+  </div>
+);
+
 }
 
 const FIBQuestion = ({current, handleFIBInput, answers}: FIBQuestionProps) => {
@@ -175,7 +179,7 @@ const FIBQuestion = ({current, handleFIBInput, answers}: FIBQuestionProps) => {
     "";
 
   return (
-    <p className="tmt-2 text-gray-700">
+    <p className="mt-2 text-gray-700">
       {parts[0]}
       <input
         type="text"
