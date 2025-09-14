@@ -16,7 +16,7 @@ const DashboardLayout = () => {
   }, [pathname])
   
   return (
-  <div className="flex flex-col min-h-screen">
+  <div className="flex flex-col h-dvh">
     <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
     <div className="flex flex-1 overflow-hidden">
@@ -29,7 +29,7 @@ const DashboardLayout = () => {
       {/* Main content */}
       <main
         ref={mainRef}
-        className="flex-1 mt-[74px] h-[calc(100vh-74px)] overflow-y-scroll bg-slate-100"
+        className="flex-1 mt-[74px] h-[calc(100dvh-74px)] overflow-y-auto bg-slate-100"
       >
         <Outlet />
       </main>

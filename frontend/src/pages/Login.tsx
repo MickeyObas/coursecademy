@@ -10,7 +10,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  // const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
 
@@ -96,19 +96,19 @@ const Login: React.FC = () => {
           <div className="relative">
             <input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border rounded px-3 py-2 pr-16 text-base focus:outline-none focus:ring focus:ring-blue-500"
+              className="w-full border rounded px-3 py-2 text-base focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
-            <button
+            {/* <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-2 top-2 text-xs sm:text-sm text-gray-600"
             >
-              {showPassword ? 'Hide' : 'Show'}
-            </button>
+              {showPassword ? 'Hide' : 'Show'} 
+            </button> */}
           </div>
         </div>
 
