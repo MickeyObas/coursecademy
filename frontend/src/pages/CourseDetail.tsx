@@ -73,9 +73,9 @@ const CourseDetail = () => {
             <h1 className="text-3xl font-bold">{course.title}</h1>
             <p className="text-gray-600">Category: {course.category.title}</p>
             <div className="flex items-center gap-4 text-sm">
-              <span>🎓 Enrolled: {course.enrollment_count}</span>
-              <span>⭐ Rating: {course.average_rating} ({course.rating_count} reviews)</span>
-              <span>💵 Price: ₦{course.price}</span>
+              <span>Enrolled: {course.enrollment_count}</span>
+              <span>Rating: {course.average_rating} ({course.rating_count} reviews)</span>
+              <span>Price: ₦{course.price}</span>
             </div>
             <div>
               {
@@ -147,7 +147,7 @@ const CourseDetail = () => {
 
         {/* Instructor */}
         <div className="mt-8 text-sm text-gray-600">
-          Instructor: {course.instructor ? course.instructor.email : "Not yet assigned"}
+          Instructor: {course.instructor ? course.instructor.full_name : "Not yet assigned"}
         </div>
       </div>
     </div>

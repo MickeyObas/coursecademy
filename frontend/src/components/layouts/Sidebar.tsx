@@ -49,23 +49,23 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     >
       {/* Nav links */}
       <div className="flex flex-col py-7 px-5 gap-y-5">
-        <NavLink to="/dashboard" end className={linkClasses}>
+        <NavLink onClick={() => onClose()} to="/dashboard" end className={linkClasses}>
           <LayoutDashboardIcon />
           <span>Dashboard</span>
         </NavLink>
-        <NavLink to="/dashboard/courses" className={linkClasses}>
+        <NavLink onClick={() => onClose()} to="/dashboard/courses" className={linkClasses}>
           <Book />
           <span>Courses</span>
         </NavLink>
-        <NavLink to="/dashboard/tests" className={linkClasses}>
+        <NavLink onClick={() => onClose()} to="/dashboard/tests" className={linkClasses}>
           <Pencil />
           <span>Tests</span>
         </NavLink>
-        <NavLink to="/dashboard/certifications" className={linkClasses}>
+        <NavLink onClick={() => onClose()} to="/dashboard/certifications" className={linkClasses}>
           <Scroll />
           <span>Certifications</span>
         </NavLink>
-        <NavLink to="/dashboard/profile" className={linkClasses}>
+        <NavLink onClick={() => onClose()} to="/dashboard/profile" className={linkClasses}>
           <User />
           <span>Profile</span>
         </NavLink>
@@ -73,7 +73,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
       {/* Bottom links */}
       <div className="flex flex-col pt-10 pb-12 px-5 gap-y-5 mt-auto border-t border-t-slate-200">
-        <NavLink to="/dashboard/settings" className={linkClasses}>
+        <NavLink onClick={() => onClose()} to="/dashboard/settings" className={linkClasses}>
           <Settings />
           <span>Settings</span>
         </NavLink>

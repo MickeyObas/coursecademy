@@ -192,7 +192,7 @@ const Dashboard = () => {
               <div className="bg-orange-300 flex items-center justify-center w-10 h-10 rounded-full">
                 <ClipboardCheck color="#f1f5f9" />
               </div>
-              <div>
+              <div className="w-14 h-14">
                 <CircularProgressbar
                 value={
                   (courseProgressSummary.lessons.completed /
@@ -205,7 +205,7 @@ const Dashboard = () => {
                     100
                 ) || 0}%`}
                 strokeWidth={18}
-                className="h-14 !block"
+                className="w-full h-full !block"
                 styles={buildStyles({
                   textColor: "black",
                   pathColor: "oklch(83.7% 0.128 66.29)",
@@ -234,7 +234,7 @@ const Dashboard = () => {
               <div className="bg-orange-300 flex items-center justify-center w-10 h-10 rounded-full">
                 <ClipboardCheck color="#f1f5f9" />
               </div>
-              <div>
+              <div className="w-14 h-14">
                 <CircularProgressbar
                   value={
                     (courseProgressSummary.modules.completed /
@@ -247,7 +247,7 @@ const Dashboard = () => {
                       100
                   ) || 0}%`}
                   strokeWidth={18}
-                  className="h-14 !block"
+                  className="w-full h-full !block"
                   styles={buildStyles({
                     textColor: "black",
                     pathColor: "oklch(0.8085 0.0691 17.717)",
@@ -276,7 +276,7 @@ const Dashboard = () => {
               <div className="bg-orange-300 flex items-center justify-center w-10 h-10 rounded-full">
                 <ClipboardCheck color="#f1f5f9" />
               </div>
-              <div>
+              <div className="w-14 h-14">
                 <CircularProgressbar
                   value={
                     (courseProgressSummary.courses.completed /
@@ -289,7 +289,7 @@ const Dashboard = () => {
                       100
                   ) || 0}%`}
                   strokeWidth={18}
-                  className="h-14 !block"
+                  className="w-full h-h-full !block"
                   styles={buildStyles({
                     textColor: "black",
                     pathColor: "oklch(0.8761 0.1061 156.743)",
@@ -426,7 +426,9 @@ const Dashboard = () => {
                       </p>
                     </>
                   ) : (
-                    <p></p>
+                    <>
+                      <p>You haven't completed any course yet.</p>
+                    </>
                   )}
                 </td>
               )
