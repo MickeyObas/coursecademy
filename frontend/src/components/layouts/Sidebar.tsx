@@ -40,7 +40,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     <div
       className={`overflow-y-auto
         fixed top-[70px] sm:static sm:top-[74px] sm:mt-[74px] left-0 
-        w-[240px] sm:w-[270px] h-[calc(100vh-70px)] sm:h-[calc(100dvh-74px)]
+        w-[240px] sm:w-[270px] h-[calc(100dvh-70px)] sm:h-[calc(100dvh-74px)]
         bg-white border-r border-slate-200
         flex flex-col select-none
         z-20 transform transition-transform duration-200
