@@ -20,7 +20,7 @@ export default function InstructorDashboardLayout() {
   }
 
   return (
-  <div className="flex h-screen bg-gray-100">
+  <div className="flex h-dvh md:h-screen bg-gray-100">
     {/* Sidebar (desktop & mobile overlay) */}
     <div
       className={`fixed inset-y-0 left-0 z-40 transform bg-white shadow-md transition-transform duration-300 

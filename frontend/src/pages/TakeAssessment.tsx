@@ -112,7 +112,7 @@ const TakeAssessment = () => {
 
 
   return (
-  <div className="flex h-screen w-full justify-center items-center bg-slate-50 px-4">
+  <div className="flex h-dvh md:h-screen w-full justify-center items-center bg-slate-50 px-4">
     {ready ? (
       <div className="w-full max-w-3xl">
         <QuestionCard

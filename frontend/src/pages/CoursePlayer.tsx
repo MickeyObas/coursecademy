@@ -130,7 +130,7 @@ export default function CoursePlayer() {
 }
 
   return (
-    <div className="flex h-screen font-sans">
+    <div className="flex h-dvh font-sans">
       {/* Mobile Sidebar (Drawer) */}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 flex">

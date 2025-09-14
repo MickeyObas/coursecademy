@@ -35,7 +35,7 @@ const Settings = () => {
   }, [])
 
   return (
-  <main className="bg-slate-100 min-h-screen">
+  <main className="bg-slate-100 h-dvh md:min-h-screen">
     <div className="px-4 sm:px-6 lg:px-8 py-10 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-8">Settings</h1>
 
