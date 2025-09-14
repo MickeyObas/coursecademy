@@ -60,7 +60,7 @@ const Login: React.FC = () => {
   };
 
   return (
-  <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+  <div className="h-dvh flex items-center justify-center bg-gray-100 p-4">
     <div className="w-full max-w-md sm:max-w-lg bg-white rounded-xl shadow-md p-6 sm:p-8">
       <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-center mb-6">
         Login to Your Account

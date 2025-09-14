@@ -47,7 +47,7 @@ const EnterCode: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+    <div className="h-dvh flex items-center justify-center bg-gray-100 p-4">
       <div className="max-w-md w-full bg-white rounded-xl shadow-md p-8">
         <h2 className="text-2xl font-semibold text-center mb-6">Enter Verification Code</h2>
         <p className="text-sm text-gray-600 text-center mb-4">

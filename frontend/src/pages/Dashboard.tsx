@@ -205,7 +205,7 @@ const Dashboard = () => {
                     100
                 ) || 0}%`}
                 strokeWidth={18}
-                className="h-14"
+                className="h-14 !block"
                 styles={buildStyles({
                   textColor: "black",
                   pathColor: "oklch(83.7% 0.128 66.29)",
@@ -247,7 +247,7 @@ const Dashboard = () => {
                       100
                   ) || 0}%`}
                   strokeWidth={18}
-                  className="h-14"
+                  className="h-14 !block"
                   styles={buildStyles({
                     textColor: "black",
                     pathColor: "oklch(0.8085 0.0691 17.717)",
@@ -289,7 +289,7 @@ const Dashboard = () => {
                       100
                   ) || 0}%`}
                   strokeWidth={18}
-                  className="h-14"
+                  className="h-14 !block"
                   styles={buildStyles({
                     textColor: "black",
                     pathColor: "oklch(0.8761 0.1061 156.743)",
