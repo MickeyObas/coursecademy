@@ -32,6 +32,7 @@ export default function InstructorDashboardLayout() {
       <div className="px-4 py-3.5 font-bold text-lg border-b whitespace-nowrap overflow-hidden">
         🫠
         <span
+          onClick={() => navigate('/idashboard/')}
           className={`ml-2 inline-block transition-all duration-300 ${
             isSidebarOpen ? "opacity-100 w-auto" : "opacity-0 w-0"
           }`}
@@ -43,6 +44,7 @@ export default function InstructorDashboardLayout() {
       {/* Nav Links */}
       <nav className="flex-1 p-2 space-y-2">
         <NavLink
+          // onClick={() => setIsSidebarOpen(false)}
           to="/idashboard/courses"
           className="flex items-center gap-2 p-2 rounded hover:bg-gray-200"
         >
@@ -57,6 +59,7 @@ export default function InstructorDashboardLayout() {
         </NavLink>
 
         <NavLink
+          // onClick={() => setIsSidebarOpen(false)}
           to="/idashboard/module-lesson-builder"
           className="flex items-center gap-2 p-2 rounded hover:bg-gray-200"
         >
@@ -71,6 +74,7 @@ export default function InstructorDashboardLayout() {
         </NavLink>
 
         <NavLink
+          // onClick={() => setIsSidebarOpen(false)}
           to="/idashboard/assessment-builder"
           className="flex items-center gap-2 p-2 rounded hover:bg-gray-200"
         >
@@ -125,16 +129,17 @@ export default function InstructorDashboardLayout() {
         <div className="flex items-center gap-3">
           {/* Mobile sidebar toggle */}
           <button
-            className="lg:hidden p-2 rounded bg-gray-200 hover:bg-gray-300"
+            className="lg:hidden p-2 rounded bg-gray-200 hover:bg-gray-300 cursor-pointer"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
           >
             ☰
           </button>
-          <span className="font-medium hidden sm:inline">Hi, {user?.full_name.split(" ")[0]}</span>
+          <span className="font-medium hidden sm:inline">Hi, {user?.full_name.split(" ")[0]}</span>          
           <img
+            onClick={() => navigate('/idashboard/')}
             src={`https://ui-avatars.com/api/?name=${user?.full_name.split(" ")[0]}`}
             alt="avatar"
-            className="w-8 h-8 rounded-full"
+            className="w-8 h-8 rounded-full cursor-pointer"
           />
         </div>
       </header>

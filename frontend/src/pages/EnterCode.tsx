@@ -65,7 +65,7 @@ const EnterCode: React.FC = () => {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               maxLength={6}
-              className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500 text-center tracking-widest"
+              className="text-base w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-blue-500 text-center tracking-widest"
               required
             />
           </div>

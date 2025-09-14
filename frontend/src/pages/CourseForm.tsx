@@ -135,7 +135,7 @@ export default function CourseForm({ onCourseSave }: CourseFormProps) {
               placeholder="New Course Title"
               value={course.title}
               onChange={handleChange}
-              className="w-full border rounded-lg p-2"
+              className="text-base w-full border rounded-lg p-2"
             />
           </div>
           
@@ -178,7 +178,7 @@ export default function CourseForm({ onCourseSave }: CourseFormProps) {
               placeholder="Price"
               value={course.price}
               onChange={handleChange}
-              className="w-full border rounded-lg p-2"
+              className="text-base w-full border rounded-lg p-2"
             />
           </div>
           <div>
@@ -189,7 +189,7 @@ export default function CourseForm({ onCourseSave }: CourseFormProps) {
               placeholder="e.g API,Python,Django,Public Speaking,Databases"
               value={course.tags}
               onChange={handleChange}
-              className="w-full border rounded-lg p-2"
+              className="text-base w-full border rounded-lg p-2"
             />
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function CourseForm({ onCourseSave }: CourseFormProps) {
               placeholder={`Skill ${i + 1}`}
               value={skill}
               onChange={(e) => handleArrayChange(e, "skillsInput", i)}
-              className="w-full border rounded-lg p-2 mb-2"
+              className="text-base w-full border rounded-lg p-2 mb-2"
             />
           ))}
           <button
@@ -224,7 +224,7 @@ export default function CourseForm({ onCourseSave }: CourseFormProps) {
               placeholder={`Learning Point ${i + 1}`}
               value={point}
               onChange={(e) => handleArrayChange(e, "learningPointsInput", i)}
-              className="w-full border rounded-lg p-2 mb-2"
+              className="text-base w-full border rounded-lg p-2 mb-2"
             />
           ))}
           <button

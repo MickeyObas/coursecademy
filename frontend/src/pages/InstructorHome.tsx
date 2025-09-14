@@ -1,10 +1,38 @@
+import { useEffect, useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import api from "../utils/axios";
+
+
+type InstructorDetails = {
+  courses_created: number,
+  lessons_published: number,
+  assessments_ready: number
+}
+
+
 const InstructorHome = () => {
+  const { user } = useAuth();
+  const [instructorDetails, setInstructorDetails] = useState<InstructorDetails | null>(null);
+
+  useEffect(() => {
+    const fetchInstructorDetails = async () => {
+      try {
+        const response = await api.get(`/api/courses/instructor/me/`);
+        console.log(response.data);
+        setInstructorDetails(response.data);
+      } catch(err){
+        console.log(err);
+      }
+    };
+    fetchInstructorDetails();
+  }, [])
+
   return (
     <div className="max-w-5xl mx-auto p-6">
       {/* Welcome Section */}
       <div className="bg-white rounded-2xl shadow p-6 mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          Welcome back, Instructor!
+          Welcome back, {user?.full_name.split(" ")[0]}!
         </h1>
         <p className="text-gray-600 text-lg">
           This is your central hub for managing courses, lessons, and assessments.
@@ -16,15 +44,15 @@ const InstructorHome = () => {
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
         <div className="bg-blue-50 p-5 rounded-xl shadow-sm text-center">
-          <h2 className="text-2xl font-bold text-blue-700">12</h2>
+          <h2 className="text-2xl font-bold text-blue-700">{instructorDetails?.courses_created}</h2>
           <p className="text-gray-600">Courses Created</p>
         </div>
         <div className="bg-green-50 p-5 rounded-xl shadow-sm text-center">
-          <h2 className="text-2xl font-bold text-green-700">48</h2>
+          <h2 className="text-2xl font-bold text-green-700">{instructorDetails?.lessons_published}</h2>
           <p className="text-gray-600">Lessons Published</p>
         </div>
         <div className="bg-purple-50 p-5 rounded-xl shadow-sm text-center">
-          <h2 className="text-2xl font-bold text-purple-700">8</h2>
+          <h2 className="text-2xl font-bold text-purple-700">{instructorDetails?.assessments_ready}</h2>
           <p className="text-gray-600">Assessments Ready</p>
         </div>
       </div>
@@ -34,7 +62,7 @@ const InstructorHome = () => {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Get Started
         </h2>
-        <ul className="list-disc list-inside space-y-2 text-gray-700">
+        <ul className="list-disc list-inside space-y-6 md:space-y-4 text-gray-700">
           <li>
             <span className="font-medium">Create or update courses:</span>{" "}
             Head to <strong>Manage Courses</strong> to add new courses or edit

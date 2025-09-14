@@ -496,3 +496,16 @@ class NextStepView(APIView):
         )
 
         return Response(data)
+
+
+class InstructorDashboardDetails(APIView):
+    permission_classes = [IsInstructor]
+    def get(self, request):
+        user = request.user
+        data = {
+            "user": user.id,
+            "courses_created": Course.objects.filter(instructor=user).count(),
+            "lessons_published": Lesson.objects.filter(module__course__instructor=user).count(),
+            "assessments_ready": LessonAssessment.objects.filter(lesson__module__course__instructor=user).count(),
+        }
+        return Response(data)

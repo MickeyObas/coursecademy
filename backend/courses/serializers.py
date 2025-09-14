@@ -309,11 +309,9 @@ class CourseSerializer(serializers.ModelSerializer):
     resume_lesson_id = serializers.SerializerMethodField()
     first_lesson_id = serializers.SerializerMethodField()
     is_enrolled = serializers.SerializerMethodField()
-    enrollment_count = serializers.SerializerMethodField(
-        source="course.enrollment_count"
-    )
-    rating_count = serializers.SerializerMethodField(source="course.rating_count")
-    average_rating = serializers.SerializerMethodField(source="course.average_rating")
+    enrollment_count = serializers.IntegerField(read_only=True)
+    rating_count = serializers.IntegerField(read_only=True)
+    average_rating = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Course

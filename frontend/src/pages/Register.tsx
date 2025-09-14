@@ -117,7 +117,7 @@ const Register: React.FC = () => {
             type="email"
             value={email}
             disabled={true}
-            className="w-full border rounded px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring focus:ring-blue-500 bg-slate-100"
+            className="w-full border rounded px-3 py-2 text-base focus:outline-none focus:ring focus:ring-blue-500 bg-slate-100"
             required
           />
           <p className="text-red-600 text-xs sm:text-sm min-h-4">{error.email}</p>
@@ -136,7 +136,7 @@ const Register: React.FC = () => {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full border rounded px-3 py-2 text-sm sm:text-base focus:outline-none focus:ring focus:ring-blue-500"
+            className="w-full border rounded px-3 py-2 text-base focus:outline-none focus:ring focus:ring-blue-500"
             required
           />
           <p className="text-red-600 text-xs sm:text-sm min-h-4">{error.full_name}</p>
@@ -156,7 +156,7 @@ const Register: React.FC = () => {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full border rounded px-3 py-2 pr-16 text-sm sm:text-base focus:outline-none focus:ring focus:ring-blue-500"
+              className="w-full border rounded px-3 py-2 pr-16 text-base focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
           </div>
@@ -177,7 +177,7 @@ const Register: React.FC = () => {
               type={showPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full border rounded px-3 py-2 pr-16 text-sm sm:text-base focus:outline-none focus:ring focus:ring-blue-500"
+              className="w-full border rounded px-3 py-2 pr-16 text-base focus:outline-none focus:ring focus:ring-blue-500"
               required
             />
             <button

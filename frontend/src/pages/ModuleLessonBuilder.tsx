@@ -262,14 +262,14 @@ export default function ModuleLessonBuilder() {
 
         <input
           type="text"
-          className="w-full border rounded-lg p-2"
+          className="text-base w-full border rounded-lg p-2"
           placeholder="Module title"
           value={newModuleTitle}
           onChange={(e) => setNewModuleTitle(e.target.value)}
         />
 
         <textarea
-          className="border resize-none w-full outline-0 p-2"
+          className="text-base border resize-none w-full outline-0 p-2"
           placeholder="Module description"
           value={newModuleDescription}
           onChange={(e) => setNewModuleDescription(e.target.value)}
@@ -342,7 +342,7 @@ export default function ModuleLessonBuilder() {
 
         <input
           type="text"
-          className="w-full border rounded-lg p-2"
+          className="text-base w-full border rounded-lg p-2"
           placeholder="Lesson title"
           value={editingLesson.title}
           onChange={(e) => handleLessonChange("title", e.target.value)}
@@ -379,7 +379,7 @@ export default function ModuleLessonBuilder() {
         ) : (
           <input
             type="text"
-            className="w-full border rounded-lg p-2"
+            className="text-base w-full border rounded-lg p-2"
             placeholder="Video URL"
             value={editingLesson.video_file || ""}
             onChange={(e) => handleLessonChange("video_file", e.target.value)}

@@ -192,77 +192,88 @@ const handleTypeChange = (index: number, newType: QuestionType) => {
 
 
   return (
-    <div className="max-w-3xl mx-auto mt-6 space-y-6">
-      {/* Course Selector */}
-      <div>
-        <p className="mb-1">Select Course</p>
-        <select
-          onChange={handleCourseChange}
-          className="border p-2 rounded"
-          value={selectedCourseId ?? ""}
-        >
-          <option value="">-- Select a course --</option>
-          {courses.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.title}
-            </option>
-          ))}
-        </select>
+  <div className="max-w-3xl mx-auto mt-6 space-y-6 px-4 sm:px-6 lg:px-8">
+    {/* Course Selector */}
+    <div>
+      <p className="mb-1 text-sm sm:text-base font-medium">Select Course</p>
+      <select
+        onChange={handleCourseChange}
+        className="border p-2 rounded w-full sm:w-auto"
+        value={selectedCourseId ?? ""}
+      >
+        <option value="">-- Select a course --</option>
+        {courses.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.title}
+          </option>
+        ))}
+      </select>
 
-        {selectedCourseId && (
-          <div>
-            <select
-              className="border p-2 rounded mt-3"
-              onChange={(e) => setAssessmentType(e.target.value)}
-            >
-              <option value="">Pick an assessment type</option>
-              <option value="lesson">Lesson</option>
-              <option value="course">Course</option>
-            </select>
-          </div>
-        )}
-        
-
-
-      </div>
-
-    {/* Lessons List */}
-      {(selectedCourseId && assessmentType === 'lesson' && !selectedLessonId) && (
-        <div className="space-y-2">
-          <h3 className="font-semibold mt-4">Lessons</h3>
-          {lessons.map((lesson) => (
-            <div key={lesson.id} className="flex items-center justify-between border p-2 rounded">
-              <span>{lesson.title}</span>
-              <button
-                className="cursor-pointer px-3 py-1 bg-blue-600 text-white rounded"
-                onClick={() => handleLessonAssessment(lesson.id, lesson.has_assessment)}
-              >
-                {lesson.has_assessment ? "Edit Assessment" : "Add Assessment"}
-              </button>
-            </div>
-          ))}
+      {selectedCourseId && (
+        <div>
+          <select
+            className="border p-2 rounded mt-3 w-full sm:w-auto"
+            onChange={(e) => setAssessmentType(e.target.value)}
+          >
+            <option value="">Pick an assessment type</option>
+            <option value="lesson">Lesson</option>
+            <option value="course">Course</option>
+          </select>
         </div>
       )}
+    </div>
 
-      {((assessmentType === "lesson" && selectedLessonId) || (assessmentType === "course" && selectedCourseId)) && (
-        <button
-          onClick={addQuestion}
-          className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+    {/* Lessons List */}
+    {selectedCourseId && assessmentType === "lesson" && !selectedLessonId && (
+      <div className="space-y-2">
+        <h3 className="font-semibold mt-4 text-base sm:text-lg">Lessons</h3>
+        {lessons.map((lesson) => (
+          <div
+            key={lesson.id}
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between border p-2 rounded gap-2"
+          >
+            <span className="text-sm sm:text-base">{lesson.title}</span>
+            <button
+              className="cursor-pointer px-3 py-1 bg-blue-600 text-white rounded text-sm sm:text-base hover:bg-blue-700"
+              onClick={() =>
+                handleLessonAssessment(lesson.id, lesson.has_assessment)
+              }
+            >
+              {lesson.has_assessment ? "Edit Assessment" : "Add Assessment"}
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {((assessmentType === "lesson" && selectedLessonId) ||
+      (assessmentType === "course" && selectedCourseId)) && (
+      <button
+        onClick={addQuestion}
+        className="cursor-pointer px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 w-full sm:w-auto"
+      >
+        + Add Question
+      </button>
+    )}
+
+    {((selectedLessonId || selectedCourseId) &&
+      assessmentType) &&
+      questions.map((q, i) => (
+        <div
+          key={i}
+          className="border rounded-lg p-4 bg-gray-50 shadow space-y-2"
         >
-          + Add Question
-        </button>
-      )}
-      
-
-      {((selectedLessonId || selectedCourseId) && assessmentType) && questions.map((q, i) => (
-        <div key={i} className="border rounded-lg p-4 bg-gray-50 shadow">
-          <h3 className="font-semibold mb-2">Question {i + 1}</h3>
+          <h3 className="font-semibold mb-2 text-base sm:text-lg">
+            Question {i + 1}
+          </h3>
 
           <select
             disabled={!!q.id}
             className="border rounded-lg p-2 mb-2 w-full"
             value={q.type}
-            onChange={(e) => handleTypeChange(i, e.target.value as QuestionType)}
+            onChange={(e) =>
+              handleTypeChange(i, e.target.value as QuestionType)
+            }
           >
             <option value="MCQ">Multiple Choice</option>
             <option value="TF">True/False</option>
@@ -273,7 +284,9 @@ const handleTypeChange = (index: number, newType: QuestionType) => {
             placeholder="Question text"
             className="w-full border rounded-lg p-2 mb-2"
             value={q.text}
-            onChange={(e) => updateQuestion(i, { ...q, text: e.target.value })}
+            onChange={(e) =>
+              updateQuestion(i, { ...q, text: e.target.value })
+            }
           />
 
           {q.type === "MCQ" && (
@@ -283,29 +296,40 @@ const handleTypeChange = (index: number, newType: QuestionType) => {
                   key={j}
                   type="text"
                   placeholder={`Option ${j + 1}`}
-                  className="w-full border rounded-lg p-2"
+                  className="w-full border rounded-lg p-2 text-base"
                   value={opt.text}
                   onChange={(e) => {
-                    const opts = [...(q.details.options|| [])];
-                    opts[j] = {text: e.target.value, is_correct: e.target.value === q.answer};
-                    updateQuestion(i, { ...q, details: {...q.details, options: opts} });
+                    const opts = [...(q.details.options || [])];
+                    opts[j] = {
+                      text: e.target.value,
+                      is_correct: e.target.value === q.answer,
+                    };
+                    updateQuestion(i, {
+                      ...q,
+                      details: { ...q.details, options: opts },
+                    });
                   }}
                 />
               ))}
               <input
                 type="text"
                 placeholder="Correct Answer (type option exactly)"
-                className="w-full border rounded-lg p-2 bg-green-400"
-                defaultValue={q.details.options.find((opt) => opt.is_correct)?.text || ""}
+                className="w-full border rounded-lg p-2 bg-green-400 text-base"
+                defaultValue={
+                  q.details.options.find((opt) => opt.is_correct)?.text || ""
+                }
                 onChange={(e) => {
                   let opts = [...(q.details.options || ["", "", "", ""])];
-                  opts = opts.map((opt) => ({...opt, is_correct: opt.text === e.target.value}))
-                  // const newCorrectOptIdx = opts.findIndex((opt) => opt.text === e.target.value)
-                  // console.log("New correct OPT idx", newCorrectOptIdx)
-                  // opts[newCorrectOptIdx] = {text: e.target.value, is_correct: e.target.value === e.target.value};
-                  updateQuestion(i, { ...q, details: {...q.details, options: opts},answer: e.target.value })
-                }
-                }
+                  opts = opts.map((opt) => ({
+                    ...opt,
+                    is_correct: opt.text === e.target.value,
+                  }));
+                  updateQuestion(i, {
+                    ...q,
+                    details: { ...q.details, options: opts },
+                    answer: e.target.value,
+                  });
+                }}
               />
             </div>
           )}
@@ -315,7 +339,13 @@ const handleTypeChange = (index: number, newType: QuestionType) => {
               className="border rounded-lg p-2 w-full"
               value={q.details.is_true ? "True" : "False"}
               onChange={(e) =>
-                updateQuestion(i, { ...q, details: {...q.details, is_true: e.target.value == "True"} })
+                updateQuestion(i, {
+                  ...q,
+                  details: {
+                    ...q.details,
+                    is_true: e.target.value == "True",
+                  },
+                })
               }
             >
               <option value="">Select Answer</option>
@@ -328,24 +358,28 @@ const handleTypeChange = (index: number, newType: QuestionType) => {
             <input
               type="text"
               placeholder="Correct Answer"
-              className="w-full border rounded-lg p-2 bg-green-400"
+              className="w-full border rounded-lg p-2 bg-green-400 text-base"
               value={q.details.correct_answer}
               onChange={(e) =>
-                updateQuestion(i, { ...q, details: {...q.details, correct_answer: e.target.value} })
+                updateQuestion(i, {
+                  ...q,
+                  details: { ...q.details, correct_answer: e.target.value },
+                })
               }
             />
           )}
         </div>
       ))}
 
-      {assessmentType && questions.length > 0 && (
-        <button
-          onClick={handleSaveAssessment}
-          className="cursor-pointer ms-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >Save Assessment</button>
-      )}  
-      
+    {assessmentType && questions.length > 0 && (
+      <button
+        onClick={handleSaveAssessment}
+        className="cursor-pointer mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+      >
+        Save Assessment
+      </button>
+    )}
+  </div>
+);
 
-    </div>
-  );
 }

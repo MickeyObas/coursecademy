@@ -1,7 +1,7 @@
 import { BellIcon, ChevronDown, Menu, MessageCircleIcon, Search, User } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
-const Header = ({ onMenuClick }) => {
+const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
   const { user } = useAuth();
 
   return (
@@ -25,7 +25,7 @@ const Header = ({ onMenuClick }) => {
           <input
             type="text"
             placeholder="Search here..."
-            className="flex-1 bg-transparent border-0 outline-0 text-sm sm:text-base"
+            className="flex-1 bg-transparent border-0 outline-0 text-base"
           />
         </div>
 

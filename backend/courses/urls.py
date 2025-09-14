@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.CourseListView.as_view()),
     # TODO: Rename URLs after configuring user type (INSTRUCTOR)
     path("instructed/", views.CourseListView.as_view()),
+    path("instructor/me/", views.InstructorDashboardDetails.as_view()),
     path("<int:course_id>/questions/", views.CourseAssessmentQuestionsView.as_view()),
     path(
         "<int:course_id>/questions/update/", views.CourseAssessmentUpdateView.as_view()

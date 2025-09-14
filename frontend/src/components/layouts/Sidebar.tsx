@@ -8,7 +8,12 @@ const linkClasses = ({ isActive }: { isActive: boolean }) =>
     isActive ? "bg-slate-100 font-medium" : "hover:bg-slate-50"
   }`;
 
-const Sidebar = ({ isOpen, onClose }) => {
+type SidebarProps = {
+  isOpen: boolean,
+  onClose: () => void
+}
+
+const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
