@@ -9,13 +9,13 @@ from .models import Profile, User
 
 class CustomUserAdmin(UserAdmin):
     model = User
-    list_display = ("email", "is_staff", "is_active")
-    list_filter = ("is_staff", "is_active", "groups")
-    search_fields = ("email")
+    list_display = ("email", "is_staff", "is_active",)
+    list_filter = ("is_staff", "is_active", "groups",)
+    search_fields = ("email",)
     ordering = ("email",)
 
     fieldsets = (
-        (None, {"fields": ("email", "password")}),
+        (None, {"fields": ("email", "password",)}),
         (_("Personal info"), {"fields": ("email",)}),  # Replace these with your fields
         (
             _("Permissions"),
@@ -49,7 +49,7 @@ class CustomUserAdmin(UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
 
-    filter_horizontal = ("groups", "user_permissions")
+    filter_horizontal = ("groups", "user_permissions",)
 
 
 admin.site.register(User, CustomUserAdmin)
