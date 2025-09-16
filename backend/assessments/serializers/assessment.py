@@ -4,7 +4,7 @@ from rest_framework import serializers
 from categories.serializers import CategorySerializer
 
 from ..models import (AssessmentSession, LessonAssessment, Question,
-                      TestAssessment, TestSession)
+                      TestAssessment, TestSession, AssessmentAnswer, Option)
 from .question import QuestionDisplaySerializer
 
 
@@ -68,3 +68,25 @@ class SubmitAssessmentSessionSerializer(serializers.Serializer):
     session_id = serializers.CharField()
     assessment_id = serializers.CharField()
     assessment_type = serializers.CharField()
+
+
+
+class AsssessmentResultSerializer(serializers.ModelSerializer):
+    user_answer = serializers.SerializerMethodField()
+    question_text = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentAnswer
+        fields = [
+            'question_text',
+            'user_answer', # User's answer
+            'is_correct',
+            'correct_answer'
+        ]
+
+    def get_question(self, obj):
+        return obj.question.text
+    
+    def get_user_answer(self, obj):
+        if obj.question.type == "MCQ":
+            correct_option = Option

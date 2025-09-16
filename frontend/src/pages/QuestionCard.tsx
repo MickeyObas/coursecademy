@@ -128,7 +128,7 @@ export default function QuestionCard({
       <button
         onClick={handlePrev}
         disabled={currentIndex === 0}
-        className={`w-full sm:w-auto px-4 py-2 rounded-lg text-white transition ${
+        className={`cursor-pointer w-full sm:w-auto px-4 py-2 rounded-lg text-white transition ${
           currentIndex === 0
             ? "bg-gray-300 cursor-not-allowed"
             : "bg-gray-600 hover:bg-gray-700"
@@ -153,14 +153,14 @@ export default function QuestionCard({
         {currentIndex === totalQuestions - 1 ? (
           <button
             onClick={onSubmit}
-            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="cursor-pointer w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Finish
           </button>
         ) : (
           <button
             onClick={handleNext}
-            className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="cursor-pointer w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Next
           </button>

@@ -228,6 +228,13 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
         return {"error": str(e)}
 
 
+def _generate_assessment_result(user_answers: list[AssessmentAnswer]):
+    result = []
+    for user_answer in user_answers:
+        
+        
+
+
 @transaction.atomic
 def start_lesson_assessment(user, lesson_id):
     try:

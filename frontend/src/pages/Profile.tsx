@@ -121,9 +121,10 @@ export const Profile = () => {
                 <img
                   src={
                     (preview as string) ||
-                    `${BACKEND_URL}${profile?.profile_picture}` ||
-                    ""
-                  }
+                    (profile?.profile_picture.startsWith("http") 
+                      ? profile.profile_picture 
+                      : `${BACKEND_URL}${profile?.profile_picture}`)
+                    }
                   alt="User avatar"
                   className="w-28 h-28 rounded-full object-cover border"
                 />

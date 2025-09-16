@@ -145,6 +145,9 @@ class SubmitAssessmentSession(APIView):
             validated["assessment_type"],
         )
 
+        # Return Q/A map in serialized form
+        # LessonId, QuestionText, QuestionType, UserAnswer, UserAnswerIsCorrect, CorrectAnswer, SessionScore
+
         return Response(result)
 
         if result.get("error"):
