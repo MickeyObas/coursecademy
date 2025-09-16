@@ -185,7 +185,7 @@ const FIBQuestion = ({current, handleFIBInput, answers}: FIBQuestionProps) => {
         type="text"
         value={value}
         onChange={(e) => handleFIBInput(current?.id, e.target.value)}
-        className="text-base border-b-2 border-blue-500 outline-none px-2 mx-1"
+        className="max-w-[100px] sm:max-w-[150px] md:max-w-[200px] text-base border-b-2 border-blue-500 outline-none px-2 mx-1"
       />
       {parts[1]}
     </p>
