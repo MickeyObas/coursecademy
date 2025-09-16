@@ -2,7 +2,7 @@ from .assessment import (AssessmentQuestionSerializer,
                          SaveAssessmentAnswerSerializer,
                          SaveTestAssessmentAnswerSerializer,
                          SubmitAssessmentSessionSerializer,
-                         TestAssessmentSerializer)
+                         TestAssessmentSerializer, AsssessmentResultSerializer)
 from .question import (FIBDetailSerializer, MCQDetailSerializer,
                        OptionSerializer, PublicMCQDetailSerializer,
                        PublicOptionSerializer, QuestionDetailsSerializer,
@@ -30,4 +30,5 @@ __all__ = [
     "TestSessionQuestion",
     "TestSessionQuestionSerializer",
     "SubmitAssessmentSessionSerializer",
+    "AsssessmentResultSerializer"
 ]

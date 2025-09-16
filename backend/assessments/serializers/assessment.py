@@ -70,10 +70,10 @@ class SubmitAssessmentSessionSerializer(serializers.Serializer):
     assessment_type = serializers.CharField()
 
 
-
 class AsssessmentResultSerializer(serializers.ModelSerializer):
     user_answer = serializers.SerializerMethodField()
     question_text = serializers.SerializerMethodField()
+    correct_answer = serializers.SerializerMethodField()
 
     class Meta:
         model = AssessmentAnswer
@@ -84,9 +84,28 @@ class AsssessmentResultSerializer(serializers.ModelSerializer):
             'correct_answer'
         ]
 
-    def get_question(self, obj):
+    def get_question_text(self, obj):
         return obj.question.text
     
     def get_user_answer(self, obj):
         if obj.question.type == "MCQ":
-            correct_option = Option
+            if obj.option_id:
+                user_option = Option.objects.get(id=obj.option_id)
+                return user_option.text
+        return obj.input
+                
+    def get_correct_answer(self, obj):
+        if obj.question.type == "MCQ":
+            correct_option = Option.objects.filter(
+                question=obj.question,
+                is_correct=True
+            ).first()
+
+            # NOTE Warn about no correct answers set
+            return correct_option.text
+        elif obj.question.type == "FIB":
+            return obj.question.correct_answer
+        elif obj.question.type == "TF":
+            return "true" if obj.question.is_true else "false"
+        
+        

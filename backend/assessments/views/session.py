@@ -14,13 +14,13 @@ from courses.helpers import get_course_from_object
 
 from ..models import (AssessmentSession, CourseAssessment, LessonAssessment,
                       Question, TestSession, TestSessionAnswer,
-                      TestSessionQuestion)
+                      TestSessionQuestion, AssessmentAnswer)
 from ..serializers import (SaveAssessmentAnswerSerializer,
                            SaveTestAssessmentAnswerSerializer,
                            TestSessionSerializer)
-from ..services import (generate_assessment_answer_objects,
+from ..services import (update_assessment_answer_objects,
                         mark_assessment_session, mark_test_session,
-                        save_assessment_answer, save_test_answer)
+                        save_assessment_answer, save_test_answer, generate_assessment_result)
 
 logger = logging.getLogger(__name__)
 
@@ -134,21 +134,23 @@ class SubmitAssessmentSession(APIView):
             f"DA ANSWERS {request.data['answers']} ----> {type(request.data['answers'])}"
         )
 
-        generate_assessment_answer_objects(
+        update_assessment_answer_objects(
             validated["session_id"], request.data["answers"]
         )
 
-        result = mark_assessment_session(
+        marked_session = mark_assessment_session(
             request.user,
             validated["session_id"],
             validated["assessment_id"],
             validated["assessment_type"],
         )
 
+        marked_session["result"] = generate_assessment_result(validated["session_id"])
+
         # Return Q/A map in serialized form
         # LessonId, QuestionText, QuestionType, UserAnswer, UserAnswerIsCorrect, CorrectAnswer, SessionScore
 
-        return Response(result)
+        return Response(marked_session)
 
         if result.get("error"):
             return Response({"error": result["error"]}, status=400)

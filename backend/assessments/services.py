@@ -22,7 +22,8 @@ from .exceptions import (NoAssessmentSessionError, NoCorrectOptionError,
                          NoQuestionError, NoTestAssessmentError,
                          NoTestBlueprintError, NoTestSessionError,
                          TestSessionExpiredError, TestSessionMarkingError)
-from .serializers import QuestionSerializer
+from .serializers import QuestionSerializer, AsssessmentResultSerializer
+
 
 logger = logging.getLogger(__name__)
 TOTAL_QUESTIONS_PER_SESSION = 10
@@ -121,17 +122,32 @@ def mark_test_session(user, session_id):
     return test_session
 
 
+# @transaction.atomic
+# def generate_assessment_answer_objects(session_id, answer_data: dict):
+#     session = AssessmentSession.objects.get(id=session_id)
+
+#     for key, value in answer_data.items():
+#         question = Question.objects.get(id=key)
+#         assessment_answer = AssessmentAnswer.objects.create(
+#             session=session,
+#             question=question,
+#             input=value,
+#             option_id=value if question.type == "MCQ" else None,
+#         )
+
+
 @transaction.atomic
-def generate_assessment_answer_objects(session_id, answer_data: dict):
+def update_assessment_answer_objects(session_id, answer_data: dict):
     session = AssessmentSession.objects.get(id=session_id)
 
     for key, value in answer_data.items():
         question = Question.objects.get(id=key)
-        assessment_answer = AssessmentAnswer.objects.create(
+        assessment_answer = AssessmentAnswer.objects.filter(
             session=session,
-            question=question,
+            question=question
+        ).update(
             input=value,
-            option_id=value if question.type == "MCQ" else None,
+            option_id=value if question.type == "MCQ" else None
         )
 
 
@@ -228,12 +244,16 @@ def mark_assessment_session(user, session_id, assessment_id, assessment_type):
         return {"error": str(e)}
 
 
-def _generate_assessment_result(user_answers: list[AssessmentAnswer]):
-    result = []
-    for user_answer in user_answers:
+def generate_assessment_result(session_id):
+    session = AssessmentSession.objects.get(id=session_id)
+    user_answers = AssessmentAnswer.objects.select_related("session").filter(session=session)
+    serializer = AsssessmentResultSerializer(user_answers, many=True)
+    return {
+        "score": session.score,
+        "correct": AssessmentAnswer.objects.filter(session=session, is_correct=True).count(),
+        "answers": serializer.data
+    }
         
-        
-
 
 @transaction.atomic
 def start_lesson_assessment(user, lesson_id):
@@ -253,6 +273,18 @@ def start_lesson_assessment(user, lesson_id):
     # Delete answers from previous attempts
     if not created:
         AssessmentAnswer.objects.filter(session=user_lesson_assessment_session).delete()
+
+    # NOTE: Create new answers then update on actual answer selection?
+    lesson_assessment_questions = Question.objects.filter(
+        content_type=ContentType.objects.get_for_model(LessonAssessment),
+        object_id=lesson_assessment.id
+    )
+
+    for question in lesson_assessment_questions:
+        AssessmentAnswer.objects.create(
+            session=user_lesson_assessment_session,
+            question=question
+        )
 
     return user_lesson_assessment_session
 

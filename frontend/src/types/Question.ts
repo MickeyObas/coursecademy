@@ -57,3 +57,10 @@ export type Current = {
 export type Answers = {
   [key: string|number]: string | number
 }
+
+export type ResultAnswer = {
+  question_text: string,
+  user_answer: null | string,
+  is_correct: boolean,
+  correct_answer: string
+}

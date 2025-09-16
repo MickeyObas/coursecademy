@@ -2,14 +2,30 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import QuestionCard from "./QuestionCard";
 import api from "../utils/axios";
-import type { Answers, Current } from "../types/Question";
+import type { Answers, Current, ResultAnswer } from "../types/Question";
 import { LoaderCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import AssessmentResult from "./AssessmentResult";
 
 type Assessment = {
   id: number,
   courseSlug: string,
   sessionId?: number
+}
+
+type NextStep = {
+  type: "retry_lesson" | "lesson" | "assessment" | "end",
+  id: number,
+  title: string,
+  url: string,
+  is_unlocked: boolean,
+  result: AssessmentResult
+}
+
+type AssessmentResult = {
+  score: number,
+  correct: number,
+  answers: ResultAnswer[]
 }
 
 const TakeAssessment = () => {
@@ -22,6 +38,8 @@ const TakeAssessment = () => {
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [questions, setQuestions] = useState([]);
   const [current, setCurrent] = useState<Current | null>(null);
+  const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
+  const [nextStep, setNextStep] = useState<NextStep | null>(null);
   const ready = assessment && current;
 
   useEffect(() => {
@@ -91,16 +109,22 @@ const TakeAssessment = () => {
         answers: answers
       })
       const next = response.data;
+
+      setAssessmentResult(next.result);
+      setNextStep(next);
+
+
+      console.log(next);
       if(next.type === "retry_lesson"){
         toast.error("Whoops. You didn't quite hit the pass mark. Let's review the lesson and try again.", {duration: 4000});
-        setTimeout(() => navigate(next.url), 2000);
+        // setTimeout(() => navigate(next.url), 2000);
         ;
       }else if(next.type === "lesson"){
         toast.success("Let's gooo. You passed the test. On to the next!", {duration: 4000});
-        setTimeout(() => navigate(next.url), 2000);
+        // setTimeout(() => navigate(next.url), 2000);
       }else if(next.type === "end"){
         toast.success("Wohooo, you have completed this course! Go check out your new certificate!", {duration: 4000});
-        setTimeout(() => navigate('/'), 2000);
+        // setTimeout(() => navigate('/'), 2000);
       }
     } catch (err){
       console.error(err);
@@ -112,31 +136,57 @@ const TakeAssessment = () => {
 
 
   return (
-  <div className="flex h-dvh md:h-screen w-full justify-center items-center bg-slate-50 px-4">
-    {ready ? (
-      <div className="w-full max-w-3xl">
-        <QuestionCard
-          current={current}
-          currentIndex={currentQuestionIndex}
-          totalQuestions={questions?.length}
-          answers={answers}
-          handleMCQInput={handleMCQInput}
-          handleFIBInput={handleFIBInput}
-          handleTFInput={handleTFInput}
-          handleNext={handleNext}
-          handlePrev={handlePrev}
-          onSubmit={submitAsssessment}
-        />
-      </div>
-    ) : (
-      <div className="flex flex-col items-center text-center space-y-6">
-        <span className="block text-lg sm:text-2xl md:text-3xl font-medium text-gray-700">
-          Just a sec. We're loading your questions...
-        </span>
-        <LoaderCircle className="animate-spin w-16 h-16 sm:w-24 sm:h-24 text-blue-600" />
-      </div>
-    )}
-  </div>
+    <>
+      {assessmentResult ? (
+        <>
+          <AssessmentResult result={assessmentResult}/>
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => {
+                if (nextStep?.type === "retry_lesson") {
+                  navigate(nextStep.url);
+                } else if (nextStep?.type === "lesson") {
+                  navigate(nextStep.url);
+                } else if (nextStep?.type === "end") {
+                  navigate("/");
+                }
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700"
+            >
+              Continue
+            </button>
+          </div>
+        </>
+        
+      ) : (
+        <div className="flex h-dvh md:h-screen w-full justify-center items-center bg-slate-50 px-4">
+          {ready ? (
+            <div className="w-full max-w-3xl">
+              <QuestionCard
+                current={current}
+                currentIndex={currentQuestionIndex}
+                totalQuestions={questions?.length}
+                answers={answers}
+                handleMCQInput={handleMCQInput}
+                handleFIBInput={handleFIBInput}
+                handleTFInput={handleTFInput}
+                handleNext={handleNext}
+                handlePrev={handlePrev}
+                onSubmit={submitAsssessment}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center text-center space-y-6">
+              <span className="block text-lg sm:text-2xl md:text-3xl font-medium text-gray-700">
+                Just a sec. We're loading your questions...
+              </span>
+              <LoaderCircle className="animate-spin w-16 h-16 sm:w-24 sm:h-24 text-blue-600" />
+            </div>
+          )}
+        </div>
+      )}
+    </>
+
 );
 
 }
