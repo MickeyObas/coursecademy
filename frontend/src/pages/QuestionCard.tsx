@@ -227,13 +227,34 @@ const TFQuestion = ({current, answers, handleTFInput}: TFQuestionProps) => {
 
 const MCQQuestion = ({current, answers, handleMCQInput}: MCQQuestionProps) => {
   if(!current) return;
+  const questionText = current?.text;
+  let hasBlank = false;
+  let parts: string[] = [];
+  if(/_{6}/.test(questionText)){
+    hasBlank = true;
+    parts = questionText.split("______");
+  }
   const value = 
     answers[current?.id] ??
     "";
 
   return (
     <>
-      <p className="mt-2 text-gray-700">{current?.text}</p>
+      <p className="mt-2 text-gray-700">
+        {hasBlank ? (
+          <>
+            {parts[0]}
+            <input
+              type="text"
+              disabled={true}
+              className="max-w-[75px] sm:max-w-[100px] text-base border-b-2 border-black outline-none px-2 mx-1 mb-1.5"
+            />
+            {parts[1]}
+            </>
+        ) : (
+          questionText
+        )}
+      </p>
       <div className="space-y-3 mt-4">
         {current?.details?.options?.map((opt) => (
           <label
