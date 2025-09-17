@@ -45,8 +45,17 @@ export default function AssessmentResult({ result }: { result: Result }) {
 
       {/* Detailed answers */}
       <div className="mt-8 grid gap-4 sm:gap-6 md:grid-cols-2">
-        {result.answers.map((answer, index) => (
-          <div
+        {result.answers.map((answer, index) => {
+          const questionText = answer.question_text;
+          let hasBlank = false;
+          let parts: string[] = [];
+          if(/_{6}/.test(questionText)){
+            hasBlank = true;
+            parts = questionText.split("______");
+          }
+          
+          return (
+            <div
             key={index}
             className={`p-4 sm:p-5 rounded-xl shadow-sm border transition ${
               answer.is_correct
@@ -68,7 +77,19 @@ export default function AssessmentResult({ result }: { result: Result }) {
               )}
               <div className="flex-1">
                 <p className="font-medium text-sm sm:text-base">
-                  {answer.question_text}
+                  {hasBlank ? (
+                    <>
+                      {parts[0]}
+                      <input
+                        type="text"
+                        disabled={true}
+                        className="max-w-[75px] sm:max-w-[100px] text-base border-b-2 border-black outline-none px-2 mx-1 mb-1.5"
+                      />
+                      {parts[1]}
+                      </>
+                  ) : (
+                    answer.question_text
+                  )}
                 </p>
                 <p className="text-xs sm:text-sm mt-1">
                   <span className="font-semibold">Your Answer:</span>{" "}
@@ -91,7 +112,9 @@ export default function AssessmentResult({ result }: { result: Result }) {
               </div>
             </div>
           </div>
-        ))}
+          )
+          
+        })}
       </div>
     </div>
   );

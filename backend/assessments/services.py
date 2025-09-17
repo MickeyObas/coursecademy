@@ -361,8 +361,9 @@ def _mark_test_answer(test_answer: TestSessionAnswer):
         # TODO: Mutate model to allow FIB questions to have multiple allowed answers (besides case-sensitivity)
 
         correct_answer = question.correct_answer.strip().lower()
-        if test_answer.input.strip().lower() == correct_answer:
-            test_answer.is_correct = True
+        if test_answer.input:
+            if test_answer.input.strip().lower() == correct_answer:
+                test_answer.is_correct = True
         else:
             test_answer.is_correct = False
 
@@ -400,8 +401,9 @@ def _mark_assessment_answer(assessment_answer: AssessmentAnswer):
         # TODO: Mutate model to allow FIB questions to have multiple allowed answers (besides case-sensitivity)
 
         correct_answer = question.correct_answer.strip().lower()
-        if assessment_answer.input.strip().lower() == correct_answer:
-            assessment_answer.is_correct = True
+        if assessment_answer.input:
+            if assessment_answer.input.strip().lower() == correct_answer:
+                assessment_answer.is_correct = True
         else:
             assessment_answer.is_correct = False
 
@@ -409,8 +411,9 @@ def _mark_assessment_answer(assessment_answer: AssessmentAnswer):
 
     elif question.type == "TF":
         correct_answer = str(question.is_true).lower()
-        if assessment_answer.input == correct_answer:
-            assessment_answer.is_correct = True
+        if assessment_answer.input:
+            if assessment_answer.input == correct_answer:
+                assessment_answer.is_correct = True
         else:
             assessment_answer.is_correct = False
 
