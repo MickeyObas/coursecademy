@@ -81,13 +81,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 "Cannot create account. User email is not verified."
             )
 
-        email_verification_code.delete()
-
         return email
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         user.save()
+
+        VerificationCode.objects.filter(
+            email=validated_data["email"], is_used=True
+        ).delete()
+        
         return user
 
 
