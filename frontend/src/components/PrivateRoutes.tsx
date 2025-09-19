@@ -15,7 +15,7 @@ export function PrivateRoutes({ allowedRoles }: {allowedRoles: Role[]}){
     if (allowedRoles && !allowedRoles.includes(user.account_type)) {
       return user.account_type === "I"
       ? <Navigate to="/idashboard" replace />
-      : <Navigate to="/dashboard" replace />
+      : <Navigate to="/dashboard/" replace />
     }
 
     return <Outlet />

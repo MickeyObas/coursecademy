@@ -37,10 +37,10 @@ const AppRoutes = () => {
       <Route path="/enter-code" element={<EnterCode />} />
       
       {/* Private Routes */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/dashboard/" replace />} />
 
         <Route element={<PrivateRoutes allowedRoles={["S"]} />}>
-          <Route path="/dashboard" element={<DashboardLayout />}>
+          <Route path="/dashboard/" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="courses" element={<Courses />} />
             <Route path="profile" element={<Profile />} />

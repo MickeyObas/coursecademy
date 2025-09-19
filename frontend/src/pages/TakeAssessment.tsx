@@ -140,7 +140,7 @@ const TakeAssessment = () => {
       {assessmentResult ? (
         <>
           <AssessmentResult result={assessmentResult}/>
-          <div className="mt-4 flex justify-center">
+          <div className="my-6 sm:my-8 flex justify-center">
             <button
               onClick={() => {
                 if (nextStep?.type === "retry_lesson") {

@@ -49,7 +49,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     >
       {/* Nav links */}
       <div className="flex flex-col py-7 px-5 gap-y-5">
-        <NavLink onClick={() => onClose()} to="/dashboard" end className={linkClasses}>
+        <NavLink onClick={() => onClose()} to="/dashboard/" end className={linkClasses}>
           <LayoutDashboardIcon />
           <span>Dashboard</span>
         </NavLink>
