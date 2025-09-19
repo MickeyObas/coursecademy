@@ -5,13 +5,13 @@ A platform where users/instructors can take/make courses and assessments, built 
 
 ## Features Demo
 <div style="width:100%; display: flex; justify-content: space-between; margin-bottom: 10px">
-    <img src="screenshots/voting.gif" alt="Description" width="49%"/>
-    <img src="screenshots/create-community.png" alt="Description" width="49%"/>
+    <img src="screenshots/dashboard.gif" alt="Dashboard display" width="49%"/>
+    <img src="screenshots/cousep.png" alt="Course in progress" width="49%"/>
 </div>
 
 <div style="width:100%; display: flex; justify-content: space-between; margin-bottom: 10px">
-    <img src="screenshots/user-profile.png" alt="Description" width="49%"/>
-    <img src="screenshots/responsive.gif" alt="Description" width="49%"/>
+    <img src="screenshots/asseessment.png" alt="Asseessment in progress" width="49%"/>
+    <img src="screenshots/responsive.gif" alt="Responsiveness in display" width="49%"/>
 </div>
 
 ## Technologies Used
