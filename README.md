@@ -10,7 +10,7 @@ A platform where users/instructors can take/make courses and assessments, built 
 </div>
 
 <div style="width:100%; display: flex; justify-content: space-between; margin-bottom: 10px">
-    <img src="screenshots/asseessment.png" alt="Asseessment in progress" width="49%"/>
+    <img src="screenshots/assessment.png" alt="Asseessment in progress" width="49%"/>
     <img src="screenshots/responsive.gif" alt="Responsiveness in display" width="49%"/>
 </div>
 
